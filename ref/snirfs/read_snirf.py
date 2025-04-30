@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Script to read metadata from SNIRF files using pysnirf2.
+Script to read metadata from SNIRF files.
 This works with all SNIRF data types, including TD-fNIRS files.
 """
 import os
 import glob
-from pysnirf2 import Snirf
+import sys
+import numpy as np
+from snirf import Snirf
 
 def read_snirf_metadata(file_path):
-    """Read and return metadata from a SNIRF file using pysnirf2."""
+    """Read and return metadata from a SNIRF file."""
     print(f"\nReading metadata from: {os.path.basename(file_path)}")
     try:
         # Open SNIRF file
@@ -45,6 +47,17 @@ def read_snirf_metadata(file_path):
                         print(f"      Data Shape: {shape}")
                         print(f"      Time Points: {shape[0]}")
                         print(f"      Channels: {shape[1]}")
+                        
+                        # Count valid channels (containing at least one finite, non-zero value)
+                        data = data_element.dataTimeSeries
+                        valid_channels = 0
+                        for col in range(shape[1]):
+                            channel_data = data[:, col]
+                            if np.any(np.isfinite(channel_data) & (channel_data != 0)):
+                                valid_channels += 1
+                        
+                        valid_percent = (valid_channels / shape[1]) * 100
+                        print(f"      Valid Channels: {valid_channels}/{shape[1]} ({valid_percent:.2f}%)")
                     
                     # Measurement list sample
                     if hasattr(data_element, 'measurementList') and len(data_element.measurementList) > 0:
@@ -103,15 +116,21 @@ def get_data_type_name(code):
         return "Unknown"
 
 def main():
-    """Find and process all SNIRF files in the current directory."""
-    print("Scanning for SNIRF files...")
-    snirf_files = glob.glob("*.snirf")
-    
-    if not snirf_files:
-        print("No SNIRF files found in the current directory.")
-        return
-    
-    print(f"Found {len(snirf_files)} SNIRF files.")
+    """Find and process SNIRF files provided as arguments or in current directory."""
+    # Check if file paths were provided as command-line arguments
+    if len(sys.argv) > 1:
+        snirf_files = sys.argv[1:]
+        print(f"Processing {len(snirf_files)} SNIRF files from command-line arguments...")
+    else:
+        # Otherwise, scan current directory
+        print("Scanning for SNIRF files in current directory...")
+        snirf_files = glob.glob("*.snirf")
+        
+        if not snirf_files:
+            print("No SNIRF files found in the current directory.")
+            return
+        
+        print(f"Found {len(snirf_files)} SNIRF files.")
     
     for file_path in snirf_files:
         read_snirf_metadata(file_path)

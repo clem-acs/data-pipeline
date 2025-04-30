@@ -20,7 +20,7 @@ pillow==11.2.1
 platformdirs==4.3.7
 pooch==1.8.2
 pyparsing==3.2.3
-pysnirf2==0.7.3
+snirf>=0.7.3  # Replacing deprecated pysnirf2
 python-dateutil==2.9.0.post0
 pytz==2025.2
 requests==2.32.3
