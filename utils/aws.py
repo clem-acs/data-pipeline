@@ -6,8 +6,12 @@ import os
 import hashlib
 import logging
 import boto3
+import dotenv
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Set, Tuple, Union
+
+# Load environment variables from .env file if it exists
+dotenv.load_dotenv()
 
 logger = logging.getLogger("pipeline.utils.aws")
 
