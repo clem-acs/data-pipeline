@@ -6,6 +6,10 @@ import h5py
 import re
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # S3 bucket details
 BUCKET_NAME = "conduit-data-dev"
@@ -13,11 +17,20 @@ PREFIX = "data-collector/new-sessions/"
 
 def init_s3_client():
     """Initialize S3 client with AWS credentials from environment"""
+    # Check if credentials are available
+    aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    region_name = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION", "us-east-1"))
+    
+    if not aws_access_key_id or not aws_secret_access_key:
+        print("WARNING: AWS credentials not found in environment variables.")
+        print("Make sure your .env file contains AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY")
+    
     return boto3.client(
         's3',
-        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-        region_name=os.environ.get("AWS_REGION", "us-east-1")
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
     )
 
 def get_session_files(s3_client, session_path):
