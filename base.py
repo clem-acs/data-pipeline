@@ -12,7 +12,7 @@ import logging
 import argparse
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Set, Union
+from typing import List, Dict, Any, Optional, Set, Union, Callable
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 
@@ -45,6 +45,7 @@ class DataTransform:
     - Supports dry-run mode for testing without making actual changes
     - Implements batching for large datasets
     - Saves script versions for reproducibility
+    - Common utilities for S3 operations and file handling
     """
     
     def __init__(self, transform_id: str, script_id: str, script_name: str, script_version: str, 
@@ -124,6 +125,189 @@ class DataTransform:
     def _ensure_script_versions_table_exists(self):
         """Ensure script versions table exists."""
         ensure_script_versions_table_exists(self.dynamodb_client, self.script_table_name)
+    
+    # S3 Operations
+    def list_s3_objects(self, prefix: str, filter_func: Optional[Callable[[str], bool]] = None, 
+                      delimiter: Optional[str] = None) -> List[str]:
+        """List S3 objects with optional filtering.
+
+        Args:
+            prefix: S3 prefix to list
+            filter_func: Optional filter function to apply to objects
+            delimiter: Optional delimiter for listing directories
+
+        Returns:
+            List of matching objects or prefixes
+        """
+        result = []
+        paginator = self.s3.get_paginator('list_objects_v2')
+        
+        paginate_args = {
+            'Bucket': self.s3_bucket,
+            'Prefix': prefix
+        }
+        
+        if delimiter:
+            paginate_args['Delimiter'] = delimiter
+        
+        for page in paginator.paginate(**paginate_args):
+            # Process directory prefixes if delimiter is used
+            if delimiter and 'CommonPrefixes' in page:
+                for prefix_obj in page['CommonPrefixes']:
+                    prefix_val = prefix_obj['Prefix']
+                    if not filter_func or filter_func(prefix_val):
+                        result.append(prefix_val)
+            
+            # Process file objects
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    key = obj['Key']
+                    if not filter_func or filter_func(key):
+                        result.append(key)
+        
+        return result
+    
+    def create_temp_path(self, filename: str) -> str:
+        """Create a temporary file path.
+        
+        Args:
+            filename: Base filename
+            
+        Returns:
+            Temporary file path
+        """
+        # Make sure we only use the base filename
+        return os.path.join('/tmp', os.path.basename(filename))
+    
+    def cleanup_temp_file(self, path: str) -> bool:
+        """Safely remove a temporary file if it exists.
+        
+        Args:
+            path: Path to the file
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"Error cleaning up temporary file {path}: {e}")
+            return False
+    
+    def get_s3_uri(self, key: str) -> str:
+        """Create a full S3 URI from a key.
+        
+        Args:
+            key: S3 object key
+            
+        Returns:
+            Full S3 URI with bucket and key
+        """
+        return f"s3://{self.s3_bucket}/{key}"
+    
+    def download_s3_file(self, s3_key: str, local_path: Optional[str] = None) -> str:
+        """Download a file from S3 with timing and error handling.
+        
+        Args:
+            s3_key: S3 key to download
+            local_path: Optional local path (default: /tmp/filename)
+            
+        Returns:
+            Path to local file
+        """
+        if not local_path:
+            local_path = self.create_temp_path(s3_key)
+        
+        try:
+            self.logger.info(f"Downloading {s3_key} to {local_path}")
+            
+            start_time = time.time()
+            self.s3.download_file(self.s3_bucket, s3_key, local_path)
+            download_time = time.time() - start_time
+            
+            file_size_mb = os.path.getsize(local_path) / (1024 * 1024)
+            self.logger.info(f"Downloaded {file_size_mb:.2f} MB in {download_time:.2f} seconds")
+            
+            if self.dry_run:
+                self.logger.info(f"[DRY RUN] Downloaded {s3_key} for inspection only")
+            
+            return local_path
+        except Exception as e:
+            self.logger.error(f"Error downloading file {s3_key}: {e}")
+            if self.dry_run:
+                self.logger.warning(f"[DRY RUN] Would fail with download error: {e}")
+                # In dry run, create an empty file for error handling
+                with open(local_path, 'wb') as f:
+                    f.write(b'')
+                return local_path
+            raise
+    
+    def upload_s3_file(self, local_path: str, s3_key: str) -> str:
+        """Upload a file to S3 with timing and error handling.
+        
+        Args:
+            local_path: Local file path
+            s3_key: S3 key to upload to
+            
+        Returns:
+            S3 URI of uploaded file
+        """
+        dest_path = self.get_s3_uri(s3_key)
+        
+        try:
+            self.logger.info(f"Uploading file to {dest_path}")
+            
+            if self.dry_run:
+                self.logger.info(f"[DRY RUN] Would upload {local_path} to {dest_path}")
+                return dest_path
+            
+            upload_start = time.time()
+            self.s3.upload_file(local_path, self.s3_bucket, s3_key)
+            upload_time = time.time() - upload_start
+            
+            file_size_mb = os.path.getsize(local_path) / (1024 * 1024)
+            self.logger.info(f"Uploaded {file_size_mb:.2f} MB in {upload_time:.2f} seconds")
+            
+            return dest_path
+        except Exception as e:
+            self.logger.error(f"Error uploading file {local_path} to {s3_key}: {e}")
+            raise
+    
+    def copy_s3_object(self, source_key: str, dest_key: str) -> str:
+        """Copy an object within S3 with proper error handling.
+        
+        Args:
+            source_key: Source object key
+            dest_key: Destination object key
+            
+        Returns:
+            S3 URI of the destination object
+        """
+        dest_path = self.get_s3_uri(dest_key)
+        source_path = self.get_s3_uri(source_key)
+        
+        try:
+            self.logger.info(f"Copying {source_path} to {dest_path}")
+            
+            if self.dry_run:
+                self.logger.info(f"[DRY RUN] Would copy {source_path} to {dest_path}")
+                return dest_path
+            
+            # Use copy_object for efficiency (stays server-side in S3)
+            self.s3.copy_object(
+                Bucket=self.s3_bucket,
+                CopySource={'Bucket': self.s3_bucket, 'Key': source_key},
+                Key=dest_key
+            )
+            
+            self.logger.info(f"Successfully copied object to {dest_path}")
+            return dest_path
+        except Exception as e:
+            self.logger.error(f"Error copying S3 object: {e}")
+            raise
     
     def _upload_script_to_s3(self):
         """Upload script to S3 only if version doesn't exist or MD5 has changed, and return its path."""

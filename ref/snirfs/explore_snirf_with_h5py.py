@@ -49,8 +49,15 @@ def explore_h5_structure(h5file, prefix=''):
             print(f"OTHER: {path}")
 
 def main():
-    # Find all SNIRF files in the current directory
-    snirf_files = list(Path('.').glob('*.snirf'))
+    import sys
+    
+    if len(sys.argv) > 1:
+        # Use the provided file path
+        snirf_files = [Path(sys.argv[1])]
+    else:
+        # Find all SNIRF files in the current directory
+        snirf_files = list(Path('.').glob('*.snirf'))
+    
     print(f"Found {len(snirf_files)} SNIRF files")
     
     for snirf_file in snirf_files:
