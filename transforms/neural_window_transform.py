@@ -318,15 +318,98 @@ class NeuralWindowTransform(DataTransform):
                 # Extract EEG and fNIRS data
                 # Adjust the paths based on actual file structure
                 try:
-                    # Try to locate EEG data
-                    eeg_paths = [k for k in f.keys() if 'eeg' in k.lower()]
-                    eeg_data_path = [k for k in eeg_paths if 'data' in k.lower()] if eeg_paths else ['eeg/data']
-                    eeg_time_path = [k for k in eeg_paths if 'time' in k.lower()] if eeg_paths else ['eeg/timestamps']
-
-                    # Try to locate fNIRS data
-                    fnirs_paths = [k for k in f.keys() if 'nir' in k.lower()]
-                    fnirs_data_path = [k for k in fnirs_paths if 'data' in k.lower()] if fnirs_paths else ['fnirs/data']
-                    fnirs_time_path = [k for k in fnirs_paths if 'time' in k.lower()] if fnirs_paths else ['fnirs/timestamps']
+                    # Initialize path lists
+                    eeg_data_path = []
+                    eeg_time_path = []
+                    fnirs_data_path = []
+                    fnirs_time_path = []
+                    
+                    # Standard paths to check
+                    standard_paths = [
+                        # Standard expected structure
+                        ('eeg/data', eeg_data_path),
+                        ('eeg/timestamps', eeg_time_path),
+                        ('fnirs/data', fnirs_data_path),
+                        ('fnirs/timestamps', fnirs_time_path),
+                        # Actual structure found in files
+                        ('devices/eeg/frames_data', eeg_data_path),
+                        ('devices/eeg/timestamps', eeg_time_path),
+                        ('devices/fnirs/frames_data', fnirs_data_path),
+                        ('devices/fnirs/timestamps', fnirs_time_path)
+                    ]
+                    
+                    # Check if standard paths exist
+                    for path, target_list in standard_paths:
+                        if path in f:
+                            target_list.append(path)
+                            self.logger.info(f"Found standard path: {path}")
+                    
+                    # If no standard paths were found, try to detect paths automatically
+                    if not (eeg_data_path and eeg_time_path and fnirs_data_path and fnirs_time_path):
+                        self.logger.info("Standard paths not found, attempting auto-detection")
+                        
+                        # Check if 'devices' group exists
+                        if 'devices' in f:
+                            devices = f['devices']
+                            
+                            # Look for EEG device data
+                            if 'eeg' in devices:
+                                eeg_device = devices['eeg']
+                                for name in eeg_device:
+                                    path = f"devices/eeg/{name}"
+                                    if 'data' in name.lower() or 'frame' in name.lower():
+                                        eeg_data_path.append(path)
+                                        self.logger.info(f"Auto-detected EEG data path: {path}")
+                                    elif 'time' in name.lower():
+                                        eeg_time_path.append(path)
+                                        self.logger.info(f"Auto-detected EEG timestamp path: {path}")
+                            
+                            # Look for fNIRS device data
+                            if 'fnirs' in devices:
+                                fnirs_device = devices['fnirs']
+                                for name in fnirs_device:
+                                    path = f"devices/fnirs/{name}"
+                                    if 'data' in name.lower() or 'frame' in name.lower():
+                                        fnirs_data_path.append(path)
+                                        self.logger.info(f"Auto-detected fNIRS data path: {path}")
+                                    elif 'time' in name.lower():
+                                        fnirs_time_path.append(path)
+                                        self.logger.info(f"Auto-detected fNIRS timestamp path: {path}")
+                        
+                        # Also check at root level
+                        for name in f:
+                            if 'eeg' in name.lower():
+                                eeg_group = f[name]
+                                if isinstance(eeg_group, h5py.Group):
+                                    for subname in eeg_group:
+                                        path = f"{name}/{subname}"
+                                        if 'data' in subname.lower():
+                                            eeg_data_path.append(path)
+                                            self.logger.info(f"Auto-detected EEG data path: {path}")
+                                        elif 'time' in subname.lower():
+                                            eeg_time_path.append(path)
+                                            self.logger.info(f"Auto-detected EEG timestamp path: {path}")
+                            elif 'nir' in name.lower():
+                                fnirs_group = f[name]
+                                if isinstance(fnirs_group, h5py.Group):
+                                    for subname in fnirs_group:
+                                        path = f"{name}/{subname}"
+                                        if 'data' in subname.lower():
+                                            fnirs_data_path.append(path)
+                                            self.logger.info(f"Auto-detected fNIRS data path: {path}")
+                                        elif 'time' in subname.lower():
+                                            fnirs_time_path.append(path)
+                                            self.logger.info(f"Auto-detected fNIRS timestamp path: {path}")
+                    
+                    # Ensure we have at least some paths to try
+                    if not eeg_data_path:
+                        eeg_data_path = ['eeg/data', 'devices/eeg/frames_data', 'devices/eeg/data']
+                    if not eeg_time_path:
+                        eeg_time_path = ['eeg/timestamps', 'devices/eeg/timestamps']
+                    if not fnirs_data_path:
+                        fnirs_data_path = ['fnirs/data', 'devices/fnirs/frames_data', 'devices/fnirs/data']
+                    if not fnirs_time_path:
+                        fnirs_time_path = ['fnirs/timestamps', 'devices/fnirs/timestamps']
 
                     # Log what we found
                     self.logger.info(f"Attempting to load EEG data from: {eeg_data_path}")
