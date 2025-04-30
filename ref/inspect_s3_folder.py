@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to test S3 connection and count sessions available in the bucket.
+Script to test S3 connection and list sessions available in the bucket.
 """
 import os
 import sys
@@ -14,16 +14,17 @@ load_dotenv()
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.aws import get_aws_credentials
 
-def test_s3_connection(bucket_name="conduit-data-dev", prefix="data-collector/new-sessions/"):
+def inspect_s3_folder(bucket_name="conduit-data-dev", prefix="data-collector/new-sessions/", show_sessions=False):
     """
     Test connection to S3 and count the number of sessions available.
     
     Args:
         bucket_name (str): Name of the S3 bucket
         prefix (str): Path prefix to filter objects
+        show_sessions (bool): Whether to print the list of session IDs
         
     Returns:
-        int: Number of unique sessions
+        list: List of unique session IDs if show_sessions is True, otherwise number of unique sessions
     """
     # Get AWS credentials from environment variables
     print("Retrieving AWS credentials...")
@@ -76,15 +77,24 @@ def test_s3_connection(bucket_name="conduit-data-dev", prefix="data-collector/ne
                         session_id = parts[2]  # Get the session ID from the path
                         session_ids.add(session_id)
         
+        # Convert set to sorted list for consistent output
+        session_list = sorted(list(session_ids))
+        
         # Print results
         print(f"Total objects: {total_objects}")
-        print(f"Total unique sessions: {len(session_ids)}")
+        print(f"Total unique sessions: {len(session_list)}")
         
-        return len(session_ids)
+        # Display session IDs if requested
+        if show_sessions:
+            print("\nSession IDs:")
+            for i, session_id in enumerate(session_list, 1):
+                print(f"{i}. {session_id}")
+        
+        return session_list if show_sessions else len(session_list)
         
     except Exception as e:
         print(f"ERROR: Failed to connect to S3 or fetch data: {e}")
         return None
 
 if __name__ == "__main__":
-    test_s3_connection()
+    inspect_s3_folder(show_sessions=True)
