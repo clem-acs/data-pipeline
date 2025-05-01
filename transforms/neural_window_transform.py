@@ -36,7 +36,7 @@ neural_processing_dir = os.path.join(current_dir, 'neural_processing')
 sys.path.insert(0, neural_processing_dir)
 
 # Direct imports from the neural_processing directory
-from eeg_preprocessing import preprocess_eeg
+from eeg_preprocessing import preprocess_eeg, expand_eeg_timestamps
 from fnirs_preprocessing import preprocess_fnirs
 from windowing import create_time_aligned_windows
 from postprocessing import postprocess_windows
@@ -503,6 +503,12 @@ class NeuralWindowTransform(DataTransform):
                     self.logger.info("Preprocessing EEG data")
                     processed_eeg, eeg_preprocessing_metadata = preprocess_eeg(eeg_data, metadata)
                     metadata.update(eeg_preprocessing_metadata)
+                    
+                    # Step 2b: Expand EEG timestamps to match processed data
+                    self.logger.info("Expanding EEG timestamps to match processed data")
+                    expanded_eeg_timestamps, timestamp_metadata = expand_eeg_timestamps(eeg_timestamps, metadata)
+                    metadata.update(timestamp_metadata)
+                    self.logger.info(f"Expanded timestamps from {eeg_timestamps.shape} to {expanded_eeg_timestamps.shape}")
 
                     # Step 3: fNIRS preprocessing
                     self.logger.info("Preprocessing fNIRS data")
@@ -512,7 +518,7 @@ class NeuralWindowTransform(DataTransform):
                     # Step 4: Create time-aligned windows
                     self.logger.info("Creating time-aligned windows")
                     windowed_eeg, windowed_fnirs, window_metadata = create_time_aligned_windows(
-                        processed_eeg, processed_fnirs, eeg_timestamps, fnirs_timestamps, metadata
+                        processed_eeg, processed_fnirs, expanded_eeg_timestamps, fnirs_timestamps, metadata
                     )
                     self.logger.info(f"Created {len(windowed_eeg)} windows")
 

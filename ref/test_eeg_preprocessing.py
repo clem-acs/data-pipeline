@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script for EEG preprocessing function.
+Test script for EEG preprocessing functions.
 
 This script:
 1. Downloads a session H5 file from S3
 2. Applies EEG preprocessing
-3. Verifies the preprocessing completes without errors
-4. Displays statistics about before and after data
+3. Expands EEG timestamps to match processed data
+4. Verifies the processing completes without errors
+5. Displays statistics about before and after data
 
 Usage:
     python test_eeg_preprocessing.py <session_id>
@@ -24,7 +25,7 @@ from dotenv import load_dotenv
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from transforms.neural_processing.eeg_preprocessing import preprocess_eeg
+from transforms.neural_processing.eeg_preprocessing import preprocess_eeg, expand_eeg_timestamps
 from utils.aws import get_aws_credentials
 
 # Constants
@@ -95,7 +96,7 @@ def download_h5_file(s3_client, s3_path, local_path):
 
 
 def extract_eeg_data(h5_path):
-    """Extract EEG data from an H5 file"""
+    """Extract EEG data and timestamps from an H5 file"""
     try:
         with h5py.File(h5_path, 'r') as f:
             # Print summary of key datasets
@@ -108,9 +109,17 @@ def extract_eeg_data(h5_path):
                 print(f"  Display events: {len(f['events/display/data'])}")
             
             # Directly access EEG data at the known location
+            eeg_data = None
+            eeg_timestamps = None
+            
             if 'devices/eeg/frames_data' in f:
                 eeg_data = f['devices/eeg/frames_data'][:]
                 print(f"\nFound EEG data with shape {eeg_data.shape}")
+                
+                # Try to get timestamps
+                if 'devices/eeg/timestamps' in f:
+                    eeg_timestamps = f['devices/eeg/timestamps'][:]
+                    print(f"Found EEG timestamps with shape {eeg_timestamps.shape}")
                 
                 metadata = {
                     'sample_rate': 250.0,  # Default sample rate
@@ -123,18 +132,18 @@ def extract_eeg_data(h5_path):
                 if 'devices/eeg/sample_rate' in f:
                     metadata['sample_rate'] = float(f['devices/eeg/sample_rate'][()])
                 
-                return eeg_data, metadata
+                return eeg_data, eeg_timestamps, metadata
             else:
                 print("EEG data not found at expected location: devices/eeg/frames_data")
-                return None, None
+                return None, None, None
             
     except Exception as e:
         print(f"Error extracting EEG data: {e}")
-        return None, None
+        return None, None, None
 
 
-def test_preprocessing(eeg_data, metadata):
-    """Test the EEG preprocessing function"""
+def test_preprocessing(eeg_data, eeg_timestamps, metadata):
+    """Test both EEG preprocessing and timestamp expansion functions"""
     if eeg_data is None:
         print("No EEG data found to test preprocessing")
         return False
@@ -142,6 +151,8 @@ def test_preprocessing(eeg_data, metadata):
     try:
         print("\nTesting EEG preprocessing...")
         print(f"Input EEG data shape: {eeg_data.shape}")
+        if eeg_timestamps is not None:
+            print(f"Input EEG timestamps shape: {eeg_timestamps.shape}")
         
         # The data should already be in the correct (frames, channels, samples_per_frame) format
         input_data = eeg_data
@@ -191,6 +202,37 @@ def test_preprocessing(eeg_data, metadata):
         if np.max(processed_eeg) > 500 or np.min(processed_eeg) < -500:
             print("  WARNING: Processed data contains unusually large values outside typical EEG range")
         
+        # Test timestamp expansion if timestamps are available
+        if eeg_timestamps is not None:
+            print("\n\nTesting EEG timestamp expansion...")
+            print(f"Input timestamps shape: {eeg_timestamps.shape}")
+            
+            # Time the timestamp expansion
+            start_time = time.time()
+            expanded_timestamps, timestamp_metadata = expand_eeg_timestamps(eeg_timestamps, metadata)
+            expansion_time = time.time() - start_time
+            
+            print(f"Timestamp expansion completed in {expansion_time:.2f} seconds")
+            print(f"Expanded timestamps shape: {expanded_timestamps.shape}")
+            print(f"Timestamp metadata:")
+            for key, value in timestamp_metadata.items():
+                print(f"  {key}: {value}")
+            
+            # Verify timestamps match processed data length
+            if expanded_timestamps.shape[0] == processed_eeg.shape[0]:
+                print(f"\nSUCCESS: Expanded timestamps match processed EEG data length ({expanded_timestamps.shape[0]})")
+            else:
+                print(f"\nWARNING: Expanded timestamps length ({expanded_timestamps.shape[0]}) does not match processed EEG data length ({processed_eeg.shape[0]})")
+            
+            # Show some sample timestamps
+            print("\nSample of original timestamps (first 3):")
+            for i in range(min(3, eeg_timestamps.shape[0])):
+                print(f"  {i}: {eeg_timestamps[i]}")
+                
+            print("\nSample of expanded timestamps (first 3 from different frames):")
+            for i in range(0, min(3*metadata.get('frame_size', 15), expanded_timestamps.shape[0]), metadata.get('frame_size', 15)):
+                print(f"  {i}: {expanded_timestamps[i]}")
+        
         return True
     except Exception as e:
         print(f"Error during preprocessing test: {e}")
@@ -228,20 +270,20 @@ def main():
             print("Failed to download H5 file")
             return 1
         
-        # Extract EEG data
-        eeg_data, metadata = extract_eeg_data(temp_path)
+        # Extract EEG data and timestamps
+        eeg_data, eeg_timestamps, metadata = extract_eeg_data(temp_path)
         if eeg_data is None:
             print("Failed to extract EEG data")
             return 1
         
-        # Test preprocessing
-        success = test_preprocessing(eeg_data, metadata)
+        # Test preprocessing and timestamp expansion
+        success = test_preprocessing(eeg_data, eeg_timestamps, metadata)
         
         if success:
-            print("\nEEG preprocessing test completed successfully!")
+            print("\nEEG preprocessing and timestamp expansion tests completed successfully!")
             return 0
         else:
-            print("\nEEG preprocessing test failed.")
+            print("\nEEG processing tests failed.")
             return 1
     
     finally:
