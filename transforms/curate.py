@@ -18,8 +18,8 @@ try:
     from ..base import DataTransform
     from ..utils.coarse_data_metrics import (
         classify_data_rate, calculate_data_rate,
-        find_task_events_file, get_client_timestamps_from_events,
-        get_session_files_and_size
+        find_task_events_file, find_element_events_file, 
+        get_client_timestamps_from_events, get_session_files_and_size
     )
 except ImportError:
     # When running as a script
@@ -29,8 +29,8 @@ except ImportError:
     from base import DataTransform
     from utils.coarse_data_metrics import (
         classify_data_rate, calculate_data_rate,
-        find_task_events_file, get_client_timestamps_from_events,
-        get_session_files_and_size
+        find_task_events_file, find_element_events_file,
+        get_client_timestamps_from_events, get_session_files_and_size
     )
 
 
@@ -116,6 +116,19 @@ class CurationTransform(DataTransform):
         Returns:
             Dict of session metrics
         """
+        # If we're getting a full H5 file path, extract the session ID
+        original_session_id = session_id
+        
+        # Check if this is a full H5 file path - handle both files in root and in subfolders
+        if session_id.startswith(self.source_prefix) and session_id.endswith('.h5'):
+            # Remove the source prefix
+            path_without_prefix = session_id[len(self.source_prefix):]
+            
+            # Extract the session ID (first part of the path)
+            session_id = path_without_prefix.split('/')[0]
+            self.logger.info(f"Extracted session ID '{session_id}' from H5 file path '{original_session_id}'")
+            
+        # Set the proper session prefix, always at the top level
         session_prefix = f"{self.source_prefix}{session_id}/"
         self.logger.debug(f"Calculating metrics for session {session_id}")
 
@@ -124,34 +137,66 @@ class CurationTransform(DataTransform):
             "id": session_id,
             "clean_duration_sec": 0,
             "file_duration_sec": 0,
-            "clean_data_rate": 0,
-            "file_data_rate": 0,
+            "data_rate": 0,
             "classification": "neither",
             "main_h5_files": [],
             "total_size_bytes": 0,
             "qualifies": False
         }
 
-        # Check for task_events.json
-        task_events_key = find_task_events_file(self.s3, session_prefix)
-        if not task_events_key:
-            self.logger.info(f"No task_events.json found in session {session_id}, clean duration is 0")
-            clean_duration_ms = 0
-            clean_duration_sec = 0
-        else:
-            self.logger.debug(f"Found task_events.json: {task_events_key}")
-
-            # Get client timestamps from task events
-            first_timestamp, last_timestamp = get_client_timestamps_from_events(self.s3, task_events_key)
-            if first_timestamp is None or last_timestamp is None:
-                self.logger.info(f"Could not extract client timestamps from task_events for {session_id}, clean duration is 0")
+        # Check for element_events.json
+        element_events_key = find_element_events_file(self.s3, session_prefix)
+        if not element_events_key:
+            self.logger.info(f"No element_events.json found in session {session_id}, trying task_events.json as fallback")
+            
+            # Fallback to task_events.json
+            task_events_key = find_task_events_file(self.s3, session_prefix)
+            if not task_events_key:
+                self.logger.info(f"No element_events.json or task_events.json found in session {session_id}, duration is 0")
                 clean_duration_ms = 0
                 clean_duration_sec = 0
+                file_duration_ms = 0
+                file_duration_sec = 0
             else:
+                self.logger.debug(f"Found task_events.json: {task_events_key}")
+                
+                # Get timestamps from element events (fallback to task events)
+                first_timestamp, last_timestamp = get_client_timestamps_from_events(self.s3, task_events_key)
+                if first_timestamp is None or last_timestamp is None:
+                    self.logger.info(f"Could not extract timestamps from element events for {session_id}, duration is 0")
+                    clean_duration_ms = 0
+                    clean_duration_sec = 0
+                    file_duration_ms = 0
+                    file_duration_sec = 0
+                else:
+                    # Use the same timestamps for both clean and file duration
+                    clean_duration_ms = last_timestamp - first_timestamp
+                    clean_duration_sec = clean_duration_ms / 1000
+                    file_duration_ms = clean_duration_ms  # Same duration for now
+                    file_duration_sec = clean_duration_sec  # Same duration for now
+                    self.logger.debug(f"Duration from element events (task events fallback): {clean_duration_sec:.2f} seconds")
+                    metrics["clean_duration_sec"] = clean_duration_sec
+                    metrics["file_duration_sec"] = file_duration_sec
+        else:
+            self.logger.debug(f"Found element_events.json: {element_events_key}")
+            
+            # Get timestamps from element events
+            first_timestamp, last_timestamp = get_client_timestamps_from_events(self.s3, element_events_key)
+            if first_timestamp is None or last_timestamp is None:
+                self.logger.info(f"Could not extract timestamps from element_events for {session_id}, duration is 0")
+                clean_duration_ms = 0
+                clean_duration_sec = 0
+                file_duration_ms = 0
+                file_duration_sec = 0
+            else:
+                # Use the same timestamps for both clean and file duration
                 clean_duration_ms = last_timestamp - first_timestamp
                 clean_duration_sec = clean_duration_ms / 1000
-                self.logger.debug(f"Clean duration from task events: {clean_duration_sec:.2f} seconds")
+                file_duration_ms = clean_duration_ms  # Same duration for now
+                file_duration_sec = clean_duration_sec  # Same duration for now
+                self.logger.debug(f"Duration from element events: {clean_duration_sec:.2f} seconds")
                 metrics["clean_duration_sec"] = clean_duration_sec
+                metrics["file_duration_sec"] = file_duration_sec
 
         # Get all session files
         main_h5_files, sub_h5_files, total_size = get_session_files_and_size(self.s3, session_prefix)
@@ -165,48 +210,15 @@ class CurationTransform(DataTransform):
             self.logger.warning(f"No H5 files found in session {session_id}")
             return metrics
 
-        # Extract timestamps from filenames for file-based duration
-        timestamps = []
-        for file_key, _ in sub_h5_files:
-            filename = file_key.split('/')[-1]
-            try:
-                timestamp_str = filename.split('_')[-1].split('.')[0]
-                timestamp = int(timestamp_str)
-                timestamps.append(timestamp)
-            except (IndexError, ValueError) as e:
-                self.logger.warning(f"Error parsing timestamp from {filename}: {e}")
-
-        if not timestamps:
-            self.logger.warning(f"No valid timestamps found in files for session {session_id}")
-            file_duration_ms = 0
-            file_duration_sec = 0
-        else:
-            # Calculate file-based duration
-            earliest = min(timestamps)
-            latest = max(timestamps)
-            file_duration_ms = latest - earliest
-            file_duration_sec = file_duration_ms / 1000
-            self.logger.debug(f"File-based duration: {file_duration_sec:.2f} seconds")
-            metrics["file_duration_sec"] = file_duration_sec
-
         self.logger.debug(f"Total data size: {total_size/(1024*1024):.2f} MB")
 
-        # Calculate data rates
-        if clean_duration_ms and clean_duration_ms > 0:
-            clean_data_rate = calculate_data_rate(total_size, clean_duration_ms)
-            clean_classification = classify_data_rate(clean_data_rate)
-            metrics["clean_data_rate"] = clean_data_rate
-            metrics["classification"] = clean_classification
-            self.logger.debug(f"Clean data rate: {clean_data_rate:.2f} KB/s - Classification: {clean_classification}")
-
-        file_data_rate = calculate_data_rate(total_size, file_duration_ms if file_duration_ms > 0 else 1)
-        file_classification = classify_data_rate(file_data_rate)
-        metrics["file_data_rate"] = file_data_rate
-
-        # If we don't have a clean classification, use file-based classification
-        if metrics["classification"] == "neither" and file_classification != "neither":
-            metrics["classification"] = file_classification
-            self.logger.debug(f"Using file-based classification: {file_classification}")
+        # Calculate data rate using file duration
+        if file_duration_ms and file_duration_ms > 0:
+            data_rate = calculate_data_rate(total_size, file_duration_ms)
+            classification = classify_data_rate(data_rate)
+            metrics["data_rate"] = data_rate
+            metrics["classification"] = classification
+            self.logger.debug(f"Data rate (using file duration): {data_rate:.2f} KB/s - Classification: {classification}")
 
         # Determine if session qualifies for curation
         if (metrics["clean_duration_sec"] >= self.min_clean_duration_sec and
@@ -252,8 +264,7 @@ class CurationTransform(DataTransform):
                 transform_metadata={
                     'clean_duration_sec': session_metrics["clean_duration_sec"],
                     'file_duration_sec': session_metrics["file_duration_sec"],
-                    'clean_data_rate': session_metrics["clean_data_rate"],
-                    'file_data_rate': session_metrics["file_data_rate"],
+                    'data_rate': session_metrics["data_rate"],
                     'classification': session_metrics["classification"],
                     'total_size_bytes': session_metrics["total_size_bytes"]
                 },
@@ -300,8 +311,7 @@ class CurationTransform(DataTransform):
                 transform_metadata={
                     'clean_duration_sec': session_metrics["clean_duration_sec"],
                     'file_duration_sec': session_metrics["file_duration_sec"],
-                    'clean_data_rate': session_metrics["clean_data_rate"],
-                    'file_data_rate': session_metrics["file_data_rate"],
+                    'data_rate': session_metrics["data_rate"],
                     'classification': session_metrics["classification"],
                     'total_size_bytes': session_metrics["total_size_bytes"]
                 },
@@ -319,8 +329,7 @@ class CurationTransform(DataTransform):
                 transform_metadata={
                     'clean_duration_sec': session_metrics["clean_duration_sec"],
                     'file_duration_sec': session_metrics["file_duration_sec"],
-                    'clean_data_rate': session_metrics["clean_data_rate"],
-                    'file_data_rate': session_metrics["file_data_rate"],
+                    'data_rate': session_metrics["data_rate"],
                     'classification': session_metrics["classification"],
                     'total_size_bytes': session_metrics["total_size_bytes"]
                 },

@@ -48,49 +48,53 @@ def find_task_events_file(s3_client, session_path):
 
     return None
 
-def get_client_timestamps_from_events(s3_client, task_events_key):
-    """Extract client_timestamp values from task_events.json file.
+def find_element_events_file(s3_client, session_path):
+    """Find the element_events.json file in a session directory"""
+    paginator = s3_client.get_paginator('list_objects_v2')
 
-    Uses task_started_2 (third event) as start time and the last event as end time.
-    Previously required at least 4 events to be valid, now returns None, None
-    when insufficient events are found, which caller will convert to 0 duration.
+    for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=session_path):
+        if 'Contents' in page:
+            for obj in page['Contents']:
+                file_key = obj['Key']
+                if file_key.endswith('element_events.json'):
+                    return file_key
+
+    return None
+
+def get_client_timestamps_from_events(s3_client, events_key):
+    """Extract client_timestamp values from element_events.json or task_events.json file.
+
+    Now using the first event as start time and the last event as end time.
     """
     try:
-        response = s3_client.get_object(Bucket=S3_BUCKET, Key=task_events_key)
+        response = s3_client.get_object(Bucket=S3_BUCKET, Key=events_key)
         content = response['Body'].read().decode('utf-8')
         events = json.loads(content)
 
-        # Check if we have fewer than 4 events
-        if len(events) < 4:
-            print(f"Not enough events in task_events.json (found {len(events)}, need at least 4)")
+        # Check if we have any events
+        if not events:
+            print(f"No events found in events file")
             return None, None
 
-        # Find the task_started_2 event
+        # Get first and last event timestamps
         start_time = None
         end_time = None
-
-        for event in events:
-            if 'id' in event and event['id'] == 'task_started_2' and 'client_timestamp' in event:
-                start_time = event['client_timestamp']
-                break
-
-        # If we couldn't find task_started_2, use the third event if available
-        if start_time is None and len(events) >= 3 and 'client_timestamp' in events[2]:
-            start_time = events[2]['client_timestamp']
-            print("Using third event as start time (task_started_2 not found)")
-
-        # Use the last event timestamp as the end time
+        
+        if len(events) > 0 and 'client_timestamp' in events[0]:
+            start_time = events[0]['client_timestamp']
+            
         if len(events) > 0 and 'client_timestamp' in events[-1]:
             end_time = events[-1]['client_timestamp']
-
+            
         if start_time and end_time:
             return start_time, end_time
 
         print("Could not find required timestamps in events")
         return None, None
     except Exception as e:
-        print(f"Error parsing task events file: {e}")
+        print(f"Error parsing events file: {e}")
         return None, None
+        
 
 def get_session_files_and_size(s3_client, session_path):
     """Get all files in a session and their total size"""
@@ -105,15 +109,13 @@ def get_session_files_and_size(s3_client, session_path):
                 file_name = file_key.split('/')[-1]
                 file_size = obj['Size']
 
-                # Separate files in the 'files' subdirectory
-                if '/files/' in file_key and file_name.endswith('.h5'):
-                    sub_h5_files.append((file_key, file_size))
                 # Get direct files in the session folder that are H5 files
-                elif file_name.endswith('.h5'):
+                # Ignore files in the 'files' subdirectory
+                if file_name.endswith('.h5') and '/files/' not in file_key:
                     main_h5_files.append((file_key, file_size))
 
-    # Calculate total size of files
-    total_size = sum(size for _, size in main_h5_files + sub_h5_files)
+    # Calculate total size of files - only use main H5 files
+    total_size = sum(size for _, size in main_h5_files)
 
     return main_h5_files, sub_h5_files, total_size
 
