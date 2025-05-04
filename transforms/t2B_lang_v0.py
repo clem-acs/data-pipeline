@@ -161,8 +161,12 @@ class LangTransform(BaseTransform):
                 "tokenizer": self.tokenizer_name,
                 "has_L_data": analysis.get('has_L_data', False),
                 "has_W_data": analysis.get('has_W_data', False),
+                "has_R_data": analysis.get('has_R_data', False),  # Add R data flag
+                "has_S_data": analysis.get('has_S_data', False),  # Add S data flag
                 "L_chars_count": analysis.get('L_chars_count', 0),
                 "W_chars_count": analysis.get('W_chars_count', 0),
+                "R_words_count": analysis.get('R_words_count', 0),  # Add R words count
+                "S_words_count": analysis.get('S_words_count', 0),  # Add S words count
                 "processing_details": result.get('details', {})
             }
             
@@ -224,8 +228,12 @@ class LangTransform(BaseTransform):
             'session_id': session_id,
             'has_L_data': False,
             'has_W_data': False,
+            'has_R_data': False,  # Add R data flag
+            'has_S_data': False,  # Add S data flag
             'L_chars_count': 0,
             'W_chars_count': 0,
+            'R_words_count': 0,   # Add R words count
+            'S_words_count': 0,   # Add S words count
             'qualifies': False
         }
         
@@ -247,8 +255,20 @@ class LangTransform(BaseTransform):
                     analysis['W_chars_count'] = len(f['language/W/chars'])
                     self.logger.info(f"Found 'W' data with {analysis['W_chars_count']} characters")
                 
-                # The file qualifies if it has either L or W data
-                qualifies = analysis['has_L_data'] or analysis['has_W_data']
+                # Check for R and S subgroups with words datasets
+                if 'R' in f['language'] and 'words' in f['language']['R']:
+                    analysis['has_R_data'] = True
+                    analysis['R_words_count'] = len(f['language/R/words'])
+                    self.logger.info(f"Found 'R' data with {analysis['R_words_count']} words")
+                
+                if 'S' in f['language'] and 'words' in f['language']['S']:
+                    analysis['has_S_data'] = True
+                    analysis['S_words_count'] = len(f['language/S/words'])
+                    self.logger.info(f"Found 'S' data with {analysis['S_words_count']} words")
+                
+                # The file qualifies if it has any language data (L, W, R, or S)
+                qualifies = (analysis['has_L_data'] or analysis['has_W_data'] or 
+                              analysis['has_R_data'] or analysis['has_S_data'])
                 analysis['qualifies'] = qualifies
                 
                 if qualifies:
@@ -368,6 +388,110 @@ class LangTransform(BaseTransform):
                 })
         
         return {'text': text, 'tokens': token_data}
+        
+    def extract_and_tokenize_words(self, h5_file, group_name: str) -> Optional[Dict[str, Any]]:
+        """Extract and tokenize text from a word-level language group (R or S).
+        
+        Args:
+            h5_file: Open h5py.File object
+            group_name: 'R' or 'S' group name
+            
+        Returns:
+            Dict with tokenization results or None
+        """
+        if f'language/{group_name}/words' not in h5_file:
+            return None
+        
+        # Extract words
+        words_dataset = h5_file[f'language/{group_name}/words']
+        words_data = []
+        
+        for i in range(len(words_dataset)):
+            word_record = words_dataset[i]
+            word = word_record['word']
+            if isinstance(word, bytes):
+                word = word.decode('utf-8')
+            
+            # Store word data with timestamps
+            words_data.append({
+                'word': word,
+                'start_timestamp': word_record['start_timestamp'],
+                'end_timestamp': word_record['end_timestamp'],
+                'idx': i
+            })
+        
+        if not words_data:
+            return None
+        
+        # Sort words by start_timestamp
+        words_data.sort(key=lambda x: x['start_timestamp'])
+        
+        # Regenerate text by joining words with spaces
+        text = ' '.join(w['word'] for w in words_data)
+        
+        # Precompute word positions in text (key optimization)
+        words_with_positions = []
+        current_pos = 0
+        for word_data in words_data:
+            word = word_data['word']
+            word_start = current_pos
+            word_end = word_start + len(word)
+            words_with_positions.append({
+                **word_data,
+                'text_start': word_start, 
+                'text_end': word_end
+            })
+            current_pos = word_end + 1  # +1 for space
+        
+        # Tokenize the text
+        encoding = self.tokenizer(text, return_offsets_mapping=True)
+        tokens = self.tokenizer.convert_ids_to_tokens(encoding['input_ids'])
+        token_ids = encoding['input_ids']
+        offsets = encoding['offset_mapping']
+        
+        # Map tokens to words
+        token_data = []
+        
+        for token_idx, (start_offset, end_offset) in enumerate(offsets):
+            # Handle special tokens
+            if start_offset == end_offset:
+                token_data.append({
+                    'token': tokens[token_idx],
+                    'token_id': token_ids[token_idx],
+                    'start_timestamp': 0,
+                    'end_timestamp': 0,
+                    'special_token': True
+                })
+                continue
+            
+            # Find words that overlap with this token (simple range check)
+            related_words = [word_item for word_item in words_with_positions 
+                             if word_item['text_start'] <= end_offset and word_item['text_end'] >= start_offset]
+            
+            if related_words:
+                # Use timestamp from the first and last related word
+                start_timestamp = related_words[0]['start_timestamp']
+                end_timestamp = related_words[-1]['end_timestamp']
+                
+                token_data.append({
+                    'token': tokens[token_idx],
+                    'token_id': token_ids[token_idx],
+                    'start_timestamp': start_timestamp,
+                    'end_timestamp': end_timestamp,
+                    'special_token': False
+                })
+            else:
+                # If no related words found (unlikely), use default values
+                self.logger.warning(f"No words found for token '{tokens[token_idx]}' at position {token_idx}")
+                token_data.append({
+                    'token': tokens[token_idx],
+                    'token_id': token_ids[token_idx],
+                    'start_timestamp': 0,
+                    'end_timestamp': 0,
+                    'special_token': False
+                })
+        
+        return {'text': text, 'tokens': token_data}
 
     def process_language_data(self, file_path: str, session: Session, analysis: Dict) -> Dict:
         """Process language data and create tokenized output.
@@ -389,7 +513,7 @@ class LangTransform(BaseTransform):
         try:
             # Process the file
             with h5py.File(file_path, 'r') as f_in:
-                # Process both L and W groups if they exist
+                # Process L and W groups if they exist
                 if analysis['has_L_data']:
                     result = self.extract_and_tokenize(f_in, 'L')
                     if result:
@@ -409,6 +533,27 @@ class LangTransform(BaseTransform):
                         self.logger.info(f"Tokenized {char_count} chars into {token_count} tokens for W group")
                         processing_details['W_token_count'] = token_count
                         processing_details['W_char_count'] = char_count
+                
+                # Process R and S groups if they exist
+                if analysis.get('has_R_data', False):
+                    result = self.extract_and_tokenize_words(f_in, 'R')
+                    if result:
+                        tokenization_results['R'] = result
+                        token_count = len(result['tokens'])
+                        word_count = len(result['text'].split())
+                        self.logger.info(f"Tokenized {word_count} words into {token_count} tokens for R group")
+                        processing_details['R_token_count'] = token_count
+                        processing_details['R_word_count'] = word_count
+                
+                if analysis.get('has_S_data', False):
+                    result = self.extract_and_tokenize_words(f_in, 'S')
+                    if result:
+                        tokenization_results['S'] = result
+                        token_count = len(result['tokens'])
+                        word_count = len(result['text'].split())
+                        self.logger.info(f"Tokenized {word_count} words into {token_count} tokens for S group")
+                        processing_details['S_token_count'] = token_count
+                        processing_details['S_word_count'] = word_count
             
             # If nothing was processed, return early
             if not tokenization_results:
@@ -428,10 +573,14 @@ class LangTransform(BaseTransform):
                 meta_group = lang_group.create_group('metadata')
                 meta_group.attrs['tokenizer'] = self.tokenizer_name
                 meta_group.attrs['tokenization_date'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                meta_group.attrs['has_L_data'] = analysis['has_L_data']
-                meta_group.attrs['has_W_data'] = analysis['has_W_data']
-                meta_group.attrs['L_chars_count'] = analysis['L_chars_count']
-                meta_group.attrs['W_chars_count'] = analysis['W_chars_count']
+                meta_group.attrs['has_L_data'] = analysis.get('has_L_data', False)
+                meta_group.attrs['has_W_data'] = analysis.get('has_W_data', False)
+                meta_group.attrs['has_R_data'] = analysis.get('has_R_data', False)
+                meta_group.attrs['has_S_data'] = analysis.get('has_S_data', False)
+                meta_group.attrs['L_chars_count'] = analysis.get('L_chars_count', 0)
+                meta_group.attrs['W_chars_count'] = analysis.get('W_chars_count', 0)
+                meta_group.attrs['R_words_count'] = analysis.get('R_words_count', 0)
+                meta_group.attrs['S_words_count'] = analysis.get('S_words_count', 0)
                 
                 # Add each tokenized group
                 for group_name, result in tokenization_results.items():
@@ -463,9 +612,15 @@ class LangTransform(BaseTransform):
             
             # Calculate total stats
             total_token_count = sum(len(r['tokens']) for r in tokenization_results.values())
-            total_char_count = sum(len(r['text']) for r in tokenization_results.values())
+            char_groups = {k: v for k, v in tokenization_results.items() if k in ['L', 'W']}
+            word_groups = {k: v for k, v in tokenization_results.items() if k in ['R', 'S']}
+            
+            total_char_count = sum(len(r['text']) for r in char_groups.values())
+            total_word_count = sum(len(r['text'].split()) for r in word_groups.values())
+            
             processing_details['total_token_count'] = total_token_count
             processing_details['total_char_count'] = total_char_count
+            processing_details['total_word_count'] = total_word_count
             
             return {
                 "local_path": output_path,
