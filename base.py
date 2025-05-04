@@ -344,8 +344,11 @@ class DataTransform:
             
         return s3_path
     
-    def get_processed_items(self):
+    def get_processed_items(self, include_skipped=True):
         """Get data IDs already processed by this transform.
+        
+        Args:
+            include_skipped: Whether to include items with 'skipped' status as processed
         
         Returns:
             Set of data IDs (e.g., session IDs)
@@ -353,9 +356,22 @@ class DataTransform:
         processed_items = set()
         try:
             self.logger.debug(f"Querying processed items for transform {self.transform_id}")
+            
+            # Build filter expression based on whether to include skipped items
+            from boto3.dynamodb.conditions import Key, Attr
+            
+            if include_skipped:
+                # Filter for both 'success' and 'skipped' status
+                filter_expr = Attr('status').is_in(['success', 'skipped'])
+            else:
+                # Only include 'success' status
+                filter_expr = Attr('status').eq('success')
+            
+            # Initial query
             response = self.table.query(
                 IndexName='TransformIndex',
                 KeyConditionExpression=Key('transform_id').eq(self.transform_id),
+                FilterExpression=filter_expr,
                 ProjectionExpression="data_id"
             )
             
@@ -367,13 +383,16 @@ class DataTransform:
                 response = self.table.query(
                     IndexName='TransformIndex',
                     KeyConditionExpression=Key('transform_id').eq(self.transform_id),
+                    FilterExpression=filter_expr,
                     ProjectionExpression="data_id",
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 for item in response.get('Items', []):
                     processed_items.add(item['data_id'])
-                    
-            self.logger.info(f"Found {len(processed_items)} already processed items")
+            
+            # Create message based on what we're including
+            status_msg = "processed or skipped" if include_skipped else "successfully processed"
+            self.logger.info(f"Found {len(processed_items)} already {status_msg} items")
             return processed_items
         except Exception as e:
             self.logger.error(f"Error getting processed items: {e}")
@@ -583,7 +602,7 @@ class DataTransform:
         raise NotImplementedError("Subclasses must implement find_items_to_process")
     
     def run_pipeline(self, data_ids: Optional[List[str]] = None, batch_size: int = 0, 
-                    max_items: int = 0, start_idx: int = 0):
+                    max_items: int = 0, start_idx: int = 0, skip_processed_check: bool = False):
         """Run the pipeline on specified data IDs or find new items to process.
         
         Args:
@@ -591,6 +610,8 @@ class DataTransform:
             batch_size: Number of items to process in each batch (0 for all at once)
             max_items: Maximum number of items to process (0 for no limit)
             start_idx: Starting index for processing
+            skip_processed_check: If True, skip checking for already processed items
+                (useful when filtering has already been done upstream)
             
         Returns:
             Dict with processing statistics
@@ -600,11 +621,15 @@ class DataTransform:
             self.logger.info("Finding items to process")
             data_ids = self.find_items_to_process()
             
-        # Get already processed items
-        processed_items = self.get_processed_items()
-        unprocessed_ids = [id for id in data_ids if id not in processed_items]
-        
-        self.logger.info(f"Found {len(unprocessed_ids)} unprocessed items out of {len(data_ids)} total")
+        # Get already processed items unless we're skipping the check
+        unprocessed_ids = data_ids
+        if not skip_processed_check:
+            # Get processed items (including those with 'skipped' status)
+            processed_items = self.get_processed_items(include_skipped=True)
+            unprocessed_ids = [id for id in data_ids if id not in processed_items]
+            self.logger.info(f"Found {len(unprocessed_ids)} unprocessed items out of {len(data_ids)} total")
+        else:
+            self.logger.info(f"Processing {len(data_ids)} items (skipping processed check as requested)")
         
         # Apply max_items limit if specified
         if max_items > 0 and max_items < len(unprocessed_ids):
@@ -668,6 +693,14 @@ class DataTransform:
                           help='Path to write log output to a file')
         parser.add_argument('--dry-run', '-n', action='store_true',
                           help="Dry run mode - don't actually copy files or write to DynamoDB")
+        
+        # Add session processing arguments if the transform can process sessions
+        if hasattr(cls, 'find_items_to_process'):
+            session_group = parser.add_argument_group('Session processing')
+            session_group.add_argument('--new-only', action='store_true',
+                               help='Only process sessions that have not been processed before')
+            session_group.add_argument('--show-processed', action='store_true',
+                               help='Show sessions that have already been processed')
     
     @classmethod
     def run_from_command_line(cls):
@@ -691,11 +724,15 @@ class DataTransform:
         # Create transform instance
         transform = cls.from_args(args)
         
+        # Check if we should skip processed items check
+        skip_processed_check = hasattr(args, 'new_only') and args.new_only
+        
         # Run the pipeline
         transform.run_pipeline(
             batch_size=args.batch_size,
             max_items=args.max_items,
-            start_idx=args.start_idx
+            start_idx=args.start_idx,
+            skip_processed_check=skip_processed_check
         )
     
     @classmethod
