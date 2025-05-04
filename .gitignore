@@ -7,3 +7,5 @@ __pycache__
 .venv
 .env
 *.log
+.env.secrets
+transform_workdir
