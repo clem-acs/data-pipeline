@@ -27,6 +27,7 @@ from transformers import AutoTokenizer
 
 # Import tokenization functions
 from .lang_processing.tokenization import extract_and_tokenize, extract_and_tokenize_words
+from .lang_processing.correction import correct_and_align_w_group
 
 
 class LangTransform(BaseTransform):
@@ -58,10 +59,6 @@ class LangTransform(BaseTransform):
         script_name = kwargs.pop('script_name', 'tokenize_language')
         script_version = kwargs.pop('script_version', 'v0')
 
-        # Extract test and keep_local before passing kwargs to parent
-        self.test = kwargs.pop('test', False)
-        self.keep_local = kwargs.pop('keep_local', False)
-        
         # Call parent constructor
         super().__init__(
             transform_id=transform_id,
@@ -77,10 +74,6 @@ class LangTransform(BaseTransform):
 
         self.logger.info(f"Language tokenization transform initialized with:")
         self.logger.info(f"  Tokenizer: {self.tokenizer_name}")
-        if self.test:
-            self.logger.info(f"  TEST MODE: Will only extract metadata without tokenization")
-        if self.keep_local:
-            self.logger.info(f"  KEEP LOCAL: Will keep temporary files for inspection")
 
     @property
     def tokenizer(self):
@@ -145,16 +138,6 @@ class LangTransform(BaseTransform):
             # Process the file to extract and tokenize language data
             self.logger.info(f"Processing session {session_id} with language data")
             
-            # In test mode, just return the analysis
-            if self.test:
-                self.logger.info(f"TEST MODE: Skipping tokenization and file creation")
-                return {
-                    "status": "success",
-                    "metadata": {**analysis, "test_mode": True},
-                    "files_to_copy": [],
-                    "files_to_upload": []
-                }
-            
             # Process language data
             result = self.process_language_data(local_h5_path, session, analysis)
             
@@ -166,10 +149,13 @@ class LangTransform(BaseTransform):
                 "has_W_data": analysis.get('has_W_data', False),
                 "has_R_data": analysis.get('has_R_data', False),  # Add R data flag
                 "has_S_data": analysis.get('has_S_data', False),  # Add S data flag
+                "has_W_corrected": analysis.get('has_W_data', False),  # Add this line
                 "L_chars_count": analysis.get('L_chars_count', 0),
                 "W_chars_count": analysis.get('W_chars_count', 0),
                 "R_words_count": analysis.get('R_words_count', 0),  # Add R words count
                 "S_words_count": analysis.get('S_words_count', 0),  # Add S words count
+                "W_corrected_token_count": result.get('details', {}).get('W_corrected_token_count', 0),  # Add this line
+                "W_correctness_score": result.get('details', {}).get('W_correctness_score', 0),  # Add this line
                 "processing_details": result.get('details', {})
             }
             
@@ -317,6 +303,23 @@ class LangTransform(BaseTransform):
                         processing_details['L_char_count'] = char_count
                 
                 if analysis['has_W_data']:
+                    # Extract character data first (only once)
+                    chars_dataset = f_in[f'language/W/chars']
+                    chars_data = []
+                    
+                    for i in range(len(chars_dataset)):
+                        char_record = chars_dataset[i]
+                        char = char_record['char']
+                        if isinstance(char, bytes):
+                            char = char.decode('utf-8')
+                        
+                        chars_data.append({
+                            'char': char,
+                            'timestamp': char_record['timestamp'],
+                            'idx': i
+                        })
+                    
+                    # Process W group normally with the existing functionality
                     result = extract_and_tokenize(f_in, 'W', self.tokenizer)
                     if result:
                         tokenization_results['W'] = result
@@ -325,6 +328,21 @@ class LangTransform(BaseTransform):
                         self.logger.info(f"Tokenized {char_count} chars into {token_count} tokens for W group")
                         processing_details['W_token_count'] = token_count
                         processing_details['W_char_count'] = char_count
+                        
+                        # Add spelling correction for W group
+                        self.logger.info(f"Applying spelling correction to W group")
+                        
+                        # Apply correction and get aligned tokens
+                        corrected_result, correctness_score = correct_and_align_w_group(chars_data, self.tokenizer)
+                        
+                        # Add results to tokenization_results
+                        tokenization_results['W_corrected'] = corrected_result
+                        
+                        # Record metrics
+                        processing_details['W_corrected_token_count'] = len(corrected_result['tokens'])
+                        processing_details['W_correctness_score'] = correctness_score
+                        
+                        self.logger.info(f"Applied spelling correction with correctness score: {correctness_score:.2f}")
                 
                 # Process R and S groups if they exist
                 if analysis.get('has_R_data', False):
@@ -369,38 +387,72 @@ class LangTransform(BaseTransform):
                 meta_group.attrs['has_W_data'] = analysis.get('has_W_data', False)
                 meta_group.attrs['has_R_data'] = analysis.get('has_R_data', False)
                 meta_group.attrs['has_S_data'] = analysis.get('has_S_data', False)
+                meta_group.attrs['has_W_corrected'] = analysis.get('has_W_data', False)
                 meta_group.attrs['L_chars_count'] = analysis.get('L_chars_count', 0)
                 meta_group.attrs['W_chars_count'] = analysis.get('W_chars_count', 0)
                 meta_group.attrs['R_words_count'] = analysis.get('R_words_count', 0)
                 meta_group.attrs['S_words_count'] = analysis.get('S_words_count', 0)
+                meta_group.attrs['W_correctness_score'] = result.get('details', {}).get('W_correctness_score', 0)
                 
                 # Add each tokenized group
                 for group_name, result in tokenization_results.items():
+                    # Create a group in the output file
                     group = lang_group.create_group(group_name)
                     
-                    # Store original text as attribute
+                    # Store the text as an attribute
                     group.attrs['text'] = result['text']
                     
-                    # Create tokens dataset with compound dtype
-                    dt = np.dtype([
-                        ('token', h5py.special_dtype(vlen=str)),
-                        ('token_id', np.int32),
-                        ('start_timestamp', np.float64),
-                        ('end_timestamp', np.float64),
-                        ('special_token', np.bool_)
-                    ])
+                    # For W_corrected, also store original text
+                    if group_name == 'W_corrected':
+                        group.attrs['original_text'] = tokenization_results['W']['text']
+                        group.attrs['correctness_score'] = result['correctness_score']
                     
+                    # Define the dataset type based on the group
+                    if group_name == 'W_corrected':
+                        # Extended dtype for corrected tokens with additional fields
+                        dt = np.dtype([
+                            ('token', h5py.special_dtype(vlen=str)),
+                            ('token_id', np.int32),
+                            ('start_timestamp', np.float64),
+                            ('end_timestamp', np.float64),
+                            ('special_token', np.bool_),
+                            ('original_indices', h5py.special_dtype(vlen=np.dtype('int32'))),
+                            ('unchanged', np.bool_)
+                        ])
+                    else:
+                        # Standard dtype for regular tokens
+                        dt = np.dtype([
+                            ('token', h5py.special_dtype(vlen=str)),
+                            ('token_id', np.int32),
+                            ('start_timestamp', np.float64),
+                            ('end_timestamp', np.float64),
+                            ('special_token', np.bool_)
+                        ])
+                    
+                    # Create and fill the dataset
                     tokens_ds = group.create_dataset('tokens', (len(result['tokens']),), dtype=dt)
                     
-                    # Fill dataset
                     for i, token in enumerate(result['tokens']):
-                        tokens_ds[i] = (
-                            token['token'],
-                            token['token_id'],
-                            token['start_timestamp'],
-                            token['end_timestamp'],
-                            token['special_token']
-                        )
+                        if group_name == 'W_corrected':
+                            # Store extended data for corrected tokens
+                            tokens_ds[i] = (
+                                token['token'],
+                                token['token_id'],
+                                token['start_timestamp'],
+                                token['end_timestamp'],
+                                token['special_token'],
+                                np.array(token.get('original_indices', []), dtype=np.int32),
+                                token.get('unchanged', False)
+                            )
+                        else:
+                            # Store standard data for regular tokens
+                            tokens_ds[i] = (
+                                token['token'],
+                                token['token_id'],
+                                token['start_timestamp'],
+                                token['end_timestamp'],
+                                token['special_token']
+                            )
             
             # Calculate total stats
             total_token_count = sum(len(r['tokens']) for r in tokenization_results.values())
@@ -455,7 +507,6 @@ class LangTransform(BaseTransform):
             verbose=args.verbose,
             log_file=args.log_file,
             dry_run=args.dry_run,
-            test=args.test,
             keep_local=args.keep_local
         )
 

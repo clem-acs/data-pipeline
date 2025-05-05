@@ -5,7 +5,10 @@ python -m cli --list-transforms
 python -m cli lang --list-sessions --verbose
 
 # Process a specific session with R/S language data (TEST MODE)
-python -m cli lang --session "omar royce herrera_20250503_201253" --verbose --test
+python -m cli lang --verbose 2>&1 | tee cor1.txt
+
+
+--session "omar royce herrera_20250503_201253" --verbose --test
 
 # Command argument explanation:
 # --test: Combined flag that activates both --dry-run and --keep-local

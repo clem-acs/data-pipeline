@@ -54,15 +54,19 @@ the r and s groups both have word datasets with timestamps, rather than char by 
     /language/S
       [Datasets: 1 total, showing 1]
       words: shape=(1888), type=[('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')], 0 attributes
+and the W and L groups have similar but with chars - have a look in the h5shape and h5shape1 files to see the dataset shapes.
+
+in the W group, there is the typing output of data subjects. i tokenized this already in the lang transform. however, now i want to correct the spelling of it and tokenize the corrected version, so i'd end up with aligned incorrect and correct tokens - i'd have a new dataset of tokens in the output file for lang that is W-correct where W-correct has the correct token, and the timestamps of when the incorrect tokens that were associated with it were written, so it would still have token,seq-number or something,  token-id, start time, end time, just as the incorrect ones. that way i'll have both incorrected and corrected timestamped tokens, and i can line them up. note that the lineup may not be 1:1 - often someone will write 'catttttttttttttttt' because they held down the t, and that is just cat, so many tokens may go to one, or i suppose one to many.
+
+i want to add this functionality to the lang transform. in particular, i want to have a few new functions in the lang_processing folder in a file called correction.py, where correction.py has functionality to take in text, correct it, and then tokenize that text from a list of chars into tokens (by using a standard huggingface function for this, or my tokenizer from the other file there, whatever. obviously tokenizer name must be configurable,  so i can use gpt2 or llama or whatever). finally it must use something, maybe difflab, to align the new tokens with the old incorrect ones, add timestamps, and then they should be saved in all output files of the lang transform as another token dataset: token, sequence num, token id, old tokens associated as a range of seq num, start time, end time
+
+i also want it to return the fraction of tokens that remained identical between the initial and the corrected as a measure of typing correctness.
 
 
-i want to modify lang to also tokenize these language groups. so, when you run lang, it should tokenize and return whatever of these four groups exist so it must have new functionality to tokenize timestamped words, not timestamped chars
+i was thinking i'd use hugging face, symspell, and difflib, but maybe you have other ideas?
 
-write a detailed, step by step proposal for how to do this, how to add this functionality to lang, keeping everything else entirely unchanged.
-write all functions i must add, write all changes necessary to current code, write what code should change to what and where, for each and every change
-it should be as simple as it can possibly be. it should use methods from hugging face, or transformer, or whatever. never reimplement functionality we can just use. as simple, clean, general, minimal as possible. ensure you correctly track all of what is already in lang.py, never reimplement anything. it's currently working perfectly for L and W, we just need to do the word ones now. write this proposal to simple-words.txt write the full step by step proposal there. don't modify anything else. think hard, ultrathink
+anyway, write me a step by step proposal for doing this as simply as possible, super simple, general code. i want it to be as simple as possible. i do not want to reimplement anything that already exists - i'd just like to use existing stuff.
 
 
-
-
-
+write that simple proposal to simple-correction.txt
+think hard, ultrathink. really read and understand first
