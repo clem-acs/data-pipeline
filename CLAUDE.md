@@ -58,9 +58,6 @@ and the W and L groups have similar but with chars - have a look in the h5shape 
 
 in the W group, there is the typing output of data subjects. i tokenized this already in the lang transform. i also correct the tokenized output to correct text
 
-i want a simple script that takes in the h5 output of the lang transform (i'll copy it here from the h5) and just prints out the original text and the corrected text. so the entire incorrected text, then the entire corrected text. for the W group
-
-i want to run it similar to hdf5_inspector_abridged.py, so like inspect-w.py "path-to-file.h5"
-write that script, as simply as you possibly can, to inspect-W.py
-
+first, explain exactly what's saved in the output of the lang transform - are the keystrokes saved in the w tokens - like the keystrokes that made up the things they wrote? compare this to how they're usually saved pre-transform
+think hard, ultrathink, explain here
 
