@@ -56,17 +56,11 @@ the r and s groups both have word datasets with timestamps, rather than char by 
       words: shape=(1888), type=[('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')], 0 attributes
 and the W and L groups have similar but with chars - have a look in the h5shape and h5shape1 files to see the dataset shapes.
 
-in the W group, there is the typing output of data subjects. i tokenized this already in the lang transform. however, now i want to correct the spelling of it and tokenize the corrected version, so i'd end up with aligned incorrect and correct tokens - i'd have a new dataset of tokens in the output file for lang that is W-correct where W-correct has the correct token, and the timestamps of when the incorrect tokens that were associated with it were written, so it would still have token,seq-number or something,  token-id, start time, end time, just as the incorrect ones. that way i'll have both incorrected and corrected timestamped tokens, and i can line them up. note that the lineup may not be 1:1 - often someone will write 'catttttttttttttttt' because they held down the t, and that is just cat, so many tokens may go to one, or i suppose one to many.
+in the W group, there is the typing output of data subjects. i tokenized this already in the lang transform. i also correct the tokenized output to correct text
 
-i want to add this functionality to the lang transform. in particular, i want to have a few new functions in the lang_processing folder in a file called correction.py, where correction.py has functionality to take in text, correct it, and then tokenize that text from a list of chars into tokens (by using a standard huggingface function for this, or my tokenizer from the other file there, whatever. obviously tokenizer name must be configurable,  so i can use gpt2 or llama or whatever). finally it must use something, maybe difflab, to align the new tokens with the old incorrect ones, add timestamps, and then they should be saved in all output files of the lang transform as another token dataset: token, sequence num, token id, old tokens associated as a range of seq num, start time, end time
+i want a simple script that takes in the h5 output of the lang transform (i'll copy it here from the h5) and just prints out the original text and the corrected text. so the entire incorrected text, then the entire corrected text. for the W group
 
-i also want it to return the fraction of tokens that remained identical between the initial and the corrected as a measure of typing correctness.
-
-
-i was thinking i'd use hugging face, symspell, and difflib, but maybe you have other ideas?
-
-anyway, write me a step by step proposal for doing this as simply as possible, super simple, general code. i want it to be as simple as possible. i do not want to reimplement anything that already exists - i'd just like to use existing stuff.
+i want to run it similar to hdf5_inspector_abridged.py, so like inspect-w.py "path-to-file.h5"
+write that script, as simply as you possibly can, to inspect-W.py
 
 
-write that simple proposal to simple-correction.txt
-think hard, ultrathink. really read and understand first
