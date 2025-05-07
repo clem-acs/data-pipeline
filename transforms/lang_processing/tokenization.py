@@ -2,6 +2,8 @@
 Tokenization functions for processing text data from H5 files.
 """
 
+import json
+
 def extract_and_tokenize(h5_file, group_name, tokenizer):
     """Extract and tokenize text from a character-level language group.
     
@@ -62,22 +64,58 @@ def extract_and_tokenize(h5_file, group_name, tokenizer):
     for token_idx, (start_offset, end_offset) in enumerate(offsets):
         # Handle special tokens
         if start_offset == end_offset:
-            token_data.append({
+            special_token_data = {
                 'token': tokens[token_idx],
                 'token_id': token_ids[token_idx],
                 'start_timestamp': 0,
                 'end_timestamp': 0,
                 'special_token': True
-            })
+            }
+            
+            # Add empty keystroke fields for W group
+            if group_name == 'W':
+                special_token_data.update({
+                    'keystroke_events': json.dumps([]),  # Empty JSON array
+                    'trigger_keystrokes': json.dumps([]),  # Empty JSON array
+                    'char_indices': []
+                })
+                
+            token_data.append(special_token_data)
             continue
         
         # Find characters for this token
         chars_in_token = []
+        char_indices = []
+        all_keystrokes = []
+        all_trigger_keystrokes = []
+        
         for i in range(len(text)):
             if i >= start_offset and i < end_offset:
                 char_idx = i
                 if char_idx < len(chars_data):
-                    chars_in_token.append(chars_data[char_idx])
+                    char_data = chars_data[char_idx]
+                    chars_in_token.append(char_data)
+                    char_indices.append(char_idx)
+                    
+                    # Only collect keystroke data for W group
+                    if group_name == 'W':
+                        # Collect keystroke data if available and serialize to JSON
+                        if 'keystrokes' in char_data and char_data['keystrokes'] is not None:
+                            # Serialize each keystroke object to JSON
+                            for keystroke in char_data['keystrokes']:
+                                if keystroke is not None:
+                                    try:
+                                        all_keystrokes.append(json.dumps(keystroke))
+                                    except (TypeError, ValueError):
+                                        # Handle case where keystroke can't be serialized
+                                        all_keystrokes.append(json.dumps(str(keystroke)))
+                        
+                        if 'trigger_keystroke' in char_data and char_data['trigger_keystroke'] is not None:
+                            try:
+                                all_trigger_keystrokes.append(json.dumps(char_data['trigger_keystroke']))
+                            except (TypeError, ValueError):
+                                # Handle case where trigger_keystroke can't be serialized
+                                all_trigger_keystrokes.append(json.dumps(str(char_data['trigger_keystroke'])))
         
         if chars_in_token:
             # Calculate token timestamps - different for L and W
@@ -90,22 +128,44 @@ def extract_and_tokenize(h5_file, group_name, tokenizer):
                 start_timestamp = chars_in_token[0]['timestamp']
                 end_timestamp = chars_in_token[-1]['timestamp']
             
-            token_data.append({
+            # Base token data
+            token_entry = {
                 'token': tokens[token_idx],
                 'token_id': token_ids[token_idx],
                 'start_timestamp': start_timestamp,
                 'end_timestamp': end_timestamp,
                 'special_token': False
-            })
+            }
+            
+            # Add keystroke data for W group only
+            if group_name == 'W':
+                # Keystroke events are already serialized as JSON strings at this point
+                token_entry.update({
+                    'keystroke_events': json.dumps(all_keystrokes),  # Wrap in JSON array
+                    'trigger_keystrokes': json.dumps(all_trigger_keystrokes),  # Wrap in JSON array
+                    'char_indices': char_indices
+                })
+                
+            token_data.append(token_entry)
         else:
             # Should rarely happen, but handle just in case
-            token_data.append({
+            token_entry = {
                 'token': tokens[token_idx],
                 'token_id': token_ids[token_idx],
                 'start_timestamp': 0,
                 'end_timestamp': 0,
                 'special_token': False
-            })
+            }
+            
+            # Add empty keystroke data for W group
+            if group_name == 'W':
+                token_entry.update({
+                    'keystroke_events': json.dumps([]),  # Empty JSON array
+                    'trigger_keystrokes': json.dumps([]),  # Empty JSON array
+                    'char_indices': []
+                })
+                
+            token_data.append(token_entry)
     
     return {'text': text, 'tokens': token_data}
 

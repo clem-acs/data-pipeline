@@ -313,11 +313,22 @@ class LangTransform(BaseTransform):
                         if isinstance(char, bytes):
                             char = char.decode('utf-8')
                         
-                        chars_data.append({
+                        # Extract all fields including keystroke data
+                        data = {
                             'char': char,
                             'timestamp': char_record['timestamp'],
                             'idx': i
-                        })
+                        }
+                        
+                        # Add keystroke data if available in the dataset
+                        if 'keystrokes' in char_record.dtype.names:
+                            data['keystrokes'] = char_record['keystrokes']
+                        if 'trigger_keystroke' in char_record.dtype.names:
+                            data['trigger_keystroke'] = char_record['trigger_keystroke']
+                        if 'reconstructed' in char_record.dtype.names:
+                            data['reconstructed'] = char_record['reconstructed']
+                        
+                        chars_data.append(data)
                     
                     # Process W group normally with the existing functionality
                     result = extract_and_tokenize(f_in, 'W', self.tokenizer)
@@ -419,8 +430,20 @@ class LangTransform(BaseTransform):
                             ('original_indices', h5py.special_dtype(vlen=np.dtype('int32'))),
                             ('unchanged', np.bool_)
                         ])
+                    elif group_name == 'W':
+                        # Enhanced dtype for W tokens with keystroke data
+                        dt = np.dtype([
+                            ('token', h5py.special_dtype(vlen=str)),
+                            ('token_id', np.int32),
+                            ('start_timestamp', np.float64),
+                            ('end_timestamp', np.float64),
+                            ('special_token', np.bool_),
+                            ('keystroke_events', h5py.special_dtype(vlen=str)),  # JSON serialized keystroke events
+                            ('trigger_keystrokes', h5py.special_dtype(vlen=str)),  # JSON serialized trigger keystrokes
+                            ('char_indices', h5py.special_dtype(vlen=np.dtype('int32')))  # Original char indices
+                        ])
                     else:
-                        # Standard dtype for regular tokens
+                        # Standard dtype for other groups (L, R, S)
                         dt = np.dtype([
                             ('token', h5py.special_dtype(vlen=str)),
                             ('token_id', np.int32),
@@ -443,6 +466,18 @@ class LangTransform(BaseTransform):
                                 token['special_token'],
                                 np.array(token.get('original_indices', []), dtype=np.int32),
                                 token.get('unchanged', False)
+                            )
+                        elif group_name == 'W':
+                            # Store W tokens with keystroke data as JSON strings
+                            tokens_ds[i] = (
+                                token['token'],
+                                token['token_id'],
+                                token['start_timestamp'],
+                                token['end_timestamp'],
+                                token['special_token'],
+                                token.get('keystroke_events', json.dumps([])),
+                                token.get('trigger_keystrokes', json.dumps([])),
+                                np.array(token.get('char_indices', []), dtype=np.int32)
                             )
                         else:
                             # Store standard data for regular tokens
