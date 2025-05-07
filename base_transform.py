@@ -80,8 +80,13 @@ class Session:
         transform_workdir = os.path.join(project_root, 'transform_workdir')
         os.makedirs(transform_workdir, exist_ok=True)
         
-        # Create the session-specific temp directory
-        session_workdir = os.path.join(transform_workdir, f'session_{session_id}_{timestamp}')
+        # Get the transform_id from the logger name or use 'unknown' if not available
+        transform_id = 'unknown'
+        if hasattr(self.logger, 'name') and '.' in self.logger.name:
+            transform_id = self.logger.name.split('.')[-1]
+        
+        # Create the session-specific temp directory with new naming pattern
+        session_workdir = os.path.join(transform_workdir, f'{transform_id}_{timestamp}_{session_id}')
         self.temp_dir = session_workdir
         os.makedirs(self.temp_dir, exist_ok=True)
         
@@ -245,6 +250,51 @@ class Session:
                 
         return local_path
         
+    def save_dynamo_record(self, record, record_type="transform"):
+        """Save a DynamoDB record locally as a JSON file.
+        
+        Args:
+            record: The record to save (dictionary)
+            record_type: Type of record (default: "transform")
+            
+        Returns:
+            Local path to the created JSON file
+        """
+        # Create a records subdirectory if it doesn't exist
+        records_dir = os.path.join(self.temp_dir, "dynamo_records")
+        os.makedirs(records_dir, exist_ok=True)
+        
+        # Generate a filename based on record type and timestamp
+        timestamp = record.get('timestamp', datetime.now().isoformat())
+        record_id = record.get('data_id', 'unknown')
+        transform_id = record.get('transform_id', 'unknown')
+        
+        # Create a safe filename
+        safe_timestamp = timestamp.replace(':', '-').replace('.', '-')
+        filename = f"{record_type}_{transform_id}_{record_id}_{safe_timestamp}.json"
+        file_path = os.path.join(records_dir, filename)
+        
+        # Convert Decimal objects to floats for JSON serialization
+        def decimal_to_float(obj):
+            if isinstance(obj, Decimal):
+                return float(obj)
+            elif isinstance(obj, dict):
+                return {k: decimal_to_float(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [decimal_to_float(i) for i in obj]
+            else:
+                return obj
+        
+        # Convert record for JSON serialization
+        serializable_record = decimal_to_float(record)
+        
+        # Write the record to a JSON file
+        with open(file_path, 'w') as f:
+            json.dump(serializable_record, f, indent=2)
+        
+        self.logger.debug(f"Saved DynamoDB record to {file_path}")
+        return file_path
+        
     def cleanup(self):
         """Clean up temp directory."""
         if os.path.exists(self.temp_dir):
@@ -354,7 +404,7 @@ class BaseTransform:
         elif self.dry_run:
             self.logger.info(f"  DRY RUN MODE ENABLED")
         elif self.keep_local:
-            self.logger.info(f"  KEEPING LOCAL FILES (no cleanup)")
+            self.logger.info(f"  KEEPING LOCAL FILES AND DYNAMO RECORDS (no cleanup)")
     
     def process_session(self, session: Session) -> Dict:
         """Process a single session.
@@ -519,7 +569,8 @@ class BaseTransform:
                          destination_paths: Optional[List[str]] = None,
                          status: str = 'success', 
                          error_details: Optional[str] = None,
-                         parent_transforms: Optional[List[str]] = None):
+                         parent_transforms: Optional[List[str]] = None,
+                         session: Optional['Session'] = None):
         """Record a transform in DynamoDB.
         
         Args:
@@ -530,6 +581,7 @@ class BaseTransform:
             status: Status of the transform ('success', 'failed', or 'skipped')
             error_details: Error details if status is 'failed'
             parent_transforms: List of prerequisite transform IDs
+            session: Session object for local record saving (optional)
             
         Returns:
             The created record or None if operation failed
@@ -566,10 +618,25 @@ class BaseTransform:
             
         if error_details:
             record['error_details'] = error_details
-            
+        
+        # Save record locally if keep_local is True and session is provided
+        # Do this regardless of dry-run status, but with a standardized record type
+        if self.keep_local and session is not None:
+            try:
+                record_type = "transform"
+                local_record_path = session.save_dynamo_record(record, record_type)
+                if self.dry_run:
+                    self.logger.info(f"[DRY RUN] Saved transform record locally to {local_record_path}")
+                else:
+                    self.logger.info(f"Saved transform record locally to {local_record_path}")
+            except Exception as local_save_error:
+                self.logger.warning(f"Failed to save record locally: {local_save_error}")
+        
+        # Continue with normal dry-run handling    
         if self.dry_run:
             self.logger.info(f"[DRY RUN] Would record transform for {data_id} with status '{status}'")
             self.logger.debug(f"[DRY RUN] Record that would be created: {record}")
+                    
             return record
             
         # Store the record
@@ -591,6 +658,10 @@ class BaseTransform:
             Dict with processing result
         """
         try:
+            # Log keep_local value before processing
+            self.logger.info(f"BaseTransform.process_item: keep_local before processing = {self.keep_local}")
+            self.logger.info(f"BaseTransform.process_item: dry_run before processing = {self.dry_run}")
+            
             # Create a session object
             session = Session(
                 s3_client=self.s3,
@@ -602,7 +673,9 @@ class BaseTransform:
             
             # Call the child class implementation - always runs in normal mode with actual processing
             # Dry run will be handled in the base class after process_session returns
+            self.logger.info(f"About to call process_session with keep_local = {self.keep_local}")
             result = self.process_session(session)
+            self.logger.info(f"After process_session call, keep_local = {self.keep_local}")
             
             # Extract the results
             files_to_upload = result.get('files_to_upload', [])
@@ -653,14 +726,22 @@ class BaseTransform:
                 source_paths=source_paths,
                 destination_paths=destination_paths,
                 status=status,
-                error_details=error_details
+                error_details=error_details,
+                session=session  # Pass the session object for local record saving
             )
+            
+            # Log keep_local right before cleanup decision
+            self.logger.info(f"keep_local before cleanup decision: {self.keep_local}")
             
             # Clean up unless keep_local is set
             if not self.keep_local:
+                self.logger.info(f"Cleaning up temp files since keep_local = {self.keep_local}")
                 session.cleanup()
             else:
-                self.logger.info(f"Keeping local files in: {session.temp_dir}")
+                self.logger.info(f"Keeping local files and records in: {session.temp_dir}")
+                # Print to stdout as well so it's clearly visible to users
+                print(f"\nTemporary files and DynamoDB records preserved for inspection in:\n{session.temp_dir}")
+                print(f"DynamoDB records saved in: {session.temp_dir}/dynamo_records/\n")
             
             return transform_record
             
@@ -668,17 +749,24 @@ class BaseTransform:
             self.logger.error(f"Error processing session {session_id}: {e}")
             self.logger.debug("Error details:", exc_info=True)
             
+            # Log keep_local value in exception handling
+            self.logger.info(f"keep_local in exception handling: {self.keep_local}")
+            
             # Clean up in case of error, unless keep_local is set
             if not self.keep_local:
                 try:
                     if 'session' in locals():  # Check if session was created before the error
+                        self.logger.info(f"Cleaning up temp files due to exception (keep_local = {self.keep_local})")
                         session.cleanup()
                 except Exception as cleanup_error:
                     self.logger.warning(f"Error during cleanup: {cleanup_error}")
             else:
                 # Log the location of the kept files
                 if 'session' in locals() and hasattr(session, 'temp_dir'):
-                    self.logger.info(f"Keeping local files despite error in: {session.temp_dir}")
+                    self.logger.info(f"Keeping local files and records despite error in: {session.temp_dir}")
+                    # Print to stdout as well so it's clearly visible to users
+                    print(f"\nTemporary files and DynamoDB records preserved for inspection (despite error) in:\n{session.temp_dir}")
+                    print(f"DynamoDB records saved in: {session.temp_dir}/dynamo_records/\n")
                 
             # Record the failure
             try:
@@ -686,7 +774,8 @@ class BaseTransform:
                     data_id=session_id,
                     transform_metadata={},
                     status='failed',
-                    error_details=str(e)
+                    error_details=str(e),
+                    session=session if 'session' in locals() else None  # Pass session if it exists
                 )
             except Exception:
                 return {"status": "failed", "error": str(e)}
@@ -743,7 +832,7 @@ class BaseTransform:
         return stats
     
     def run_pipeline(self, session_ids: Optional[List[str]] = None, batch_size: int = 0, 
-                    max_items: int = 0, start_idx: int = 0, skip_processed_check: bool = False):
+                    max_items: int = 0, start_idx: int = 0, include_processed: bool = False):
         """Run the pipeline on specified session IDs or find new sessions to process.
         
         Args:
@@ -751,7 +840,7 @@ class BaseTransform:
             batch_size: Number of items to process in each batch
             max_items: Maximum number of items to process
             start_idx: Starting index for processing
-            skip_processed_check: Skip checking for already processed items
+            include_processed: Whether to include already processed sessions
             
         Returns:
             Dict with processing statistics
@@ -761,15 +850,15 @@ class BaseTransform:
             self.logger.info("Finding sessions to process")
             session_ids = self.find_sessions()
             
-        # Get already processed items unless we're skipping the check
+        # Only filter out processed sessions if include_processed is False
         unprocessed_ids = session_ids
-        if not skip_processed_check:
+        if not include_processed:
             # Get processed items (including those with 'skipped' status)
             processed_items = self.get_processed_items(include_skipped=True)
             unprocessed_ids = [id for id in session_ids if id not in processed_items]
             self.logger.info(f"Found {len(unprocessed_ids)} unprocessed items out of {len(session_ids)} total")
         else:
-            self.logger.info(f"Processing {len(session_ids)} items (skipping processed check as requested)")
+            self.logger.info(f"Processing all {len(session_ids)} items including previously processed ones")
         
         # Apply max_items limit if specified
         if max_items > 0 and max_items < len(unprocessed_ids):
@@ -840,13 +929,19 @@ class BaseTransform:
         parser.add_argument('--dry-run', '-n', action='store_true',
                           help="Dry run mode - don't actually modify files or DynamoDB")
         parser.add_argument('--keep-local', '-k', action='store_true',
-                          help="Keep local temporary files (don't clean up the working directory)")
+                          help="Keep local temporary files and DynamoDB records (don't clean up the working directory)")
         parser.add_argument('--test', '-t', action='store_true',
                           help="Test mode - combines both --dry-run and --keep-local flags")
         parser.add_argument('--reset', '-r', action='store_true',
                           help="Reset the transform by deleting its entries from DynamoDB")
-        parser.add_argument('--new-only', action='store_true',
-                          help='Only process sessions that have not been processed before')
+        # Create a mutually exclusive group for session filtering options
+        session_filter_group = parser.add_mutually_exclusive_group()
+        session_filter_group.add_argument('--include-processed', action='store_true',
+                          help='Include and reprocess sessions that have already been processed')
+        session_filter_group.add_argument('--include-skipped', action='store_true',
+                          help='Include and reprocess sessions that were previously skipped')
+        session_filter_group.add_argument('--skipped-only', action='store_true',
+                          help='Only process sessions that were previously skipped')
     
     @classmethod
     def add_subclass_arguments(cls, parser):
@@ -1021,5 +1116,5 @@ class BaseTransform:
             batch_size=args.batch_size,
             max_items=args.max_items,
             start_idx=args.start_idx,
-            skip_processed_check=args.new_only
+            include_processed=hasattr(args, 'include_processed') and args.include_processed
         )
