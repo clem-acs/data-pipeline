@@ -264,7 +264,8 @@ def get_all_sessions(s3_client, prefix=NEW_SESSIONS_PREFIX, bucket=BUCKET_NAME, 
 
     return sessions
 
-def display_sessions_summary(sessions, min_duration_minutes=0, processed_sessions=None, show_processed=True):
+def display_sessions_summary(sessions, min_duration_minutes=0, processed_sessions=None, 
+                      include_processed=False, include_skipped=False, skipped_only=False):
     """
     Display summary of sessions with optional processed status indicator.
     
@@ -272,7 +273,9 @@ def display_sessions_summary(sessions, min_duration_minutes=0, processed_session
         sessions: Dictionary of sessions data
         min_duration_minutes: Minimum session duration in minutes (use 0 to skip duration filtering)
         processed_sessions: Set of session IDs already processed
-        show_processed: If False, filter out already processed sessions
+        include_processed: If True, show already processed sessions; if False, filter them out
+        include_skipped: If True, show sessions that were previously skipped
+        skipped_only: If True, show only sessions that were previously skipped
         
     Returns:
         List of sorted (folder, data) tuples for sessions meeting criteria
@@ -283,12 +286,33 @@ def display_sessions_summary(sessions, min_duration_minutes=0, processed_session
         if data.get('duration_minutes', 0) >= min_duration_minutes
     }
     
-    # Filter out processed sessions if requested
-    if processed_sessions is not None and not show_processed:
-        filtered_sessions = {
-            item_path: data for item_path, data in filtered_sessions.items()
-            if data['name'] not in processed_sessions
-        }
+    # Apply session filtering based on flags
+    if processed_sessions is not None:
+        # Get processed and skipped sessions from DynamoDB
+        if skipped_only:
+            # Only include sessions that were previously skipped
+            filtered_sessions = {
+                item_path: data for item_path, data in filtered_sessions.items()
+                if data['name'] in processed_sessions
+            }
+        elif include_processed and include_skipped:
+            # Include all sessions (no filtering)
+            pass
+        elif include_processed:
+            # Only filter out skipped sessions (if we had that information separately)
+            # Since we don't, include all sessions
+            pass
+        elif include_skipped:
+            # Include skipped sessions, filter out successfully processed ones
+            # Would require separate lists of success/skipped, which we don't have
+            # For now, no filtering is applied
+            pass
+        else:
+            # Default: filter out all processed sessions (both success and skipped)
+            filtered_sessions = {
+                item_path: data for item_path, data in filtered_sessions.items()
+                if data['name'] not in processed_sessions
+            }
 
     # Sort sessions by duration (longest first)
     sorted_sessions = sorted(filtered_sessions.items(), key=lambda x: x[1]['duration_ms'], reverse=True)
@@ -339,8 +363,8 @@ def display_sessions_summary(sessions, min_duration_minutes=0, processed_session
         print(f"\nTotal sessions matching criteria: {len(sorted_sessions)}")
         print(f"  - Already processed: {len(sorted_sessions) - unprocessed_count}")
         print(f"  - New (unprocessed): {unprocessed_count}")
-        if not show_processed:
-            print(f"NOTE: Only showing NEW sessions (use --show-processed to see all)")
+        if not include_processed:
+            print(f"NOTE: Only showing NEW sessions (use --include-processed to see all)")
     else:
         if min_duration_minutes > 0:
             print(f"\nTotal sessions with duration > {min_duration_minutes} minutes: {len(sorted_sessions)}")
@@ -489,7 +513,7 @@ def inspect_session_h5(s3_client, session_path, session_name, bucket=BUCKET_NAME
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metadata', include_skipped=True):
+def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metadata', include_skipped=True, skipped_only=False):
     """
     Get a set of session IDs that have already been processed by the specified transform.
     
@@ -497,6 +521,7 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
         transform_id: ID of the transform to check
         dynamodb_table: Name of the DynamoDB table with transform records
         include_skipped: Whether to include items with 'skipped' status as processed
+        skipped_only: If True, return only skipped sessions, ignoring success sessions
         
     Returns:
         Set of session IDs that have been processed
@@ -514,8 +539,11 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
         # Start with an empty LastEvaluatedKey
         last_key = None
         
-        # Build the filter expression based on whether to include skipped items
-        if include_skipped:
+        # Build the filter expression based on flags
+        if skipped_only:
+            # Only include 'skipped' status
+            filter_expr = Attr('status').eq('skipped')
+        elif include_skipped:
             # Include both 'success' and 'skipped' status
             filter_expr = Attr('status').is_in(['success', 'skipped'])
         else:
@@ -549,7 +577,12 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
                 break
                 
         # Create message based on what we're including
-        status_msg = "successfully processed or skipped" if include_skipped else "successfully processed"
+        if skipped_only:
+            status_msg = "previously skipped"
+        elif include_skipped:
+            status_msg = "successfully processed or skipped"
+        else:
+            status_msg = "successfully processed"
         print(f"Found {len(processed_sessions)} sessions {status_msg} by {transform_id}")
         return processed_sessions
         
@@ -557,7 +590,8 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
         print(f"Error getting processed sessions: {e}")
         return set()
 
-def select_sessions_interactive(sessions, min_duration_minutes=0, processed_sessions=None, show_processed=True):
+def select_sessions_interactive(sessions, min_duration_minutes=0, processed_sessions=None, 
+                            include_processed=False, include_skipped=False, skipped_only=False):
     """
     Interactive session selection using the same flow as in inspect_new_sessions.py
     
@@ -565,73 +599,39 @@ def select_sessions_interactive(sessions, min_duration_minutes=0, processed_sess
         sessions: Dictionary of session data
         min_duration_minutes: Minimum session duration in minutes
         processed_sessions: Set of session IDs that have already been processed
-        show_processed: Whether to show already processed sessions
+        include_processed: Whether to include already processed sessions in display and selection
+        include_skipped: Whether to include previously skipped sessions
+        skipped_only: Whether to show only previously skipped sessions
     """
     # Display summary
     print("Available sessions matching criteria:")
-    sorted_sessions = display_sessions_summary(sessions, min_duration_minutes, processed_sessions, show_processed)
+    sorted_sessions = display_sessions_summary(sessions, min_duration_minutes, processed_sessions,
+                                     include_processed, include_skipped, skipped_only)
     print("\n")
     
     selected_sessions = []
     
-    # Auto-select if only one session
-    if len(sorted_sessions) == 1:
-        folder, data = sorted_sessions[0]
-        print(f"\nAutomatically selecting single matching session: {data['name']}")
-        selected_sessions.append((folder, data))
-    # Prompt for which session to inspect if multiple
-    elif len(sorted_sessions) > 1:
-        print("\nMultiple sessions found. Options:")
+    # Always prompt for selection, even with only one session
+    if len(sorted_sessions) >= 1:
+        if len(sorted_sessions) == 1:
+            print("\nOne session found. Please confirm:")
+        else:
+            print("\nMultiple sessions found. Options:")
         for i, (folder, data) in enumerate(sorted_sessions, 1):
             session_id = data['name']
             processed_marker = " [PROCESSED]" if processed_sessions and session_id in processed_sessions else ""
             print(f"  {i}: {session_id} ({data['duration']}){processed_marker}")
-        print("  all: Process all matching sessions")
-        if processed_sessions:
-            print("  new: Process only new (unprocessed) sessions")
+        print("  all: Process all sessions in the list")
         print("  quit: Exit without processing")
 
-        choice = input("\nEnter choice (number, 'all', 'new', or 'quit'): ").strip().lower()
+        choice = input("\nEnter choice (number, 'all', or 'quit'): ").strip().lower()
 
         if choice == 'quit':
             return []
         elif choice == 'all':
-            # Check if there are processed sessions that might not be visible
-            if processed_sessions and not show_processed:
-                # Get all session IDs from sorted_sessions
-                visible_session_ids = {data['name'] for _, data in sorted_sessions}
-                
-                # Get all sessions that match minimum duration
-                all_filtered_sessions = {
-                    folder: data for folder, data in sessions.items()
-                    if data.get('duration_minutes', 0) >= min_duration_minutes
-                }
-                
-                # Count processed sessions that would be included
-                processed_count = sum(1 for folder, data in all_filtered_sessions.items() 
-                                    if data['name'] in processed_sessions)
-                
-                # If there are processed sessions that are not visible
-                if processed_count > 0:
-                    warning_msg = f"\nWARNING: You've selected 'all', which will also process {processed_count} already processed session(s) that aren't currently shown."
-                    confirmation = input(f"{warning_msg}\nDo you want to continue? (y/N): ").strip().lower()
-                    if confirmation != 'y':
-                        print("Operation cancelled. Exiting.")
-                        return []
-                    
-                    # If confirmed, include all sessions
-                    sorted_all_sessions = sorted(
-                        all_filtered_sessions.items(), 
-                        key=lambda x: x[1]['duration_ms'], 
-                        reverse=True
-                    )
-                    return sorted_all_sessions
-            
-            # If no confirmation needed or confirmed
+            # Simply return all sessions currently shown in the list
+            print(f"\nProcessing all {len(sorted_sessions)} sessions in the list")
             return sorted_sessions
-        elif choice == 'new' and processed_sessions:
-            return [(folder, data) for folder, data in sorted_sessions 
-                   if data['name'] not in processed_sessions]
         elif choice.isdigit() and 1 <= int(choice) <= len(sorted_sessions):
             idx = int(choice) - 1
             folder, data = sorted_sessions[idx]
