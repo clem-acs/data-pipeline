@@ -17,7 +17,7 @@ session_details = []
 
 def classify_data_rate(rate_kb_per_sec):
     """Classify the data rate into device categories"""
-    if rate_kb_per_sec < 100:
+    if rate_kb_per_sec < 70:
         return "neither"
     elif rate_kb_per_sec < 200:
         return "fnirs only"
@@ -79,13 +79,13 @@ def get_client_timestamps_from_events(s3_client, events_key):
         # Get first and last event timestamps
         start_time = None
         end_time = None
-        
+
         if len(events) > 0 and 'client_timestamp' in events[0]:
             start_time = events[0]['client_timestamp']
-            
+
         if len(events) > 0 and 'client_timestamp' in events[-1]:
             end_time = events[-1]['client_timestamp']
-            
+
         if start_time and end_time:
             return start_time, end_time
 
@@ -94,7 +94,7 @@ def get_client_timestamps_from_events(s3_client, events_key):
     except Exception as e:
         print(f"Error parsing events file: {e}")
         return None, None
-        
+
 
 def get_session_files_and_size(s3_client, session_path):
     """Get all files in a session and their total size"""
