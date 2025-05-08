@@ -46,18 +46,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 
 Your task
-first comb through every file in the repo - all transforms, cli, base transform, every util, etc. then, look in the ref folder at the h5shape files - there are several, like h5shape2 or similar. look at the other groups in the Language group. there are also R and S groups (and an LR, but that's always empty, so ignore it).
-the r and s groups both have word datasets with timestamps, rather than char by char data. look at the files called h5shape.txt and h5shape1.txt as examples of these. compare this to the char datasets in L and W
-    /language/R
-      [Datasets: 1 total, showing 1]
-      words: shape=(4255), type=[('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')], 0 attributes
-    /language/S
-      [Datasets: 1 total, showing 1]
-      words: shape=(1888), type=[('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')], 0 attributes
-and the W and L groups have similar but with chars - have a look in the h5shape and h5shape1 files to see the dataset shapes.
 
-in the W group, there is the typing output of data subjects. i tokenized this already in the lang transform. i also correct the tokenized output to correct text
+first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
-first, explain exactly what's saved in the output of the lang transform - are the keystrokes saved in the w tokens - like the keystrokes that made up the things they wrote? compare this to how they're usually saved pre-transform
-think hard, ultrathink, explain here
+I want a script like t2e
+that time
+
+
 
