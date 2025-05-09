@@ -1,0 +1,927 @@
+"""
+T2E Events Transform
+
+Extracts and organizes event data from curated H5 files into a structured format
+for easy integration with TileDB and other transforms.
+"""
+
+import os
+import json
+import logging
+import numpy as np
+import h5py
+import time
+from typing import Dict, Any, List, Optional
+from collections import defaultdict
+
+# Import base transform
+from base_transform import BaseTransform, Session
+
+# Module logger - only used before class initialization
+logger = logging.getLogger(__name__)
+
+class EventTransform(BaseTransform):
+    """Transform for extracting and organizing event data from H5 files."""
+    
+    SOURCE_PREFIX = "curated-h5/"
+    DEST_PREFIX = "processed/event/"
+    
+    def __init__(self, **kwargs):
+        """
+        Initialize the events transform.
+
+        Args:
+            **kwargs: Additional arguments for BaseTransform
+        """
+        # Set default transform info if not provided
+        transform_id = kwargs.pop('transform_id', 't2E_event_v0')
+        script_id = kwargs.pop('script_id', '2E')
+        script_name = kwargs.pop('script_name', 'event')
+        script_version = kwargs.pop('script_version', 'v0')
+
+        # Call parent constructor
+        super().__init__(
+            transform_id=transform_id,
+            script_id=script_id,
+            script_name=script_name,
+            script_version=script_version,
+            **kwargs
+        )
+        
+        self.logger.info(f"Event extraction transform initialized")
+    
+    def process_session(self, session: Session) -> Dict:
+        """Process a single session, extracting event data into a structured format.
+        
+        Args:
+            session: Session object
+            
+        Returns:
+            Dict: Dictionary with processing results
+        """
+        session_id = session.session_id
+        self.logger.info(f"Processing events for session {session_id}")
+        
+        try:
+            # Look for H5 file in the source prefix
+            h5_key = f"{self.source_prefix}{session_id}.h5"
+            
+            # Check if the file exists
+            try:
+                self.s3.head_object(Bucket=self.s3_bucket, Key=h5_key)
+                self.logger.info(f"Found H5 file: {h5_key}")
+            except Exception as e:
+                self.logger.error(f"No H5 file found for session {session_id}: {e}")
+                return {
+                    "status": "failed",
+                    "error_details": f"No H5 file found for session {session_id}",
+                    "metadata": {"session_id": session_id},
+                    "files_to_copy": [],
+                    "files_to_upload": []
+                }
+            
+            # Download the H5 file
+            local_source = session.download_file(h5_key)
+            
+            # Create output file
+            output_filename = f"{session_id}_events.h5"
+            local_dest = session.create_upload_file(output_filename)
+            
+            # Process the file
+            with h5py.File(local_source, 'r') as source_h5:
+                # Extract and process events
+                self.logger.info(f"Extracting events for {session_id}")
+                success = self._process_events(source_h5, local_dest, session_id)
+                
+                if not success:
+                    self.logger.error(f"Failed to process events for {session_id}")
+                    return {
+                        "status": "failed",
+                        "error_details": f"Failed to process events for {session_id}",
+                        "metadata": {"session_id": session_id},
+                        "files_to_copy": [],
+                        "files_to_upload": []
+                    }
+            
+            # Create metadata for DynamoDB
+            metadata = {
+                "session_id": session_id,
+                "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            }
+            
+            # Define the destination key
+            dest_key = f"{self.destination_prefix}{output_filename}"
+            
+            self.logger.info(f"Successfully processed events for {session_id}")
+            return {
+                "status": "success",
+                "metadata": metadata,
+                "files_to_copy": [],
+                "files_to_upload": [(local_dest, dest_key)]
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error processing events for {session_id}: {e}", exc_info=True)
+            return {
+                "status": "failed",
+                "error_details": str(e),
+                "metadata": {"session_id": session_id},
+                "files_to_copy": [],
+                "files_to_upload": []
+            }
+    
+    def _process_events(self, source_h5, dest_file, session_id):
+        """Extract and organize events from H5 file.
+        
+        Args:
+            source_h5: Source H5 file object
+            dest_file: Path to destination file
+            session_id: Session ID
+            
+        Returns:
+            bool: True if processing succeeded
+        """
+        try:
+            # Extract raw events from H5
+            events = self._extract_raw_events(source_h5)
+            
+            # Process event data
+            processed_data = self._process_event_data(events, session_id, source_h5)
+            
+            # Save to destination file
+            self._save_processed_data(processed_data, dest_file)
+            
+            return True
+        except Exception as e:
+            self.logger.exception(f"Error processing events: {e}")
+            return False
+    
+    def _extract_raw_events(self, h5_file):
+        """Extract raw events from the H5 file.
+        
+        Args:
+            h5_file: H5 file object
+            
+        Returns:
+            dict: Dictionary of event data by type
+        """
+        events = {}
+        
+        # Check if events group exists
+        if 'events' not in h5_file:
+            self.logger.warning("No events group in H5 file")
+            return events
+        
+        # Extract all event types
+        for event_type in h5_file['events']:
+            events[event_type] = {
+                'data': [],
+                'event_ids': [],
+                'timestamps': []
+            }
+            
+            # Extract event data
+            if 'data' in h5_file[f'events/{event_type}']:
+                data = h5_file[f'events/{event_type}/data'][:]
+                events[event_type]['data'] = [json.loads(d) for d in data]
+            
+            # Extract event IDs
+            if 'event_ids' in h5_file[f'events/{event_type}']:
+                event_ids = h5_file[f'events/{event_type}/event_ids'][:]
+                events[event_type]['event_ids'] = [eid.decode('utf-8') if isinstance(eid, bytes) else eid for eid in event_ids]
+            
+            # Extract timestamps
+            if 'timestamps' in h5_file[f'events/{event_type}']:
+                events[event_type]['timestamps'] = h5_file[f'events/{event_type}/timestamps'][:]
+        
+        return events
+    
+    def _process_segment_type(self, events, start_event_type, end_event_type, segment_type, segments):
+        """Process segments of a specific type.
+        
+        Args:
+            events: Dictionary of events
+            start_event_type: Type of start event (e.g., 'recording_start')
+            end_event_type: Type of end event (e.g., 'recording_stop')
+            segment_type: Type of segment (e.g., 'recording')
+            segments: Dictionary to store segments
+        """
+        # Get event pairs
+        pairs = self._pair_events(events, start_event_type, end_event_type)
+        
+        # Process each pair
+        for i, (start_id, (start_event, end_event)) in enumerate(pairs.items()):
+            segment_id = f"{segment_type}_{start_id}"
+            start_time = float(start_event['timestamps'][0])
+            end_time = float(end_event['timestamps'][0])
+            
+            segments[segment_type].append({
+                'segment_id': segment_id,
+                'segment_type': segment_type,
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration': end_time - start_time,
+                'start_event_id': start_event['event_ids'][0],
+                'end_event_id': end_event['event_ids'][0],
+                'containing_element_id': '',
+                'containing_task_id': '',
+                'element_relative_start': 0.0,
+                'task_relative_start': 0.0
+            })
+    
+    def _pair_events(self, events, start_type, end_type):
+        """Pair start/end events.
+        
+        Args:
+            events: Dictionary of events
+            start_type: Type of start event
+            end_type: Type of end event
+            
+        Returns:
+            dict: Dictionary of paired events by ID
+        """
+        pairs = {}
+        
+        # Check if both event types exist
+        if start_type not in events or end_type not in events:
+            return pairs
+        
+        start_events = events[start_type]
+        end_events = events[end_type]
+        
+        # Simple matching by index if counts match
+        if len(start_events['event_ids']) == len(end_events['event_ids']):
+            for i in range(len(start_events['event_ids'])):
+                start_id = start_events['event_ids'][i]
+                end_id = end_events['event_ids'][i]
+                
+                start_data = {
+                    'data': start_events['data'][i] if i < len(start_events['data']) else {},
+                    'event_ids': [start_id],
+                    'timestamps': start_events['timestamps'][i] if i < len(start_events['timestamps']) else []
+                }
+                
+                end_data = {
+                    'data': end_events['data'][i] if i < len(end_events['data']) else {},
+                    'event_ids': [end_id],
+                    'timestamps': end_events['timestamps'][i] if i < len(end_events['timestamps']) else []
+                }
+                
+                pairs[start_id] = (start_data, end_data)
+        else:
+            # More complex matching by timestamps
+            self.logger.warning(f"Mismatched counts for {start_type}/{end_type}, using timestamp matching")
+            
+            # Sort by timestamp
+            start_items = sorted(list(zip(
+                start_events['event_ids'],
+                start_events['timestamps'][:, 0] if len(start_events['timestamps']) > 0 else [],
+                range(len(start_events['event_ids']))
+            )), key=lambda x: x[1])
+            
+            end_items = sorted(list(zip(
+                end_events['event_ids'],
+                end_events['timestamps'][:, 0] if len(end_events['timestamps']) > 0 else [],
+                range(len(end_events['event_ids']))
+            )), key=lambda x: x[1])
+            
+            # Match each start with the next end
+            for i, (start_id, start_time, start_idx) in enumerate(start_items):
+                if i < len(end_items):
+                    end_id, end_time, end_idx = end_items[i]
+                    
+                    if end_time >= start_time:  # Ensure end is after start
+                        start_data = {
+                            'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
+                            'event_ids': [start_id],
+                            'timestamps': start_events['timestamps'][start_idx] if start_idx < len(start_events['timestamps']) else []
+                        }
+                        
+                        end_data = {
+                            'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
+                            'event_ids': [end_id],
+                            'timestamps': end_events['timestamps'][end_idx] if end_idx < len(end_events['timestamps']) else []
+                        }
+                        
+                        pairs[start_id] = (start_data, end_data)
+        
+        return pairs
+    
+    def _process_event_data(self, events, session_id, h5_file):
+        """Process event data into tasks, elements, and segments.
+        
+        Args:
+            events: Dictionary of events
+            session_id: Session ID
+            h5_file: Source H5 file
+            
+        Returns:
+            dict: Processed event data
+        """
+        # Initialize result dictionaries
+        tasks = {}
+        elements = {}
+        segments = {
+            'recording': [],
+            'thinking': [],
+            'pause': []
+        }
+        
+        # Get session start time
+        session_start_time = self._get_session_start_time(h5_file)
+        
+        # 1. Process task events
+        task_pairs = self._pair_events(events, 'task_started', 'task_completed')
+        
+        for event_id, (start_event, end_event) in task_pairs.items():
+            # Extract task data from event
+            task_data = start_event['data']
+            config = task_data.get('config', {})
+            
+            # Extract actual task ID from the data (e.g., "eye_1" instead of "task_started_1")
+            actual_task_id = task_data.get('task_id', '')
+            
+            if not actual_task_id:
+                self.logger.warning(f"Task started event {event_id} has no task_id field")
+                continue
+                
+            # Create task entry using the actual task ID as the key
+            tasks[actual_task_id] = {
+                # Core identifiers
+                'task_id': actual_task_id,  # Use the actual task ID from data
+                'task_type': task_data.get('task_type', ''),
+                'sequence_number': int(task_data.get('sequence', 0)),  # Extract sequence number
+                'start_time': float(start_event['timestamps'][0]),
+                'end_time': float(end_event['timestamps'][0]),
+                'completion_status': 'completed',
+                # Store the original event IDs for reference
+                'task_started_event_id': event_id,
+                
+                # Core configuration - common across task types
+                'count': config.get('count', 0),
+                'allow_repeats': config.get('allow_repeats', False),
+                'with_interruptions': config.get('with_interruptions', False),
+                'audio_mode': config.get('audio_mode', ''),
+                'intro_delay_seconds': config.get('intro_delay_seconds', 0.0),
+                
+                # Task-specific timing parameters
+                'eyes_closed_seconds': config.get('eyes_closed_seconds', 0.0),
+                'eyes_open_seconds': config.get('eyes_open_seconds', 0.0),
+                'normal_breathing_seconds': config.get('normal_breathing_seconds', 0.0),
+                'breath_hold_seconds': config.get('breath_hold_seconds', 0.0),
+                'sound_seconds': config.get('sound_seconds', 0.0),
+                'quiet_seconds': config.get('quiet_seconds', 0.0),
+                
+                # Input configuration parameters - variable by task type
+                'input_modality': config.get('input_modality', ''),
+                'element_during_answer': config.get('element_during_answer', ''),
+                'answer_display': config.get('answer_display', ''),
+                
+                # Word task specific parameters
+                'delay': config.get('delay', 0),  # Millisecond delay between elements
+                
+                # Event references
+                'task_started_id': start_event['event_ids'][0],
+                'task_completed_id': end_event['event_ids'][0],
+                
+                # Skip information (populated later if applicable)
+                'skipped': False,
+                'skip_time': 0.0,
+                'skip_event_id': '',
+                
+                # Fields for elements and segments
+                'element_ids': [],
+                'recording_segments': [],
+                'thinking_segments': [],
+                'pause_segments': []
+            }
+            
+            # Calculate additional metadata
+            print(f"DEBUG-TASK: Adding task_id '{actual_task_id}' to dictionary")
+            tasks[actual_task_id]['duration'] = tasks[actual_task_id]['end_time'] - tasks[actual_task_id]['start_time']
+            
+            # Calculate session fractions
+            if session_start_time is not None:
+                tasks[actual_task_id]['session_fraction_start'] = (tasks[actual_task_id]['start_time'] - session_start_time) / (24 * 60 * 60)
+                tasks[actual_task_id]['session_fraction_end'] = (tasks[actual_task_id]['end_time'] - session_start_time) / (24 * 60 * 60)
+        
+        # 2. Process skip task events if present
+        if 'skip_task' in events and len(events['skip_task']['event_ids']) > 0:
+            for i, skip_id in enumerate(events['skip_task']['event_ids']):
+                if i >= len(events['skip_task']['timestamps']):
+                    continue
+                    
+                skip_time = float(events['skip_task']['timestamps'][i][0])
+                
+                # Find active task at skip time
+                active_task_id = None
+                for t_id, task in tasks.items():
+                    if task['start_time'] <= skip_time <= task['end_time']:
+                        active_task_id = t_id
+                        break
+                
+                # If no active task found, find the next scheduled task
+                if not active_task_id:
+                    next_tasks = [(t_id, t['start_time']) for t_id, t in tasks.items() if t['start_time'] > skip_time]
+                    if next_tasks:
+                        active_task_id = min(next_tasks, key=lambda x: x[1])[0]
+                
+                # Update task if found
+                if active_task_id and active_task_id in tasks:
+                    tasks[active_task_id]['skipped'] = True
+                    tasks[active_task_id]['skip_event_id'] = skip_id
+                    tasks[active_task_id]['skip_time'] = skip_time
+                    
+                    # Update status based on when the skip occurred
+                    if skip_time <= tasks[active_task_id]['start_time']:
+                        tasks[active_task_id]['completion_status'] = 'skipped_before_start'
+                    else:
+                        tasks[active_task_id]['completion_status'] = 'partially_completed_then_skipped'
+        
+        # 3. Process element events
+        element_pairs = self._pair_events(events, 'element_sent', 'element_replied')
+        
+        for element_id, (sent_event, replied_event) in element_pairs.items():
+            # Extract element data
+            sent_data = sent_event['data']
+            replied_data = replied_event['data'] if replied_event else {}
+            
+            element_content = sent_data.get('element_content', {})
+            task_metadata = element_content.get('task_metadata', {})
+            
+            # Create element entry with extracted fields
+            elements[element_id] = {
+                'element_id': element_id,
+                'element_type': element_content.get('element_type', ''),
+                'title': element_content.get('title', ''),
+                'is_instruction': element_content.get('is_instruction', False),
+                
+                # Task relationship
+                'task_id': task_metadata.get('task_id', ''),
+                'task_type': task_metadata.get('task_type', ''),
+                'sequence_idx': task_metadata.get('current_count', 0),
+                'max_count': task_metadata.get('max_count', 0),
+                
+                # Timing
+                'start_time': float(sent_event['timestamps'][0]),
+                'end_time': float(replied_event['timestamps'][0]),
+                'session_fraction': task_metadata.get('fraction_session_completed', 0.0),
+                
+                # Presentation
+                'audio_mode': element_content.get('audio_mode', ''),
+                'display_text': element_content.get('display_text', True),
+                'has_audio': element_content.get('has_audio', False),
+                'auto_advance_seconds': element_content.get('auto_advance_seconds', 0.0),
+                'with_interruptions': element_content.get('with_interruptions', False),
+                
+                # Response
+                'input_modality': replied_data.get('input_modality', ''),
+                'user_input_length': len(replied_data.get('user_input', '')),
+                'response_required': element_content.get('response_expected', True),
+                
+                # Event references
+                'element_sent_id': sent_event['event_ids'][0],
+                'element_replied_id': replied_event['event_ids'][0],
+                
+                # Placeholders for segments
+                'recording_segments': [],
+                'thinking_segments': [],
+                'pause_segments': []
+            }
+            
+            # Calculate derived fields
+            elements[element_id]['duration'] = (
+                elements[element_id]['end_time'] - elements[element_id]['start_time']
+            )
+            elements[element_id]['response_time_seconds'] = elements[element_id]['duration']
+            
+            if session_start_time is not None:
+                elements[element_id]['session_relative_time'] = elements[element_id]['start_time'] - session_start_time
+            
+            # Add element to task's element list
+            task_id = elements[element_id]['task_id']
+            print(f"DEBUG-ELEMENT: Element {element_id} looking for task_id '{task_id}'")
+            if task_id and task_id in tasks:
+                tasks[task_id]['element_ids'].append(element_id)
+            else:
+                self.logger.warning(f"Element {element_id} could not be associated with any task (task_id='{task_id}')")
+        
+        # 4. Process segment events
+        segment_types = [
+            ('recording', 'recording_start', 'recording_stop'),
+            ('thinking', 'thinking_start', 'thinking_stop'),
+            ('pause', 'pause_event', 'resume_event')
+        ]
+        
+        # Process all segment types using a consistent approach
+        for segment_type, start_event_type, end_event_type in segment_types:
+            self._process_segment_type(events, start_event_type, end_event_type, segment_type, segments)
+        
+        # 5. Associate segments with elements and tasks
+        # For each segment type
+        for segment_type, segment_list in segments.items():
+            for segment in segment_list:
+                # Get timestamps
+                start_time = segment['start_time']
+                end_time = segment['end_time']
+                
+                # Check element containment
+                contained_by_element = False
+                for element_id, element in elements.items():
+                    if (element['start_time'] <= start_time and 
+                        element['end_time'] >= end_time):
+                        # Add reference in both directions
+                        segment['containing_element_id'] = element_id
+                        elements[element_id][f'{segment_type}_segments'].append(segment['segment_id'])
+                        
+                        # Calculate relative position
+                        segment['element_relative_start'] = start_time - element['start_time']
+                        
+                        contained_by_element = True
+                        break
+                
+                # Check task containment if not in an element
+                if not contained_by_element:
+                    for task_id, task in tasks.items():
+                        if (task['start_time'] <= start_time and 
+                            task['end_time'] >= end_time):
+                            # Add reference in both directions
+                            segment['containing_task_id'] = task_id
+                            tasks[task_id][f'{segment_type}_segments'].append(segment['segment_id'])
+                            
+                            # Calculate relative position
+                            segment['task_relative_start'] = start_time - task['start_time']
+                            
+                            break
+        
+        return {
+            'tasks': tasks,
+            'elements': elements,
+            'segments': segments,
+            'session_id': session_id
+        }
+    
+    def _get_session_start_time(self, h5_file):
+        """Get the session start time from metadata.
+        
+        Args:
+            h5_file: H5 file object
+            
+        Returns:
+            float: Session start time or None
+        """
+        if 'metadata' in h5_file and 'start_time' in h5_file['metadata'].attrs:
+            return float(h5_file['metadata'].attrs['start_time'])
+        return None
+    
+    def _save_processed_data(self, processed_data, dest_file):
+        """Save processed data to H5 file.
+        
+        Args:
+            processed_data: Processed event data
+            dest_file: Path to destination file
+        """
+        with h5py.File(dest_file, 'w') as h5f:
+            # Create metadata group
+            metadata = h5f.create_group('metadata')
+            metadata.attrs['session_id'] = processed_data['session_id']
+            metadata.attrs['transform'] = 'event'
+            metadata.attrs['version'] = '0.1'
+            
+            # Print debug summary
+            print(f"DEBUG-SUMMARY: All task_ids in dictionary: {list(processed_data['tasks'].keys())}")
+            print(f"DEBUG-SUMMARY: Total tasks: {len(processed_data['tasks'])}, Total elements: {len(processed_data['elements'])}")
+            
+            # Create statistics
+            stats = metadata.create_group('stats')
+            stats.attrs['num_tasks'] = len(processed_data['tasks'])
+            stats.attrs['num_elements'] = len(processed_data['elements'])
+            
+            for segment_type, segments in processed_data['segments'].items():
+                stats.attrs[f'num_{segment_type}_segments'] = len(segments)
+            
+            # Create elements group and table
+            elements_group = h5f.create_group('elements')
+            element_dtype = self._create_element_dtype()
+            element_data = self._convert_to_array(processed_data['elements'], element_dtype, 'elements')
+            
+            elements_table = elements_group.create_dataset(
+                'table',
+                data=element_data,
+                dtype=element_dtype
+            )
+            
+            # Create tasks group and table
+            tasks_group = h5f.create_group('tasks')
+            task_dtype = self._create_task_dtype()
+            task_data = self._convert_to_array(processed_data['tasks'], task_dtype, 'tasks')
+            
+            tasks_table = tasks_group.create_dataset(
+                'table',
+                data=task_data,
+                dtype=task_dtype
+            )
+            
+            # Create segments group and tables
+            segments_group = h5f.create_group('segments')
+            segment_dtype = self._create_segment_dtype()
+            
+            for segment_type, segment_list in processed_data['segments'].items():
+                if segment_list:
+                    segment_data = self._convert_to_array(segment_list, segment_dtype, 'segments')
+                    segments_group.create_dataset(
+                        segment_type,
+                        data=segment_data,
+                        dtype=segment_dtype
+                    )
+            
+            # Create indices
+            indices_group = h5f.create_group('indices')
+            
+            # Create element_by_task index
+            element_by_task = indices_group.create_group('element_by_task')
+            for task_id, task in processed_data['tasks'].items():
+                if task['element_ids']:
+                    element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in task['element_ids']]
+                    element_by_task.create_dataset(
+                        task_id,
+                        data=np.array(element_ids, dtype='S64')
+                    )
+            
+            # Create element_by_type index
+            element_by_type = indices_group.create_group('element_by_type')
+            element_types = defaultdict(list)
+            
+            for element_id, element in processed_data['elements'].items():
+                element_type = element['element_type']
+                if element_type:
+                    element_types[element_type].append(element_id)
+            
+            for element_type, element_ids in element_types.items():
+                element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in element_ids]
+                element_by_type.create_dataset(
+                    element_type,
+                    data=np.array(element_ids, dtype='S64')
+                )
+            
+            # Create segments_by_element index
+            segments_by_element = indices_group.create_group('segments_by_element')
+            for element_id, element in processed_data['elements'].items():
+                all_segments = []
+                for segment_type in ['recording', 'thinking', 'pause']:
+                    all_segments.extend(element[f'{segment_type}_segments'])
+                
+                if all_segments:
+                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in all_segments]
+                    segments_by_element.create_dataset(
+                        element_id,
+                        data=np.array(segment_ids, dtype='S64')
+                    )
+            
+            # Create segments_by_task index
+            segments_by_task = indices_group.create_group('segments_by_task')
+            for task_id, task in processed_data['tasks'].items():
+                all_segments = []
+                for segment_type in ['recording', 'thinking', 'pause']:
+                    all_segments.extend(task[f'{segment_type}_segments'])
+                
+                if all_segments:
+                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in all_segments]
+                    segments_by_task.create_dataset(
+                        task_id,
+                        data=np.array(segment_ids, dtype='S64')
+                    )
+    
+    def _create_element_dtype(self):
+        """Create numpy dtype for elements table.
+        
+        Returns:
+            np.dtype: Element table dtype
+        """
+        return np.dtype([
+            # 1. Identifiers & Metadata
+            ('element_id', h5py.special_dtype(vlen=str)),
+            ('element_type', h5py.special_dtype(vlen=str)),
+            ('title', h5py.special_dtype(vlen=str)),
+            ('is_instruction', np.bool_),
+            
+            # 2. Task Relationships
+            ('task_id', h5py.special_dtype(vlen=str)),
+            ('task_type', h5py.special_dtype(vlen=str)),
+            ('sequence_idx', np.int32),
+            ('max_count', np.int32),
+            
+            # 3. Timing & Position
+            ('start_time', np.float64),
+            ('end_time', np.float64),
+            ('duration', np.float64),
+            ('session_fraction', np.float32),
+            ('session_relative_time', np.float64),
+            
+            # 4. Presentation Configuration
+            ('audio_mode', h5py.special_dtype(vlen=str)),
+            ('display_text', np.bool_),
+            ('has_audio', np.bool_),
+            ('auto_advance_seconds', np.float64),
+            ('with_interruptions', np.bool_),
+            
+            # 5. Response Characteristics
+            ('input_modality', h5py.special_dtype(vlen=str)),
+            ('user_input_length', np.int32),
+            ('response_required', np.bool_),
+            ('response_time_seconds', np.float64),
+            
+            # 6. Event References
+            ('element_sent_id', h5py.special_dtype(vlen=str)),
+            ('element_replied_id', h5py.special_dtype(vlen=str)),
+            
+            # 7. Segment Containment
+            ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+            ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+            ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+        ])
+    
+    def _create_task_dtype(self):
+        """Create numpy dtype for tasks table.
+        
+        Returns:
+            np.dtype: Task table dtype
+        """
+        return np.dtype([
+            # 1. Identifiers & Type
+            ('task_id', h5py.special_dtype(vlen=str)),
+            ('task_type', h5py.special_dtype(vlen=str)),
+            ('sequence_number', np.int32),
+            
+            # 2. Timing
+            ('start_time', np.float64),
+            ('end_time', np.float64),
+            ('duration', np.float64),
+            ('session_fraction_start', np.float32),
+            ('session_fraction_end', np.float32),
+            
+            # 3. Core Configuration
+            ('count', np.int32),
+            ('allow_repeats', np.bool_),
+            ('with_interruptions', np.bool_),
+            ('audio_mode', h5py.special_dtype(vlen=str)),
+            ('intro_delay_seconds', np.float64),
+            
+            # 4. Task-Type Specific Parameters
+            ('eyes_closed_seconds', np.float64),
+            ('eyes_open_seconds', np.float64),
+            ('normal_breathing_seconds', np.float64),
+            ('breath_hold_seconds', np.float64),
+            ('sound_seconds', np.float64),
+            ('quiet_seconds', np.float64),
+            
+            # 5. Input Configuration
+            ('input_modality', h5py.special_dtype(vlen=str)),
+            ('element_during_answer', h5py.special_dtype(vlen=str)),
+            ('answer_display', h5py.special_dtype(vlen=str)),
+            ('delay', np.int32),  # Added for word task delay parameter
+            
+            # 6. Status Information
+            ('completion_status', h5py.special_dtype(vlen=str)),
+            ('skipped', np.bool_),
+            ('skip_time', np.float64),
+            ('skip_event_id', h5py.special_dtype(vlen=str)),
+            
+            # 7. Event References
+            ('task_started_id', h5py.special_dtype(vlen=str)),
+            ('task_completed_id', h5py.special_dtype(vlen=str)),
+            
+            # 8. Element Relationships
+            ('element_count', np.int32),
+            ('element_ids', h5py.special_dtype(vlen=np.dtype('S64'))),
+            
+            # 9. Segment Containment
+            ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+            ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+            ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+        ])
+    
+    def _create_segment_dtype(self):
+        """Create numpy dtype for segments table.
+        
+        Returns:
+            np.dtype: Segment table dtype
+        """
+        return np.dtype([
+            # 1. Core Information
+            ('segment_id', h5py.special_dtype(vlen=str)),
+            ('segment_type', h5py.special_dtype(vlen=str)),
+            ('start_time', np.float64),
+            ('end_time', np.float64),
+            ('duration', np.float64),
+            
+            # 2. Container Relationships
+            ('containing_element_id', h5py.special_dtype(vlen=str)),
+            ('containing_task_id', h5py.special_dtype(vlen=str)),
+            ('element_relative_start', np.float64),
+            ('task_relative_start', np.float64),
+            
+            # 3. Event References
+            ('start_event_id', h5py.special_dtype(vlen=str)),
+            ('end_event_id', h5py.special_dtype(vlen=str)),
+        ])
+    
+    def _convert_to_array(self, items, dtype, item_type='elements'):
+        """Convert items to a structured numpy array.
+        
+        Args:
+            items: Dictionary or list of items
+            dtype: Numpy dtype for the array
+            item_type: Type of items ('elements', 'tasks', or 'segments')
+            
+        Returns:
+            np.ndarray: Structured array
+        """
+        # Initialize array
+        array_data = np.zeros(len(items), dtype=dtype)
+        
+        # Define special fields that need array conversion by item type
+        array_fields = {
+            'elements': ['recording_segments', 'thinking_segments', 'pause_segments'],
+            'tasks': ['element_ids', 'recording_segments', 'thinking_segments', 'pause_segments'],
+            'segments': []
+        }
+        special_fields = array_fields.get(item_type, [])
+        
+        # Convert items to array
+        if item_type == 'segments':
+            # Segments are a list, not a dictionary
+            for i, item in enumerate(items):
+                for field in dtype.names:
+                    if field in item:
+                        array_data[i][field] = item[field]
+        else:
+            # Elements and tasks are dictionaries
+            for i, (item_id, item) in enumerate(items.items()):
+                for field in dtype.names:
+                    if field in item:
+                        # Handle string arrays
+                        if field in special_fields:
+                            if isinstance(item[field], list):
+                                # Convert string IDs to byte arrays
+                                ids = [id_val.encode('utf-8') if isinstance(id_val, str) else id_val for id_val in item[field]]
+                                array_data[i][field] = np.array(ids, dtype='S64')
+                        else:
+                            array_data[i][field] = item[field]
+                
+                # Task-specific post-processing
+                if item_type == 'tasks':
+                    # Calculate element count
+                    array_data[i]['element_count'] = len(item.get('element_ids', []))
+                    
+                    # Set defaults for optional fields
+                    if not item.get('completion_status'):
+                        array_data[i]['completion_status'] = 'completed'
+                    
+                    if 'skipped' not in item:
+                        array_data[i]['skipped'] = False
+        
+        return array_data
+    
+    @classmethod
+    def from_args(cls, args):
+        """Create instance from command line arguments.
+        
+        Args:
+            args: Command line arguments
+            
+        Returns:
+            EventTransform: Instance of transform
+        """
+        # Extract arguments
+        source_prefix = getattr(args, 'source_prefix', cls.SOURCE_PREFIX)
+        dest_prefix = getattr(args, 'dest_prefix', cls.DEST_PREFIX)
+        
+        kwargs = {
+            'source_prefix': source_prefix,
+            'destination_prefix': dest_prefix,
+            's3_bucket': args.s3_bucket,
+            'verbose': args.verbose,
+            'log_file': args.log_file,
+            'dry_run': args.dry_run
+        }
+        
+        # Handle keep_local if it exists
+        if hasattr(args, 'keep_local'):
+            kwargs['keep_local'] = args.keep_local
+            
+        return cls(**kwargs)
+    
+    @classmethod
+    def add_subclass_arguments(cls, parser):
+        """Add subclass-specific arguments to parser.
+        
+        Args:
+            parser: ArgumentParser to add arguments to
+        """
+        # No additional arguments needed for basic operation
+        pass
+
+
+if __name__ == "__main__":
+    EventTransform.run_from_command_line()

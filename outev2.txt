@@ -1,0 +1,347 @@
+Inspecting: C:\Users\riopo\data-pipeline\Tamuz_B3_20250506_175629_events.h5
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+/elements : Group
+/elements/table : Dataset
+/indices : Group
+/indices/element_by_task : Group
+/indices/element_by_task/argument_1 : Dataset
+/indices/element_by_task/breath_1 : Dataset
+/indices/element_by_task/breath_2 : Dataset
+/indices/element_by_task/chat_1 : Dataset
+/indices/element_by_task/completion_1 : Dataset
+/indices/element_by_task/completion_2 : Dataset
+/indices/element_by_task/completion_3 : Dataset
+/indices/element_by_task/completion_4 : Dataset
+/indices/element_by_task/completion_5 : Dataset
+/indices/element_by_task/completion_6 : Dataset
+/indices/element_by_task/eye_1 : Dataset
+/indices/element_by_task/eye_2 : Dataset
+/indices/element_by_task/eye_3 : Dataset
+/indices/element_by_task/feedback_1 : Dataset
+/indices/element_by_task/language_1 : Dataset
+/indices/element_by_task/language_2 : Dataset
+/indices/element_by_task/learn_1 : Dataset
+/indices/element_by_task/listen_1 : Dataset
+/indices/element_by_task/listen_2 : Dataset
+/indices/element_by_task/paraphrase_1 : Dataset
+/indices/element_by_task/paraphrase_2 : Dataset
+/indices/element_by_task/sentence_1 : Dataset
+/indices/element_by_task/sentence_2 : Dataset
+/indices/element_by_task/sentence_3 : Dataset
+/indices/element_by_task/sentence_4 : Dataset
+/indices/element_by_task/situation_1 : Dataset
+/indices/element_by_task/wait_1 : Dataset
+/indices/element_by_task/word_1 : Dataset
+/indices/element_by_task/word_2 : Dataset
+/indices/element_by_task/word_3 : Dataset
+/indices/element_by_task/wordassociation_1 : Dataset
+/indices/element_by_task/wordassociation_2 : Dataset
+/indices/element_by_type : Group
+/indices/element_by_type/input : Dataset
+/indices/element_by_type/text : Dataset
+/indices/segments_by_element : Group
+/indices/segments_by_element/element_sent_193 : Dataset
+/indices/segments_by_element/element_sent_194 : Dataset
+/indices/segments_by_element/element_sent_195 : Dataset
+/indices/segments_by_element/element_sent_196 : Dataset
+/indices/segments_by_element/element_sent_197 : Dataset
+/indices/segments_by_element/element_sent_198 : Dataset
+/indices/segments_by_element/element_sent_199 : Dataset
+/indices/segments_by_element/element_sent_200 : Dataset
+/indices/segments_by_element/element_sent_201 : Dataset
+/indices/segments_by_element/element_sent_202 : Dataset
+/indices/segments_by_element/element_sent_226 : Dataset
+/indices/segments_by_element/element_sent_227 : Dataset
+/indices/segments_by_element/element_sent_228 : Dataset
+/indices/segments_by_element/element_sent_229 : Dataset
+/indices/segments_by_element/element_sent_230 : Dataset
+/indices/segments_by_element/element_sent_231 : Dataset
+/indices/segments_by_element/element_sent_232 : Dataset
+/indices/segments_by_element/element_sent_233 : Dataset
+/indices/segments_by_element/element_sent_234 : Dataset
+/indices/segments_by_element/element_sent_235 : Dataset
+/indices/segments_by_element/element_sent_236 : Dataset
+/indices/segments_by_element/element_sent_237 : Dataset
+/indices/segments_by_element/element_sent_238 : Dataset
+/indices/segments_by_element/element_sent_239 : Dataset
+/indices/segments_by_element/element_sent_240 : Dataset
+/indices/segments_by_element/element_sent_241 : Dataset
+/indices/segments_by_element/element_sent_242 : Dataset
+/indices/segments_by_element/element_sent_243 : Dataset
+/indices/segments_by_element/element_sent_244 : Dataset
+/indices/segments_by_element/element_sent_245 : Dataset
+/indices/segments_by_element/element_sent_246 : Dataset
+/indices/segments_by_element/element_sent_247 : Dataset
+/indices/segments_by_element/element_sent_248 : Dataset
+/indices/segments_by_element/element_sent_249 : Dataset
+/indices/segments_by_element/element_sent_250 : Dataset
+/indices/segments_by_element/element_sent_251 : Dataset
+/indices/segments_by_element/element_sent_252 : Dataset
+/indices/segments_by_element/element_sent_254 : Dataset
+/indices/segments_by_element/element_sent_255 : Dataset
+/indices/segments_by_element/element_sent_256 : Dataset
+/indices/segments_by_element/element_sent_257 : Dataset
+/indices/segments_by_element/element_sent_258 : Dataset
+/indices/segments_by_element/element_sent_259 : Dataset
+/indices/segments_by_element/element_sent_260 : Dataset
+/indices/segments_by_element/element_sent_261 : Dataset
+/indices/segments_by_element/element_sent_262 : Dataset
+/indices/segments_by_element/element_sent_263 : Dataset
+/indices/segments_by_element/element_sent_264 : Dataset
+/indices/segments_by_element/element_sent_265 : Dataset
+/indices/segments_by_element/element_sent_266 : Dataset
+/indices/segments_by_element/element_sent_267 : Dataset
+/indices/segments_by_element/element_sent_268 : Dataset
+/indices/segments_by_element/element_sent_269 : Dataset
+/indices/segments_by_element/element_sent_270 : Dataset
+/indices/segments_by_element/element_sent_271 : Dataset
+/indices/segments_by_element/element_sent_272 : Dataset
+/indices/segments_by_element/element_sent_273 : Dataset
+/indices/segments_by_element/element_sent_274 : Dataset
+/indices/segments_by_element/element_sent_275 : Dataset
+/indices/segments_by_element/element_sent_276 : Dataset
+/indices/segments_by_element/element_sent_277 : Dataset
+/indices/segments_by_element/element_sent_278 : Dataset
+/indices/segments_by_element/element_sent_279 : Dataset
+/indices/segments_by_element/element_sent_280 : Dataset
+/indices/segments_by_element/element_sent_281 : Dataset
+/indices/segments_by_element/element_sent_282 : Dataset
+/indices/segments_by_element/element_sent_283 : Dataset
+/indices/segments_by_element/element_sent_284 : Dataset
+/indices/segments_by_element/element_sent_285 : Dataset
+/indices/segments_by_element/element_sent_286 : Dataset
+/indices/segments_by_element/element_sent_287 : Dataset
+/indices/segments_by_element/element_sent_288 : Dataset
+/indices/segments_by_element/element_sent_289 : Dataset
+/indices/segments_by_element/element_sent_290 : Dataset
+/indices/segments_by_element/element_sent_291 : Dataset
+/indices/segments_by_element/element_sent_292 : Dataset
+/indices/segments_by_element/element_sent_319 : Dataset
+/indices/segments_by_element/element_sent_320 : Dataset
+/indices/segments_by_element/element_sent_321 : Dataset
+/indices/segments_by_element/element_sent_322 : Dataset
+/indices/segments_by_element/element_sent_323 : Dataset
+/indices/segments_by_element/element_sent_324 : Dataset
+/indices/segments_by_element/element_sent_325 : Dataset
+/indices/segments_by_element/element_sent_326 : Dataset
+/indices/segments_by_element/element_sent_327 : Dataset
+/indices/segments_by_element/element_sent_328 : Dataset
+/indices/segments_by_element/element_sent_329 : Dataset
+/indices/segments_by_element/element_sent_330 : Dataset
+/indices/segments_by_element/element_sent_331 : Dataset
+/indices/segments_by_element/element_sent_332 : Dataset
+/indices/segments_by_element/element_sent_333 : Dataset
+/indices/segments_by_element/element_sent_334 : Dataset
+/indices/segments_by_element/element_sent_335 : Dataset
+/indices/segments_by_element/element_sent_336 : Dataset
+/indices/segments_by_element/element_sent_337 : Dataset
+/indices/segments_by_element/element_sent_338 : Dataset
+/indices/segments_by_element/element_sent_339 : Dataset
+/indices/segments_by_element/element_sent_340 : Dataset
+/indices/segments_by_element/element_sent_341 : Dataset
+/indices/segments_by_element/element_sent_342 : Dataset
+/indices/segments_by_element/element_sent_37 : Dataset
+/indices/segments_by_element/element_sent_38 : Dataset
+/indices/segments_by_element/element_sent_39 : Dataset
+/indices/segments_by_element/element_sent_40 : Dataset
+/indices/segments_by_element/element_sent_406 : Dataset
+/indices/segments_by_element/element_sent_407 : Dataset
+/indices/segments_by_element/element_sent_408 : Dataset
+/indices/segments_by_element/element_sent_409 : Dataset
+/indices/segments_by_element/element_sent_41 : Dataset
+/indices/segments_by_element/element_sent_410 : Dataset
+/indices/segments_by_element/element_sent_411 : Dataset
+/indices/segments_by_element/element_sent_412 : Dataset
+/indices/segments_by_element/element_sent_413 : Dataset
+/indices/segments_by_element/element_sent_414 : Dataset
+/indices/segments_by_element/element_sent_415 : Dataset
+/indices/segments_by_element/element_sent_416 : Dataset
+/indices/segments_by_element/element_sent_417 : Dataset
+/indices/segments_by_element/element_sent_418 : Dataset
+/indices/segments_by_element/element_sent_419 : Dataset
+/indices/segments_by_element/element_sent_42 : Dataset
+/indices/segments_by_element/element_sent_43 : Dataset
+/indices/segments_by_element/element_sent_44 : Dataset
+/indices/segments_by_element/element_sent_45 : Dataset
+/indices/segments_by_element/element_sent_46 : Dataset
+/indices/segments_by_element/element_sent_47 : Dataset
+/indices/segments_by_element/element_sent_48 : Dataset
+/indices/segments_by_element/element_sent_49 : Dataset
+/indices/segments_by_element/element_sent_50 : Dataset
+/indices/segments_by_element/element_sent_51 : Dataset
+/indices/segments_by_element/element_sent_52 : Dataset
+/indices/segments_by_element/element_sent_53 : Dataset
+/indices/segments_by_element/element_sent_54 : Dataset
+/indices/segments_by_element/element_sent_55 : Dataset
+/indices/segments_by_element/element_sent_56 : Dataset
+/indices/segments_by_element/element_sent_57 : Dataset
+/indices/segments_by_element/element_sent_58 : Dataset
+/indices/segments_by_element/element_sent_59 : Dataset
+/indices/segments_by_element/element_sent_60 : Dataset
+/indices/segments_by_element/element_sent_61 : Dataset
+/indices/segments_by_element/element_sent_77 : Dataset
+/indices/segments_by_element/element_sent_78 : Dataset
+/indices/segments_by_element/element_sent_79 : Dataset
+/indices/segments_by_element/element_sent_80 : Dataset
+/indices/segments_by_element/element_sent_81 : Dataset
+/indices/segments_by_element/element_sent_82 : Dataset
+/indices/segments_by_element/element_sent_83 : Dataset
+/indices/segments_by_element/element_sent_84 : Dataset
+/indices/segments_by_element/element_sent_85 : Dataset
+/indices/segments_by_element/element_sent_86 : Dataset
+/indices/segments_by_element/element_sent_87 : Dataset
+/indices/segments_by_element/element_sent_88 : Dataset
+/indices/segments_by_element/element_sent_89 : Dataset
+/indices/segments_by_element/element_sent_90 : Dataset
+/indices/segments_by_element/element_sent_91 : Dataset
+/indices/segments_by_element/element_sent_92 : Dataset
+/indices/segments_by_task : Group
+/metadata : Group
+/metadata/stats : Group
+/metadata/stats Attributes:
+/metadata/stats  num_elements: 448
+/metadata/stats  num_pause_segments: 0
+/metadata/stats  num_recording_segments: 103
+/metadata/stats  num_tasks: 32
+/metadata/stats  num_thinking_segments: 52
+/metadata Attributes:
+/metadata  session_id: Tamuz_B3_20250506_175629
+/metadata  transform: event
+/metadata  version: 0.1
+/segments : Group
+/segments/recording : Dataset
+/segments/thinking : Dataset
+/tasks : Group
+/tasks/table : Dataset
+
+================================================================================
+METADATA
+================================================================================
+  session_id: Tamuz_B3_20250506_175629
+  transform: event
+  version: 0.1
+
+Statistics:
+  num_elements: 448
+  num_pause_segments: 0
+  num_recording_segments: 103
+  num_tasks: 32
+  num_thinking_segments: 52
+
+================================================================================
+TASKS
+================================================================================
+  ERROR accessing tasks/table: Cannot create cython.array from NULL pointer
+Tasks table is empty or could not be read
+
+================================================================================
+ELEMENTS
+================================================================================
+  ERROR accessing elements/table: Cannot create cython.array from NULL pointer
+Elements table is empty or could not be read
+
+================================================================================
+SEGMENTS
+================================================================================
+Found 2 segment types: recording, thinking
+
+Recording segments: 103
+  Segment structure:
+    Field: segment_id (Type: object)
+    Field: segment_type (Type: object)
+    Field: start_time (Type: float64)
+    Field: end_time (Type: float64)
+    Field: duration (Type: float64)
+    Field: containing_element_id (Type: object)
+    Field: containing_task_id (Type: object)
+    Field: element_relative_start (Type: float64)
+    Field: task_relative_start (Type: float64)
+    Field: start_event_id (Type: object)
+    Field: end_event_id (Type: object)
+  Contained by elements: 103
+  Contained by tasks: 0
+  Uncontained: 0
+
+  Sample segments:
+    Segment 1: recording_recording_start_1
+      Type: recording
+      Element: element_sent_77
+      Task: None
+      Duration: 10908.00s
+      Time range: 1746580699769.00 - 1746580710677.00
+    Segment 2: recording_recording_start_2
+      Type: recording
+      Element: element_sent_78
+      Task: None
+      Duration: 8234.00s
+      Time range: 1746580714699.00 - 1746580722933.00
+
+Thinking segments: 52
+  Segment structure:
+    Field: segment_id (Type: object)
+    Field: segment_type (Type: object)
+    Field: start_time (Type: float64)
+    Field: end_time (Type: float64)
+    Field: duration (Type: float64)
+    Field: containing_element_id (Type: object)
+    Field: containing_task_id (Type: object)
+    Field: element_relative_start (Type: float64)
+    Field: task_relative_start (Type: float64)
+    Field: start_event_id (Type: object)
+    Field: end_event_id (Type: object)
+  Contained by elements: 52
+  Contained by tasks: 0
+  Uncontained: 0
+
+  Sample segments:
+    Segment 1: thinking_thinking_start_1
+      Type: thinking
+      Element: element_sent_37
+      Task: None
+      Duration: 3001.00s
+      Time range: 1746579904963.00 - 1746579907964.00
+    Segment 2: thinking_thinking_start_2
+      Type: thinking
+      Element: element_sent_38
+      Task: None
+      Duration: 3002.00s
+      Time range: 1746579911771.00 - 1746579914773.00
+
+================================================================================
+ASSOCIATION VERIFICATION
+================================================================================
+  ERROR accessing tasks/table: Cannot create cython.array from NULL pointer
+  ERROR accessing elements/table: Cannot create cython.array from NULL pointer
+Could not read tasks or elements table
+
+================================================================================
+INDICES
+================================================================================
+Found 4 index types: element_by_task, element_by_type, segments_by_element, segments_by_task
+
+element_by_task: 32 entries
+  Sample entries:
+    argument_1: 15 items
+    breath_1: 8 items
+    breath_2: 8 items
+
+element_by_type: 2 entries
+  Sample entries:
+    input: 362 items
+    text: 86 items
+
+segments_by_element: 155 entries
+  Sample entries:
+    element_sent_193: 1 items
+      Items: ['recording_recording_start_17']
+    element_sent_194: 1 items
+      Items: ['recording_recording_start_18']
+    element_sent_195: 1 items
+      Items: ['recording_recording_start_19']
+
+segments_by_task: 0 entries
+
+Inspection completed successfully

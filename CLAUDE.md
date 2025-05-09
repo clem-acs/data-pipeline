@@ -49,8 +49,18 @@ Your task
 
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
-I want a script like t2e
-that time
+I want a transform like T2e or something that extracts all the types of event data in various ways
 
+after that, i'll later combine the output of window, lang, and this event transform into a tiledb dataset for very easy large model training
+so what are the desiterata of the events data here? look in the h5 shapes folder, explain how i might extract events to make combination into tiledb easay, and later model training on a whole range of downstream tasks. for example, get windowed data only around a certain token, get all eeg data for the second eyes-open element in the first eyes open/closed task for every single session that has it, get a single sessions data from all the tasks of one type (but not others) throughout the session, etc etc
+
+so think about the deserata of the eventual tiledb dataset - super easy, fast querying for training lots of things with just a line or two of code to query. that will be like t4a or something. but we aren't really coding that up yet, we just need to keep that goal in mind and really grok what we need to do for it
+
+then, work backward from that to explain how i should now get different kinds of event data and extract them. what will make this useful later?
+read the file tamuz-inspected.txt in full and consider the actual kinds of events at play here. some are saved as two event types, for example (element sent and element replied make up one full element, for example, same with some others), so we'll want to save those differently from one-shot events, like a display event for example. really look at all the data, the shapes, how this is similar to aspects of lang or window, etc.
+
+don't write any code or anything, just think very hard about the absolutely flawless architecture, functionality. super easy to use later for our goals, easy to work with and develop, etc
+write this analysis to what-we-need.txt write everything to that file
+think hard, ultrathink
 
 

@@ -15,6 +15,7 @@ try:
     from .transforms.t0A_curate_v0 import CurateTransform
     from .transforms.t2A_window_v0 import WindowTransform
     from .transforms.t2D_validate_v0 import ValidateTransform
+    from .transforms.t2E_event_v0 import EventTransform
     from .utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -25,6 +26,7 @@ except ImportError:
     from transforms.t0A_curate_v0 import CurateTransform
     from transforms.t2A_window_v0 import WindowTransform
     from transforms.t2D_validate_v0 import ValidateTransform
+    from transforms.t2E_event_v0 import EventTransform
     from utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -50,6 +52,7 @@ TRANSFORMS = {
     'curate': CurateTransform,
     'window': WindowTransform,
     'validate': ValidateTransform,
+    'event': EventTransform,
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
     # 'extract': FeatureExtractionTransform,

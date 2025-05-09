@@ -1,0 +1,568 @@
+Inspecting HDF5 file: Tamuz_B3_20250506_175629.h5
+------------------------------------------------------------
+FILE ATTRIBUTES:
+------------------------------------------------------------
+FILE STRUCTURE:
+Group: audio/
+  Dataset: audio/audio_data (Shape: 26559 x 4096, Type: float32)
+  Dataset: audio/chunk_metadata (Shape: 26559, Type: object)
+  Dataset: audio/timestamps (Shape: 26559 x 2, Type: float64)
+Group: devices/
+  Group: devices/eeg/
+    Dataset: devices/eeg/frames_data (Shape: 226722 x 28 x 15, Type: float32)
+    Dataset: devices/eeg/timestamps (Shape: 226722 x 3, Type: float64)
+  Group: devices/fnirs/
+    Dataset: devices/fnirs/frames_data (Shape: 30037 x 248832 x 1, Type: float64)
+    Dataset: devices/fnirs/timestamps (Shape: 30037 x 3, Type: float64)
+Group: events/
+  Group: events/display/
+    Dataset: events/display/data (Shape: 9220, Type: object)
+    Dataset: events/display/event_ids (Shape: 9220, Type: object)
+    Dataset: events/display/timestamps (Shape: 9220 x 2, Type: float64)
+  Group: events/element_replied/
+    Dataset: events/element_replied/data (Shape: 448, Type: object)
+    Dataset: events/element_replied/event_ids (Shape: 448, Type: object)
+    Dataset: events/element_replied/timestamps (Shape: 448 x 2, Type: float64)
+  Group: events/element_sent/
+    Dataset: events/element_sent/data (Shape: 449, Type: object)
+    Dataset: events/element_sent/event_ids (Shape: 449, Type: object)
+    Dataset: events/element_sent/timestamps (Shape: 449 x 2, Type: float64)
+  Group: events/keystroke/
+    Dataset: events/keystroke/data (Shape: 7360, Type: object)
+    Dataset: events/keystroke/event_ids (Shape: 7360, Type: object)
+    Dataset: events/keystroke/timestamps (Shape: 7360 x 2, Type: float64)
+  Group: events/recording_start/
+    Dataset: events/recording_start/data (Shape: 103, Type: object)
+    Dataset: events/recording_start/event_ids (Shape: 103, Type: object)
+    Dataset: events/recording_start/timestamps (Shape: 103 x 2, Type: float64)
+  Group: events/recording_stop/
+    Dataset: events/recording_stop/data (Shape: 103, Type: object)
+    Dataset: events/recording_stop/event_ids (Shape: 103, Type: object)
+    Dataset: events/recording_stop/timestamps (Shape: 103 x 2, Type: float64)
+  Group: events/skip_task/
+    Dataset: events/skip_task/data (Shape: 1, Type: object)
+    Dataset: events/skip_task/event_ids (Shape: 1, Type: object)
+    Dataset: events/skip_task/timestamps (Shape: 1 x 2, Type: float64)
+  Group: events/task_completed/
+    Dataset: events/task_completed/data (Shape: 32, Type: object)
+    Dataset: events/task_completed/event_ids (Shape: 32, Type: object)
+    Dataset: events/task_completed/timestamps (Shape: 32 x 2, Type: float64)
+  Group: events/task_started/
+    Dataset: events/task_started/data (Shape: 33, Type: object)
+    Dataset: events/task_started/event_ids (Shape: 33, Type: object)
+    Dataset: events/task_started/timestamps (Shape: 33 x 2, Type: float64)
+  Group: events/thinking_start/
+    Dataset: events/thinking_start/data (Shape: 52, Type: object)
+    Dataset: events/thinking_start/event_ids (Shape: 52, Type: object)
+    Dataset: events/thinking_start/timestamps (Shape: 52 x 2, Type: float64)
+  Group: events/thinking_stop/
+    Dataset: events/thinking_stop/data (Shape: 52, Type: object)
+    Dataset: events/thinking_stop/event_ids (Shape: 52, Type: object)
+    Dataset: events/thinking_stop/timestamps (Shape: 52 x 2, Type: float64)
+Group: language/
+  Group: language/L/
+    Dataset: language/L/chars (Shape: 9219, Type: [('char', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O')])
+  Group: language/LR/
+  Group: language/R/
+    Dataset: language/R/words (Shape: 8762, Type: [('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')])
+  Group: language/S/
+    Dataset: language/S/words (Shape: 2104, Type: [('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')])
+  Group: language/W/
+    Dataset: language/W/chars (Shape: 4875, Type: [('char', 'O'), ('timestamp', '<f8'), ('keystrokes', 'O'), ('trigger_keystroke', 'O'), ('reconstructed', '?')])
+    Group: language/W/metadata/
+Group: metadata/
+------------------------------------------------------------
+GROUP: /
+------------------------------------------------------------
+GROUP: audio
+  DATASET: audio_data
+    Shape: (26559, 4096)
+    Type: float32
+    Sample Data:
+      Top-left corner (3x3):
+        [-1.0986328e-03 -4.5776367e-04  6.1035156e-05]
+        [-0.00079346 -0.00683594 -0.00384521]
+        [-0.01004028  0.01071167  0.00613403]
+    Statistics:
+      Min: -1.0000
+      Max: 1.0000
+      Mean: -0.0000
+      Std Dev: 0.0263
+  DATASET: chunk_metadata
+    Shape: (26559,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"sample_rate": 16000, "channels": 1, "format": "float32", "original_format": "int16", "source": "websocket", "synchronized": true, "client_timestamp": 1746579401327, "server_timestamp": 1746579401328, "device_id": "audio_ws_Tamuz_B3_20250506_175629_1746579401149"}'
+ b'{"sample_rate": 16000, "channels": 1, "format": "float32", "original_format": "int16", "source": "websocket", "synchronized": true, "client_timestamp": 1746579401587, "server_timestamp": 1746579401588, "device_id": "audio_ws_Tamuz_B3_20250506_175629_1746579401149"}'
+ b'{"sample_rate": 16000, "channels": 1, "format": "float32", "original_format": "int16", "source": "websocket", "synchronized": true, "client_timestamp": 1746579401837, "server_timestamp": 1746579401836, "device_id": "audio_ws_Tamuz_B3_20250506_175629_1746579401149"}'
+ b'{"sample_rate": 16000, "channels": 1, "format": "float32", "original_format": "int16", "source": "websocket", "synchronized": true, "client_timestamp": 1746579402097, "server_timestamp": 1746579402096, "device_id": "audio_ws_Tamuz_B3_20250506_175629_1746579401149"}'
+ b'{"sample_rate": 16000, "channels": 1, "format": "float32", "original_format": "int16", "source": "websocket", "synchronized": true, "client_timestamp": 1746579402347, "server_timestamp": 1746579402347, "device_id": "audio_ws_Tamuz_B3_20250506_175629_1746579401149"}']
+  DATASET: timestamps
+    Shape: (26559, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465794e+12 1.7465794e+12]
+        [1.7465794e+12 1.7465794e+12]
+        [1.7465794e+12 1.7465794e+12]
+    Statistics:
+      Min: 1746579401327.0000
+      Max: 1746586202227.0000
+      Mean: 1746582801419.0745
+      Std Dev: 1963184.8423
+------------------------------------------------------------
+GROUP: devices
+------------------------------------------------------------
+GROUP: devices/eeg
+  Attributes:
+    device_type: eeg
+  DATASET: frames_data
+    Shape: (226722, 28, 15)
+    Type: float32
+    Sample Data:
+      [Data has 3 dimensions]
+    Statistics:
+      Min: -0.4437
+      Max: 3400.8301
+      Mean: 236.1740
+      Std Dev: 352.6969
+  DATASET: timestamps
+    Shape: (226722, 3)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x3):
+        [1.7465794e+12 1.7465794e+12 0.0000000e+00]
+        [1.7465794e+12 1.7465794e+12 2.8000000e+01]
+        [1.7465794e+12 1.7465794e+12 2.8000000e+01]
+    Statistics:
+      Min: -4620.0000
+      Max: 1746586202285.0000
+      Mean: 1164388534313.3333
+      Std Dev: 823347028567.7466
+------------------------------------------------------------
+GROUP: devices/fnirs
+  Attributes:
+    device_type: fnirs
+  DATASET: frames_data
+    Shape: (30037, 248832, 1)
+    Type: float64
+    Sample Data:
+      [Data has 3 dimensions]
+      [Error computing statistics: Unable to allocate 55.7 GiB for an array with shape (30037, 248832, 1) and data type float64]
+  DATASET: timestamps
+    Shape: (30037, 3)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x3):
+        [ 1.7465794e+12  1.7465794e+12 -2.5900000e+02]
+        [ 1.7465794e+12  1.7465794e+12 -1.1100000e+02]
+        [ 1.7465794e+12  1.7465794e+12 -5.6000000e+01]
+    Statistics:
+      Min: -352.0000
+      Max: 1746586202010.0000
+      Mean: 1164388435126.1367
+      Std Dev: 823346958492.8906
+------------------------------------------------------------
+GROUP: events
+------------------------------------------------------------
+GROUP: events/display
+  DATASET: data
+    Shape: (9220,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400303, "server_timestamp": 1746579400304, "content_type": "element", "content": {"id": "wait_1_intro", "element_type": "instruction", "display_timestamp": 1746579400303}}'
+ b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400304, "server_timestamp": 1746579400310, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": "Please", "word_index": 0, "display_timestamp": 1746579400304, "via_audio_sync": false}}'
+ b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400536, "server_timestamp": 1746579400539, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": " ", "word_index": 1, "display_timestamp": 1746579400536, "via_audio_sync": false}}'
+ b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400661, "server_timestamp": 1746579400662, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": "wait", "word_index": 2, "display_timestamp": 1746579400661, "via_audio_sync": false}}'
+ b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400933, "server_timestamp": 1746579400939, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": " ", "word_index": 3, "display_timestamp": 1746579400933, "via_audio_sync": false}}']
+  DATASET: event_ids
+    Shape: (9220,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'display_1' b'display_2' b'display_3' b'display_4' b'display_5']
+  DATASET: timestamps
+    Shape: (9220, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465794e+12 1.7465794e+12]
+        [1.7465794e+12 1.7465794e+12]
+        [1.7465794e+12 1.7465794e+12]
+    Statistics:
+      Min: 1746579400303.0000
+      Max: 1746586202234.0000
+      Mean: 1746583546158.4600
+      Std Dev: 1654831.6164
+------------------------------------------------------------
+GROUP: events/element_replied
+  DATASET: data
+    Shape: (448,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "element_id": "wait_1_intro", "user_input": "", "input_modality": "text"}'
+ b'{"task_id": "", "element_id": "eye_1_intro", "user_input": "", "input_modality": "text"}'
+ b'{"task_id": "", "element_id": "eye_1_close_2", "user_input": "", "input_modality": "text"}'
+ b'{"task_id": "", "element_id": "eye_1_open_2", "user_input": "", "input_modality": "text"}'
+ b'{"task_id": "", "element_id": "eye_1_close_4", "user_input": "", "input_modality": "text"}']
+  DATASET: event_ids
+    Shape: (448,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'element_replied_1' b'element_replied_2' b'element_replied_3'
+ b'element_replied_4' b'element_replied_5']
+  DATASET: timestamps
+    Shape: (448, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.74657948e+12 1.74657948e+12]
+        [1.74657949e+12 1.74657949e+12]
+        [1.74657951e+12 1.74657951e+12]
+    Statistics:
+      Min: 1746579484928.0000
+      Max: 1746586193012.0000
+      Mean: 1746582921402.2278
+      Std Dev: 1906915.8417
+------------------------------------------------------------
+GROUP: events/element_sent
+  DATASET: data
+    Shape: (449,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "element_id": "wait_1_intro", "element_type": "text", "element_content": {"element_type": "text", "element_id": "wait_1_intro", "title": "Wait Task", "content": "Please wait while we adjust measurements.", "is_instruction": true, "task_metadata": {"task_id": "wait_1", "task_type": "wait", "max_count": 1, "current_count": 0, "duration": 300, "fraction_session_completed": 0.0}}, "sequence": 0}'
+ b'{"task_id": "", "element_id": "eye_1_intro", "element_type": "text", "element_content": {"element_type": "text", "element_id": "eye_1_intro", "title": "Baseline Instructions", "content": "We\'re getting baselines. Please listen to the instructions.", "is_instruction": true, "_item": {"id": 1, "taskType": "eye", "instruction": "We\'re getting baselines. Please listen to the instructions.", "audio_path": "audio\\\\eye_1.mp3", "alignment": {"characters": ["W", "e", "\'", "r", "e", " ", "g", "e", "t", "t", "i", "n", "g", " ", "b", "a", "s", "e", "l", "i", "n", "e", "s", ".", " ", "P", "l", "e", "a", "s", "e", " ", "l", "i", "s", "t", "e", "n", " ", "t", "o", " ", "t", "h", "e", " ", "i", "n", "s", "t", "r", "u", "c", "t", "i", "o", "n", "s", "."], "character_start_times_seconds": [0.0, 0.209, 0.267, 0.313, 0.348, 0.372, 0.395, 0.43, 0.464, 0.499, 0.534, 0.569, 0.592, 0.615, 0.673, 0.72, 0.801, 0.871, 0.929, 0.998, 1.068, 1.126, 1.184, 1.207, 1.231, 1.265, 1.312, 1.347, 1.382, 1.416, 1.451, 1.474, 1.509, 1.544, 1.591, 1.625, 1.66, 1.695, 1.718, 1.753, 1.776, 1.811, 1.858, 1.881, 1.904, 1.927, 1.962, 1.997, 2.032, 2.09, 2.125, 2.171, 2.218, 2.276, 2.322, 2.368, 2.403, 2.461, 2.612], "character_end_times_seconds": [0.209, 0.267, 0.313, 0.348, 0.372, 0.395, 0.43, 0.464, 0.499, 0.534, 0.569, 0.592, 0.615, 0.673, 0.72, 0.801, 0.871, 0.929, 0.998, 1.068, 1.126, 1.184, 1.207, 1.231, 1.265, 1.312, 1.347, 1.382, 1.416, 1.451, 1.474, 1.509, 1.544, 1.591, 1.625, 1.66, 1.695, 1.718, 1.753, 1.776, 1.811, 1.858, 1.881, 1.904, 1.927, 1.962, 1.997, 2.032, 2.09, 2.125, 2.171, 2.218, 2.276, 2.322, 2.368, 2.403, 2.461, 2.612, 2.972]}}, "task_metadata": {"task_id": "eye_1", "task_type": "eye", "max_count": 7, "current_count": 0, "duration": 110, "fraction_session_completed": 0.04253509145044662}, "audio_mode": "audio_only", "display_text": false, "audio_path": "/audio/eye_1.mp3", "auto_advance_seconds": 5}, "sequence": 0}'
+ b'{"task_id": "", "element_id": "eye_1_close_2", "element_type": "text", "element_content": {"element_type": "text", "element_id": "eye_1_close_2", "title": "Eye Exercise", "content": "Close your eyes.", "is_instruction": true, "_item": {"id": 2, "taskType": "eye", "instruction": "Close your eyes.", "audio_path": "audio\\\\eye_2.mp3", "alignment": {"characters": ["C", "l", "o", "s", "e", " ", "y", "o", "u", "r", " ", "e", "y", "e", "s", "."], "character_start_times_seconds": [0.0, 0.174, 0.232, 0.279, 0.325, 0.36, 0.395, 0.418, 0.441, 0.476, 0.511, 0.58, 0.627, 0.673, 0.743, 0.813], "character_end_times_seconds": [0.174, 0.232, 0.279, 0.325, 0.36, 0.395, 0.418, 0.441, 0.476, 0.511, 0.58, 0.627, 0.673, 0.743, 0.813, 1.115]}}, "task_metadata": {"task_id": "eye_1", "task_type": "eye", "max_count": 7, "current_count": 1, "duration": 110, "fraction_session_completed": 0.04253509145044662}, "audio_mode": "audio_only", "display_text": false, "audio_path": "/audio/eye_2.mp3", "auto_advance_seconds": 20}, "sequence": 0}'
+ b'{"task_id": "", "element_id": "eye_1_open_2", "element_type": "text", "element_content": {"element_type": "text", "element_id": "eye_1_open_2", "title": "Eye Exercise", "content": "Open your eyes.", "is_instruction": true, "_item": {"id": 3, "taskType": "eye", "instruction": "Open your eyes.", "audio_path": "audio\\\\eye_3.mp3", "alignment": {"characters": ["O", "p", "e", "n", " ", "y", "o", "u", "r", " ", "e", "y", "e", "s", "."], "character_start_times_seconds": [0.0, 0.267, 0.325, 0.372, 0.406, 0.464, 0.488, 0.511, 0.546, 0.58, 0.662, 0.708, 0.755, 0.824, 0.94], "character_end_times_seconds": [0.267, 0.325, 0.372, 0.406, 0.464, 0.488, 0.511, 0.546, 0.58, 0.662, 0.708, 0.755, 0.824, 0.94, 1.254]}}, "task_metadata": {"task_id": "eye_1", "task_type": "eye", "max_count": 7, "current_count": 2, "duration": 110, "fraction_session_completed": 0.04253509145044662}, "audio_mode": "audio_only", "display_text": false, "audio_path": "/audio/eye_3.mp3", "auto_advance_seconds": 15}, "sequence": 0}'
+ b'{"task_id": "", "element_id": "eye_1_close_4", "element_type": "text", "element_content": {"element_type": "text", "element_id": "eye_1_close_4", "title": "Eye Exercise", "content": "Close your eyes.", "is_instruction": true, "_item": {"id": 2, "taskType": "eye", "instruction": "Close your eyes.", "audio_path": "audio\\\\eye_2.mp3", "alignment": {"characters": ["C", "l", "o", "s", "e", " ", "y", "o", "u", "r", " ", "e", "y", "e", "s", "."], "character_start_times_seconds": [0.0, 0.174, 0.232, 0.279, 0.325, 0.36, 0.395, 0.418, 0.441, 0.476, 0.511, 0.58, 0.627, 0.673, 0.743, 0.813], "character_end_times_seconds": [0.174, 0.232, 0.279, 0.325, 0.36, 0.395, 0.418, 0.441, 0.476, 0.511, 0.58, 0.627, 0.673, 0.743, 0.813, 1.115]}}, "task_metadata": {"task_id": "eye_1", "task_type": "eye", "max_count": 7, "current_count": 3, "duration": 110, "fraction_session_completed": 0.04253509145044662}, "audio_mode": "audio_only", "display_text": false, "audio_path": "/audio/eye_2.mp3", "auto_advance_seconds": 20}, "sequence": 0}']
+  DATASET: event_ids
+    Shape: (449,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'element_sent_1' b'element_sent_2' b'element_sent_3' b'element_sent_4'
+ b'element_sent_5']
+  DATASET: timestamps
+    Shape: (449, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465794e+12 1.7465794e+12]
+        [1.74657948e+12 1.74657948e+12]
+        [1.74657949e+12 1.74657949e+12]
+    Statistics:
+      Min: 1746579400285.0000
+      Max: 1746586193107.0000
+      Mean: 1746582913933.6426
+      Std Dev: 1912217.7456
+------------------------------------------------------------
+GROUP: events/keystroke
+  DATASET: data
+    Shape: (7360,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "word_1_word_628", "client_timestamp": 1746579776401, "server_timestamp": 1746579776404, "key": "f", "event": "keydown", "current_text": ""}'
+ b'{"task_id": "word_1_word_628", "client_timestamp": 1746579777153, "server_timestamp": 1746579777155, "key": "a", "event": "keydown", "current_text": "f"}'
+ b'{"task_id": "word_1_word_628", "client_timestamp": 1746579777817, "server_timestamp": 1746579777821, "key": "x", "event": "keydown", "current_text": "fa"}'
+ b'{"task_id": "word_1_word_628", "client_timestamp": 1746579778704, "server_timestamp": 1746579778705, "key": "Shift", "event": "keydown", "current_text": "fax"}'
+ b'{"task_id": "word_1_word_628", "client_timestamp": 1746579781106, "server_timestamp": 1746579781144, "key": "Enter", "event": "keydown", "current_text": "fax"}']
+  DATASET: event_ids
+    Shape: (7360,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'keystroke_1' b'keystroke_2' b'keystroke_3' b'keystroke_4'
+ b'keystroke_5']
+  DATASET: timestamps
+    Shape: (7360, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.74657978e+12 1.74657978e+12]
+        [1.74657978e+12 1.74657978e+12]
+        [1.74657978e+12 1.74657978e+12]
+    Statistics:
+      Min: 1746579776401.0000
+      Max: 1746586193175.0000
+      Mean: 1746582726664.1865
+      Std Dev: 1925902.8686
+------------------------------------------------------------
+GROUP: events/recording_start
+  DATASET: data
+    Shape: (103,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "client_timestamp": 1746580699766, "server_timestamp": 1746580699768}'
+ b'{"task_id": "", "client_timestamp": 1746580714695, "server_timestamp": 1746580714699}'
+ b'{"task_id": "", "client_timestamp": 1746580726686, "server_timestamp": 1746580726691}'
+ b'{"task_id": "", "client_timestamp": 1746580736906, "server_timestamp": 1746580736922}'
+ b'{"task_id": "", "client_timestamp": 1746580743727, "server_timestamp": 1746580743729}']
+  DATASET: event_ids
+    Shape: (103,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'recording_start_1' b'recording_start_2' b'recording_start_3'
+ b'recording_start_4' b'recording_start_5']
+  DATASET: timestamps
+    Shape: (103, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465807e+12 1.7465807e+12]
+        [1.74658071e+12 1.74658071e+12]
+        [1.74658073e+12 1.74658073e+12]
+    Statistics:
+      Min: 1746580699766.0000
+      Max: 1746585742491.0000
+      Mean: 1746583534531.5679
+      Std Dev: 1454135.3120
+------------------------------------------------------------
+GROUP: events/recording_stop
+  DATASET: data
+    Shape: (103,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "client_timestamp": 1746580710672, "server_timestamp": 1746580710676}'
+ b'{"task_id": "", "client_timestamp": 1746580722928, "server_timestamp": 1746580722933}'
+ b'{"task_id": "", "client_timestamp": 1746580733520, "server_timestamp": 1746580733525}'
+ b'{"task_id": "", "client_timestamp": 1746580741248, "server_timestamp": 1746580741251}'
+ b'{"task_id": "", "client_timestamp": 1746580749992, "server_timestamp": 1746580749996}']
+  DATASET: event_ids
+    Shape: (103,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'recording_stop_1' b'recording_stop_2' b'recording_stop_3'
+ b'recording_stop_4' b'recording_stop_5']
+  DATASET: timestamps
+    Shape: (103, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.74658071e+12 1.74658071e+12]
+        [1.74658072e+12 1.74658072e+12]
+        [1.74658073e+12 1.74658073e+12]
+    Statistics:
+      Min: 1746580710672.0000
+      Max: 1746585752555.0000
+      Mean: 1746583541530.5972
+      Std Dev: 1453345.2496
+------------------------------------------------------------
+GROUP: events/skip_task
+  DATASET: data
+    Shape: (1,)
+    Type: object
+    Sample Data:
+      First 1 elements: [b'{"task_id": "", "client_timestamp": 1746585596262, "server_timestamp": 1746585596265}']
+  DATASET: event_ids
+    Shape: (1,)
+    Type: object
+    Sample Data:
+      First 1 elements: [b'skip_task_1']
+  DATASET: timestamps
+    Shape: (1, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (1x2):
+        [1.7465856e+12 1.7465856e+12]
+    Statistics:
+      Min: 1746585596262.0000
+      Max: 1746585596265.0000
+      Mean: 1746585596263.5000
+      Std Dev: 1.5000
+------------------------------------------------------------
+GROUP: events/task_completed
+  DATASET: data
+    Shape: (32,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "wait_1", "task_type": "wait", "completion_status": "completed"}'
+ b'{"task_id": "eye_1", "task_type": "eye", "completion_status": "completed"}'
+ b'{"task_id": "breath_1", "task_type": "breath", "completion_status": "completed"}'
+ b'{"task_id": "listen_1", "task_type": "listen", "completion_status": "completed"}'
+ b'{"task_id": "word_1", "task_type": "word", "completion_status": "completed"}']
+  DATASET: event_ids
+    Shape: (32,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'task_completed_1' b'task_completed_2' b'task_completed_3'
+ b'task_completed_4' b'task_completed_5']
+  DATASET: timestamps
+    Shape: (32, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.74657948e+12 1.74657948e+12]
+        [1.74657957e+12 1.74657957e+12]
+        [1.74657967e+12 1.74657967e+12]
+    Statistics:
+      Min: 1746579484939.0000
+      Max: 1746586193096.0000
+      Mean: 1746582739866.2812
+      Std Dev: 2178111.0080
+------------------------------------------------------------
+GROUP: events/task_started
+  DATASET: data
+    Shape: (33,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "wait_1", "task_type": "wait", "config": {"count": 1, "with_interruptions": false}}'
+ b'{"task_id": "eye_1", "task_type": "eye", "config": {"count": 7, "allow_repeats": true, "intro_delay_seconds": 5, "eyes_closed_seconds": 20, "eyes_open_seconds": 15, "audio_mode": "audio_only"}}'
+ b'{"task_id": "breath_1", "task_type": "breath", "config": {"count": 8, "allow_repeats": true, "intro_delay_seconds": 5, "normal_breathing_seconds": 10, "breath_hold_seconds": 18, "audio_mode": "aligned"}}'
+ b'{"task_id": "listen_1", "task_type": "listen", "config": {"count": 7, "allow_repeats": true, "intro_delay_seconds": 5, "sound_seconds": 20, "quiet_seconds": 10, "audio_mode": "audio_only"}}'
+ b'{"task_id": "word_1", "task_type": "word", "config": {"count": 500, "allow_repeats": true, "with_interruptions": false, "delay": 1000, "element_during_answer": "grey", "answer_display": "normal"}}']
+  DATASET: event_ids
+    Shape: (33,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'task_started_1' b'task_started_2' b'task_started_3' b'task_started_4'
+ b'task_started_5']
+  DATASET: timestamps
+    Shape: (33, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465794e+12 1.7465794e+12]
+        [1.74657948e+12 1.74657948e+12]
+        [1.74657957e+12 1.74657957e+12]
+    Statistics:
+      Min: 1746579397983.0000
+      Max: 1746586193102.0000
+      Mean: 1746582638861.0757
+      Std Dev: 2220136.1513
+------------------------------------------------------------
+GROUP: events/thinking_start
+  DATASET: data
+    Shape: (52,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "client_timestamp": 1746579904961, "server_timestamp": 1746579904963}'
+ b'{"task_id": "", "client_timestamp": 1746579911770, "server_timestamp": 1746579911771}'
+ b'{"task_id": "", "client_timestamp": 1746579917774, "server_timestamp": 1746579917778}'
+ b'{"task_id": "", "client_timestamp": 1746579923644, "server_timestamp": 1746579923647}'
+ b'{"task_id": "", "client_timestamp": 1746579930398, "server_timestamp": 1746579930399}']
+  DATASET: event_ids
+    Shape: (52,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'thinking_start_1' b'thinking_start_2' b'thinking_start_3'
+ b'thinking_start_4' b'thinking_start_5']
+  DATASET: timestamps
+    Shape: (52, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.7465799e+12 1.7465799e+12]
+        [1.74657991e+12 1.74657991e+12]
+        [1.74657992e+12 1.74657992e+12]
+    Statistics:
+      Min: 1746579904961.0000
+      Max: 1746583349739.0000
+      Mean: 1746581689333.8943
+      Std Dev: 1643606.2666
+------------------------------------------------------------
+GROUP: events/thinking_stop
+  DATASET: data
+    Shape: (52,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'{"task_id": "", "client_timestamp": 1746579907962, "server_timestamp": 1746579907964}'
+ b'{"task_id": "", "client_timestamp": 1746579914772, "server_timestamp": 1746579914773}'
+ b'{"task_id": "", "client_timestamp": 1746579920776, "server_timestamp": 1746579920777}'
+ b'{"task_id": "", "client_timestamp": 1746579926645, "server_timestamp": 1746579926646}'
+ b'{"task_id": "", "client_timestamp": 1746579933399, "server_timestamp": 1746579933401}']
+  DATASET: event_ids
+    Shape: (52,)
+    Type: object
+    Sample Data:
+      First 5 elements: [b'thinking_stop_1' b'thinking_stop_2' b'thinking_stop_3'
+ b'thinking_stop_4' b'thinking_stop_5']
+  DATASET: timestamps
+    Shape: (52, 2)
+    Type: float64
+    Sample Data:
+      Top-left corner (3x2):
+        [1.74657991e+12 1.74657991e+12]
+        [1.74657991e+12 1.74657991e+12]
+        [1.74657992e+12 1.74657992e+12]
+    Statistics:
+      Min: 1746579907962.0000
+      Max: 1746583352739.0000
+      Mean: 1746581692335.1443
+      Std Dev: 1643606.1419
+------------------------------------------------------------
+GROUP: language
+------------------------------------------------------------
+GROUP: language/L
+  Attributes:
+    description: Audio-only listened text
+  DATASET: chars
+    Shape: (9219,)
+    Type: [('char', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O')]
+    Sample Data:
+      First 5 elements: [(b'W', 1.74657948e+12, 1.74657949e+12, b'eye_1_intro')
+ (b'e', 1.74657949e+12, 1.74657949e+12, b'eye_1_intro')
+ (b"'", 1.74657949e+12, 1.74657949e+12, b'eye_1_intro')
+ (b'r', 1.74657949e+12, 1.74657949e+12, b'eye_1_intro')
+ (b'e', 1.74657949e+12, 1.74657949e+12, b'eye_1_intro')]
+------------------------------------------------------------
+GROUP: language/LR
+  Attributes:
+    description: Text both read and heard
+------------------------------------------------------------
+GROUP: language/R
+  Attributes:
+    description: Words presented to user for reading
+  DATASET: words
+    Shape: (8762,)
+    Type: [('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')]
+    Sample Data:
+      First 5 elements: [(b'Please', 1.7465794e+12, 1.7465794e+12, b'wait_1_intro', b'R', b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400304, "server_timestamp": 1746579400310, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": "Please", "word_index": 0, "display_timestamp": 1746579400304, "via_audio_sync": false}}')
+ (b' ', 1.7465794e+12, 1.7465794e+12, b'wait_1_intro', b'R', b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400536, "server_timestamp": 1746579400539, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": " ", "word_index": 1, "display_timestamp": 1746579400536, "via_audio_sync": false}}')
+ (b'wait', 1.7465794e+12, 1.7465794e+12, b'wait_1_intro', b'R', b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400661, "server_timestamp": 1746579400662, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": "wait", "word_index": 2, "display_timestamp": 1746579400661, "via_audio_sync": false}}')
+ (b' ', 1.7465794e+12, 1.7465794e+12, b'wait_1_intro', b'R', b'{"task_id": "wait_1_intro", "client_timestamp": 1746579400933, "server_timestamp": 1746579400939, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": " ", "word_index": 3, "display_timestamp": 1746579400933, "via_audio_sync": false}}')
+ (b'while', 1.7465794e+12, 1.7465794e+12, b'wait_1_intro', b'R', b'{"task_id": "wait_1_intro", "client_timestamp": 1746579401057, "server_timestamp": 1746579401057, "content_type": "word", "content": {"element_id": "wait_1_intro", "word": "while", "word_index": 4, "display_timestamp": 1746579401056, "via_audio_sync": false}}')]
+------------------------------------------------------------
+GROUP: language/S
+  Attributes:
+    description: Spoken text from user
+  DATASET: words
+    Shape: (2104,)
+    Type: [('word', 'O'), ('start_timestamp', '<f8'), ('end_timestamp', '<f8'), ('element_id', 'O'), ('mode', 'O'), ('display_reference', 'O')]
+    Sample Data:
+      First 5 elements: [(b'Towards', 1.74658071e+12, 1.74658071e+12, b'completion_2_completion_10', b'spoken', b'{}')
+ (b' ', 1.74658071e+12, 1.74658071e+12, b'completion_2_completion_10', b'spoken', b'{}')
+ (b'the', 1.74658071e+12, 1.74658071e+12, b'completion_2_completion_10', b'spoken', b'{}')
+ (b' ', 1.74658071e+12, 1.74658071e+12, b'completion_2_completion_10', b'spoken', b'{}')
+ (b'complete', 1.74658071e+12, 1.74658071e+12, b'completion_2_completion_10', b'spoken', b'{}')]
+------------------------------------------------------------
+GROUP: language/W
+  Attributes:
+    description: Reconstructed text from keystrokes
+  DATASET: chars
+    Shape: (4875,)
+    Type: [('char', 'O'), ('timestamp', '<f8'), ('keystrokes', 'O'), ('trigger_keystroke', 'O'), ('reconstructed', '?')]
+    Attributes:
+      description: Character data with keystroke information
+    Sample Data:
+      First 5 elements: [(b'f', 1.74657978e+12, b'["keystroke_1"]', b'keystroke_1',  True)
+ (b'a', 1.74657978e+12, b'["keystroke_2"]', b'keystroke_2',  True)
+ (b'x', 1.74657978e+12, b'["keystroke_3"]', b'keystroke_3',  True)
+ (b'\n', 1.74657978e+12, b'["keystroke_4", "keystroke_5"]', b'keystroke_5',  True)
+ (b'L', 1.74657978e+12, b'["keystroke_6"]', b'keystroke_6',  True)]
+------------------------------------------------------------
+GROUP: language/W/metadata
+  Attributes:
+    description: Metadata for reconstructed text
+    reconstruction_method: full_history_processing
+------------------------------------------------------------
+GROUP: metadata
+  Attributes:
+    booth_id: 3
+    duration_ms: 6817589
+    end_time: 1746586207550
+    expected_total_duration: 7053
+    participant_id: Tamuz
+    session_id: Tamuz_B3_20250506_175629
+    start_time: 1746579389961
+    stats_audio_count: 26568
+    stats_event_count: 17862
+    stats_frame_count: 256846
+    stats_language_count: 9219
+    stats_save_count: 169

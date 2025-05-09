@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\cli.py", line 15, in <module>
+    from .transforms.t0A_curate_v0 import CurateTransform
+ImportError: attempted relative import with no known parent package
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\cli.py", line 29, in <module>
+    from transforms.t2E_event_v0 import EventTransform
+  File "C:\Users\riopo\data-pipeline\transforms\t2E_event_v0.py", line 14, in <module>
+    from data_pipeline.base_transform import BaseTransform
+ModuleNotFoundError: No module named 'data_pipeline'

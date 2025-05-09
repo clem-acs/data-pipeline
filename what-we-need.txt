@@ -1,0 +1,929 @@
+# T2E Events Transform Design Analysis
+
+## Data Pipeline Context Analysis
+
+Based on a thorough examination of the data pipeline, we need to design a transform (T2E) that extracts and processes event data to enable seamless integration with TileDB for efficient ML model training. This document outlines the architecture and functionality for this transform.
+
+## Session Structure Understanding
+
+Analyzing the H5 files reveals a clear hierarchical structure:
+
+1. **Session**: The top-level container for all data (e.g., "Tamuz_B3_20250506_175629")
+2. **Tasks**: A sequence of experimental tasks within the session (e.g., "eye_1", "breath_1")
+3. **Elements**: Interactive UI components within tasks (e.g., instructions, questions, responses)
+
+This structure is crucial for ML model training, where we often want to train on specific elements or element types, with filtering based on task properties. Each component has specific events associated with it.
+
+## Event Data Understanding
+
+From examining the H5 file structure in `tamuz_inspected.txt` and `h5shape.txt`, the key events that should be handled by the T2E transform include:
+
+1. **Element-level events**: 
+   - `element_sent`: When an element is displayed (e.g., instructions, prompts)
+   - `element_replied`: When the user responds to an element
+   
+2. **Task-level events**:
+   - `task_started`: Beginning of a task
+   - `task_completed`: End of a task
+   
+3. **Session-level and other events**:
+   - `recording_start`/`recording_stop`: Signal recording periods
+   - `thinking_start`/`thinking_stop`: User contemplation periods
+   - `skip_task`: User skipping a task
+
+Note: `display` and `keystroke` events are handled by the language transform (T2B) and should not be included in this transform.
+
+Events contain rich metadata in JSON format with critical information like task_id, timestamps, and content-specific data that provides context for experimental tasks and elements.
+
+## Element-Centric Design for ML Training
+
+Since elements will be the primary units for ML training, the T2E transform should prioritize element-centric organization while maintaining the session → task → element hierarchy.
+
+### Clean Tabular Data Structure
+
+```
+session/
+  ├── metadata/                      # Standard session metadata
+  │   ├── session_info               # Basic session information
+  │   ├── transform_metadata         # Transform processing metadata
+  │   └── stats                      # Summary statistics
+  │
+  ├── elements/                      # Element event pairs
+  │   └── table                      # Main elements table (one row per element)
+  │
+  ├── tasks/                         # Task event pairs
+  │   └── table                      # Main tasks table (one row per task)
+  │
+  ├── segments/                      # Time segments from paired events
+  │   ├── recording                  # Recording segments (start/stop pairs)
+  │   ├── thinking                   # Thinking segments (start/stop pairs)
+  │   ├── pause                      # Pause segments (pause/resume pairs)
+  │   └── task_execution             # Task execution segments
+  │
+  └── indices/                       # Pre-computed indices for fast access
+      ├── element_by_task            # Elements by task ID
+      ├── element_by_type            # Elements by element type
+      ├── segments_by_element        # Segments contained in elements
+      └── segments_by_task           # Segments contained in tasks
+```
+
+## Complete Table Structures
+
+### Element Table
+
+The elements table contains all element-related metadata without duplicating content handled by other transforms:
+
+```python
+element_dtype = np.dtype([
+    # 1. Identifiers & Metadata
+    ('element_id', h5py.special_dtype(vlen=str)),      # Primary identifier
+    ('element_type', h5py.special_dtype(vlen=str)),    # Type of element
+    ('title', h5py.special_dtype(vlen=str)),           # Title of element
+    ('is_instruction', np.bool_),                       # Whether element is an instruction
+    
+    # 2. Task Relationships
+    ('task_id', h5py.special_dtype(vlen=str)),         # Parent task identifier
+    ('task_type', h5py.special_dtype(vlen=str)),       # Type of task
+    ('sequence_idx', np.int32),                         # Position within task
+    ('max_count', np.int32),                            # Total elements in task
+    
+    # 3. Timing & Position
+    ('start_time', np.float64),                         # From element_sent timestamp
+    ('end_time', np.float64),                           # From element_replied timestamp
+    ('duration', np.float64),                           # Response/viewing time
+    ('session_fraction', np.float32),                   # Position in session (0.0-1.0)
+    ('session_relative_time', np.float64),              # Seconds from session start
+    
+    # 4. Presentation Configuration 
+    ('audio_mode', h5py.special_dtype(vlen=str)),      # Audio presentation mode
+    ('display_text', np.bool_),                         # Whether text is displayed
+    ('has_audio', np.bool_),                            # Whether audio is included
+    ('auto_advance_seconds', np.float64),               # Auto-progression timeout
+    ('with_interruptions', np.bool_),                   # Whether interruptions allowed
+    
+    # 5. Response Characteristics
+    ('input_modality', h5py.special_dtype(vlen=str)),  # How user responded
+    ('user_input_length', np.int32),                    # Length of user input
+    ('response_required', np.bool_),                    # Whether response expected
+    ('response_time_seconds', np.float64),              # Time taken to respond
+    
+    # 6. Event References
+    ('element_sent_id', h5py.special_dtype(vlen=str)), # Reference to display event
+    ('element_replied_id', h5py.special_dtype(vlen=str)), # Reference to response event
+    
+    # 7. Segment Containment
+    ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))), # Recording segments
+    ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),  # Thinking segments
+    ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),     # Pause segments
+])
+```
+
+### Task Table
+
+The tasks table contains all task-related metadata:
+
+```python
+task_dtype = np.dtype([
+    # 1. Identifiers & Type
+    ('task_id', h5py.special_dtype(vlen=str)),         # Primary identifier
+    ('task_type', h5py.special_dtype(vlen=str)),       # Type of task
+    ('sequence_number', np.int32),                      # Position in session
+    
+    # 2. Timing
+    ('start_time', np.float64),                         # From task_started
+    ('end_time', np.float64),                           # From task_completed
+    ('duration', np.float64),                           # Task duration
+    ('session_fraction_start', np.float32),             # Session position at start
+    ('session_fraction_end', np.float32),               # Session position at end
+    
+    # 3. Core Configuration
+    ('count', np.int32),                                # Number of elements
+    ('allow_repeats', np.bool_),                        # Whether repetition allowed
+    ('with_interruptions', np.bool_),                   # Whether interruptions allowed
+    ('audio_mode', h5py.special_dtype(vlen=str)),      # Default audio mode
+    ('intro_delay_seconds', np.float64),                # Initial delay
+    
+    # 4. Task-Type Specific Parameters
+    ('eyes_closed_seconds', np.float64),                # For eye tasks
+    ('eyes_open_seconds', np.float64),                  # For eye tasks
+    ('normal_breathing_seconds', np.float64),           # For breath tasks
+    ('breath_hold_seconds', np.float64),                # For breath tasks
+    ('sound_seconds', np.float64),                      # For listen tasks
+    ('quiet_seconds', np.float64),                      # For listen tasks
+    
+    # 5. Input Configuration
+    ('input_modality', h5py.special_dtype(vlen=str)),  # Primary input mode
+    ('element_during_answer', h5py.special_dtype(vlen=str)), # Display during answer
+    ('answer_display', h5py.special_dtype(vlen=str)),  # Answer presentation mode
+    
+    # 6. Status Information
+    ('completion_status', h5py.special_dtype(vlen=str)), # Completed/skipped status
+    ('skipped', np.bool_),                              # Flag for skipped tasks
+    ('skip_time', np.float64),                          # When task was skipped
+    ('skip_event_id', h5py.special_dtype(vlen=str)),   # Reference to skip event
+    
+    # 7. Event References
+    ('task_started_id', h5py.special_dtype(vlen=str)), # Reference to start event
+    ('task_completed_id', h5py.special_dtype(vlen=str)), # Reference to completion event
+    
+    # 8. Element Relationships
+    ('element_count', np.int32),                        # Number of elements
+    ('element_ids', h5py.special_dtype(vlen=np.dtype('S64'))), # Contained elements
+    
+    # 9. Segment Containment
+    ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))), # Recording segments
+    ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),  # Thinking segments
+    ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),     # Pause segments
+])
+```
+
+### Segment Tables
+
+The segment tables capture timing periods of interest:
+
+```python
+segment_dtype = np.dtype([
+    # 1. Core Information
+    ('segment_id', h5py.special_dtype(vlen=str)),      # Constructed identifier
+    ('segment_type', h5py.special_dtype(vlen=str)),    # Type (recording, thinking)
+    ('start_time', np.float64),                         # From start event
+    ('end_time', np.float64),                           # From end event
+    ('duration', np.float64),                           # Segment duration
+    
+    # 2. Container Relationships
+    ('containing_element_id', h5py.special_dtype(vlen=str)), # Element reference
+    ('containing_task_id', h5py.special_dtype(vlen=str)),    # Task reference
+    ('element_relative_start', np.float64),             # Time relative to element
+    ('task_relative_start', np.float64),                # Time relative to task
+    
+    # 3. Event References
+    ('start_event_id', h5py.special_dtype(vlen=str)),  # Reference to start event
+    ('end_event_id', h5py.special_dtype(vlen=str)),    # Reference to end event
+])
+```
+```
+
+## TileDB Schema Design for Tabular Data Structure
+
+With our clean tabular structure, the TileDB schema would be straightforward and optimized for querying:
+
+### 1. Elements Array
+
+**Dimensions:**
+- `session_id` (string)
+- `element_id` (string)
+- `time` (timestamp)
+
+**Attributes:**
+- `element_type` (string)
+- `title` (string)
+- `is_instruction` (bool)
+- `task_id` (string)
+- `task_type` (string)
+- `sequence_idx` (int32)
+- `max_count` (int32)
+- `duration` (float64)
+- `session_fraction` (float32)
+- `session_relative_time` (float64)
+- `audio_mode` (string)
+- `display_text` (bool)
+- `has_audio` (bool)
+- `auto_advance_seconds` (float64)
+- `with_interruptions` (bool)
+- `input_modality` (string)
+- `user_input_length` (int32)
+- `response_required` (bool)
+- `response_time_seconds` (float64)
+- `element_sent_id` (string)
+- `element_replied_id` (string)
+- `recording_segments` (vector<string>)
+- `thinking_segments` (vector<string>)
+
+### 2. Tasks Array
+
+**Dimensions:**
+- `session_id` (string)
+- `task_id` (string)
+- `time` (timestamp)
+
+**Attributes:**
+- `task_type` (string)
+- `sequence_number` (int32)
+- `duration` (float64)
+- `session_fraction_start` (float32)
+- `session_fraction_end` (float32)
+- `count` (int32)
+- `allow_repeats` (bool)
+- `with_interruptions` (bool)
+- `audio_mode` (string)
+- `intro_delay_seconds` (float64)
+- `eyes_closed_seconds` (float64)
+- `eyes_open_seconds` (float64)
+- `normal_breathing_seconds` (float64)
+- `breath_hold_seconds` (float64)
+- `sound_seconds` (float64)
+- `quiet_seconds` (float64)
+- `input_modality` (string)
+- `element_during_answer` (string)
+- `answer_display` (string)
+- `completion_status` (string)
+- `skipped` (bool)
+- `skip_time` (float64)
+- `skip_event_id` (string)
+- `task_started_id` (string)
+- `task_completed_id` (string)
+- `element_count` (int32)
+- `element_ids` (vector<string>)
+- `recording_segments` (vector<string>)
+- `thinking_segments` (vector<string>)
+
+### 3. Segments Array
+
+**Dimensions:**
+- `session_id` (string)
+- `segment_id` (string)
+- `segment_type` (string) - "recording", "thinking", "task_execution"
+- `start_time` (timestamp)
+- `end_time` (timestamp)
+
+**Attributes:**
+- `duration` (float64)
+- `containing_element_id` (string)
+- `containing_task_id` (string)
+- `element_relative_start` (float64)
+- `task_relative_start` (float64)
+- `start_event_id` (string)
+- `end_event_id` (string)
+
+### Example TileDB Queries for Event Data
+
+```python
+# Get all "eyes open" instruction elements across all sessions
+eyes_open_elements = tiledb.query(
+    arrays=["elements"],
+    filters={
+        "element_type": "instruction",
+        "task_type": "eye",
+        "title": {"contains": "Eye Exercise"},
+        "has_audio": True
+    }
+)
+
+# Find all elements with audio-only presentation
+audio_only_elements = tiledb.query(
+    arrays=["elements"],
+    filters={
+        "has_audio": True,
+        "display_text": False,
+        "audio_mode": "audio_only"
+    }
+)
+
+# Compare response times across different task types
+response_time_by_task = tiledb.query(
+    arrays=["elements"],
+    filters={
+        "response_time_seconds": {"is_not_null": True}
+    },
+    group_by="task_type",
+    aggregation="avg(response_time_seconds)"
+)
+
+# Find all thinking segments that occurred during breath-hold tasks
+thinking_during_breath_hold = tiledb.query(
+    arrays=["segments", "tasks"],
+    filters={
+        "segments.segment_type": "thinking",
+        "tasks.task_type": "breath",
+        "tasks.breath_hold_seconds": {">": 0}
+    },
+    conditions=[
+        "segments.containing_task_id = tasks.task_id"
+    ]
+)
+
+# Find all pause segments with their containing elements or tasks
+pause_segments = tiledb.query(
+    arrays=["segments"],
+    filters={
+        "segment_type": "pause"
+    },
+    select=["segment_id", "duration", "containing_element_id", "containing_task_id"]
+)
+
+# Find elements with both recording and thinking segments
+elements_with_both_segments = tiledb.query(
+    arrays=["elements"],
+    filters={
+        "recording_segments": {"length": {">": 0}},
+        "thinking_segments": {"length": {">": 0}}
+    }
+)
+
+# Find elements interrupted by pause events
+elements_with_pauses = tiledb.query(
+    arrays=["elements"],
+    filters={
+        "pause_segments": {"length": {">": 0}}
+    },
+    order_by=["duration", "desc"]
+)
+
+# Get all segments that occurred during the first elements of each task
+first_element_segments = tiledb.query(
+    arrays=["elements", "segments"],
+    filters={
+        "elements.sequence_idx": 0
+    },
+    conditions=[
+        "segments.containing_element_id = elements.element_id"
+    ]
+)
+```
+
+## Implementation Strategy for Tabular T2E Transform
+
+1. **Extract Raw Events**:
+   - Parse all events from the H5 file's events/ group
+   - Normalize timestamps to consistent format
+   - Parse JSON data in event content but extract only needed fields
+
+2. **Build Task Table**:
+   - Extract task_started/task_completed event pairs
+   - Extract specific task configuration fields (not JSON blobs)
+   - Calculate task durations and temporal positions
+   - Process skip_task events and associate them with affected tasks
+   - Create task table with one row per task and typed fields
+
+3. **Build Element Table**:
+   - Identify element_sent/element_replied event pairs
+   - Extract specific element metadata fields (avoiding JSON storage)
+   - Associate elements with their parent tasks using metadata
+   - Store element event IDs for linking
+   - Calculate derived fields (durations, response times)
+
+4. **Process Time Segments**:
+   - Pair related events (recording_start/stop, thinking_start/stop)
+   - Calculate segment durations
+   - Associate segments with tasks and elements via timestamp containment
+   - Calculate relative timing information
+   - Store in segment tables by type
+
+5. **Generate Indices**:
+   - Create element-by-task indices
+   - Create element-by-type indices
+   - Create segment-by-container indices
+
+6. **Create H5 Output**:
+   - Build metadata group with schema information
+   - Create tabular datasets for elements, tasks, and segments
+   - Use compound dtypes with appropriate field types
+   - Include version and processing metadata
+
+## Processing Events: Clean Implementation Example
+
+```python
+def process_events(h5_file):
+    """Extract and process events into structured tables"""
+    
+    # 1. Extract raw events
+    events = extract_raw_events(h5_file)
+    
+    # 2. Process task events
+    tasks = {}
+    task_pairs = pair_events(events, 'task_started', 'task_completed')
+    
+    for task_id, (start_event, end_event) in task_pairs.items():
+        # Extract task data from event
+        task_data = json.loads(start_event['data'])
+        config = task_data.get('config', {})
+        
+        # Basic task info
+        tasks[task_id] = {
+            'task_id': task_id,
+            'task_type': task_data.get('task_type', ''),
+            'start_time': float(start_event['timestamps'][0]),
+            'end_time': float(end_event['timestamps'][0]),
+            'completion_status': 'completed',
+            
+            # Extract specific config fields directly - no JSON blobs
+            'count': config.get('count', 0),
+            'allow_repeats': config.get('allow_repeats', False),
+            'with_interruptions': config.get('with_interruptions', False),
+            'audio_mode': config.get('audio_mode', ''),
+            'intro_delay_seconds': config.get('intro_delay_seconds', 0.0),
+            
+            # Task-specific fields
+            'eyes_closed_seconds': config.get('eyes_closed_seconds', 0.0),
+            'eyes_open_seconds': config.get('eyes_open_seconds', 0.0),
+            'normal_breathing_seconds': config.get('normal_breathing_seconds', 0.0),
+            'breath_hold_seconds': config.get('breath_hold_seconds', 0.0),
+            'sound_seconds': config.get('sound_seconds', 0.0),
+            'quiet_seconds': config.get('quiet_seconds', 0.0),
+            
+            # Event references
+            'task_started_id': start_event['event_ids'][0],
+            'task_completed_id': end_event['event_ids'][0],
+            
+            # Placeholders for elements and segments
+            'element_ids': [],
+            'recording_segments': [],
+            'thinking_segments': [],
+            'pause_segments': []
+        }
+    
+    # 3. Handle skip events
+    tasks = process_skip_tasks(events, tasks)
+    
+    # 4. Process element events
+    elements = {}
+    element_pairs = pair_events(events, 'element_sent', 'element_replied')
+    
+    for element_id, (sent_event, replied_event) in element_pairs.items():
+        # Extract element data
+        sent_data = json.loads(sent_event['data'])
+        replied_data = json.loads(replied_event['data'])
+        element_content = sent_data.get('element_content', {})
+        task_metadata = element_content.get('task_metadata', {})
+        
+        # Extract specific metadata fields - no JSON storage
+        elements[element_id] = {
+            'element_id': element_id,
+            'element_type': element_content.get('element_type', ''),
+            'title': element_content.get('title', ''),
+            'is_instruction': element_content.get('is_instruction', False),
+            
+            # Task relationship
+            'task_id': task_metadata.get('task_id', ''),
+            'task_type': task_metadata.get('task_type', ''),
+            'sequence_idx': task_metadata.get('current_count', 0),
+            'max_count': task_metadata.get('max_count', 0),
+            
+            # Timing
+            'start_time': float(sent_event['timestamps'][0]),
+            'end_time': float(replied_event['timestamps'][0]),
+            'session_fraction': task_metadata.get('fraction_session_completed', 0.0),
+            
+            # Presentation
+            'audio_mode': element_content.get('audio_mode', ''),
+            'display_text': element_content.get('display_text', True),
+            'has_audio': element_content.get('has_audio', False),
+            'auto_advance_seconds': element_content.get('auto_advance_seconds', 0.0),
+            'with_interruptions': element_content.get('with_interruptions', False),
+            
+            # Response
+            'input_modality': replied_data.get('input_modality', ''),
+            'user_input_length': len(replied_data.get('user_input', '')),
+            'response_required': element_content.get('response_required', True),
+            
+            # Event references
+            'element_sent_id': sent_event['event_ids'][0],
+            'element_replied_id': replied_event['event_ids'][0],
+            
+            # Placeholders for segments
+            'recording_segments': [],
+            'thinking_segments': [],
+            'pause_segments': []
+        }
+        
+        # Calculate derived fields
+        elements[element_id]['duration'] = (
+            elements[element_id]['end_time'] - elements[element_id]['start_time']
+        )
+        elements[element_id]['response_time_seconds'] = elements[element_id]['duration']
+        
+        # Add element to task's element list
+        task_id = elements[element_id]['task_id']
+        if task_id and task_id in tasks:
+            tasks[task_id]['element_ids'].append(element_id)
+    
+    # 5. Process segments (recording, thinking, pause)
+    segments = {
+        'recording': [],
+        'thinking': [],
+        'pause': []
+    }
+    
+    # Process recording segments
+    recording_pairs = pair_events(events, 'recording_start', 'recording_stop')
+    for i, (start_id, (start_event, stop_event)) in enumerate(recording_pairs.items()):
+        segment_id = f"recording_{start_id}"
+        start_time = float(start_event['timestamps'][0])
+        end_time = float(stop_event['timestamps'][0])
+        
+        segments['recording'].append({
+            'segment_id': segment_id,
+            'segment_type': 'recording',
+            'start_time': start_time,
+            'end_time': end_time,
+            'duration': end_time - start_time,
+            'start_event_id': start_event['event_ids'][0],
+            'end_event_id': stop_event['event_ids'][0],
+            'containing_element_id': '',
+            'containing_task_id': '',
+            'element_relative_start': 0.0,
+            'task_relative_start': 0.0
+        })
+    
+    # Process thinking segments
+    thinking_pairs = pair_events(events, 'thinking_start', 'thinking_stop')
+    for i, (start_id, (start_event, stop_event)) in enumerate(thinking_pairs.items()):
+        segment_id = f"thinking_{start_id}"
+        start_time = float(start_event['timestamps'][0])
+        end_time = float(stop_event['timestamps'][0])
+        
+        segments['thinking'].append({
+            'segment_id': segment_id,
+            'segment_type': 'thinking',
+            'start_time': start_time,
+            'end_time': end_time,
+            'duration': end_time - start_time,
+            'start_event_id': start_event['event_ids'][0],
+            'end_event_id': stop_event['event_ids'][0],
+            'containing_element_id': '',
+            'containing_task_id': '',
+            'element_relative_start': 0.0,
+            'task_relative_start': 0.0
+        })
+    
+    # Process pause segments
+    pause_pairs = pair_events(events, 'pause_event', 'resume_event')
+    for i, (start_id, (start_event, stop_event)) in enumerate(pause_pairs.items()):
+        segment_id = f"pause_{start_id}"
+        start_time = float(start_event['timestamps'][0])
+        end_time = float(stop_event['timestamps'][0])
+        
+        segments['pause'].append({
+            'segment_id': segment_id,
+            'segment_type': 'pause',
+            'start_time': start_time,
+            'end_time': end_time,
+            'duration': end_time - start_time,
+            'start_event_id': start_event['event_ids'][0],
+            'end_event_id': stop_event['event_ids'][0],
+            'containing_element_id': '',
+            'containing_task_id': '',
+            'element_relative_start': 0.0,
+            'task_relative_start': 0.0
+        })
+    
+    # 6. Associate segments with elements and tasks
+    segments = associate_segments_with_containers(segments, elements, tasks)
+    
+    # 7. Create final H5 datasets with the structured tables
+    create_h5_output(h5_file, tasks, elements, segments)
+    
+    return True
+```
+
+## Optimized Implementation
+
+The implementation focuses on three key areas that needed improvement:
+
+### 1. Task ID Resolution
+
+```python
+def resolve_task_ids(events, tasks):
+    # 1. Create temporal task windows from task_started/completed events
+    task_windows = []
+    for task_id, task_data in tasks.items():
+        task_windows.append({
+            'task_id': task_id,
+            'start_time': task_data['start_time'],
+            'end_time': task_data['end_time']
+        })
+    
+    # Sort by start time
+    task_windows.sort(key=lambda x: x['start_time'])
+    
+    # 2. Extract task_ids for element events directly from their content
+    element_task_map = {}
+    for event_id, event_data in events['element_sent'].items():
+        content = json.loads(event_data['data'])
+        if 'element_content' in content and 'task_metadata' in content['element_content']:
+            task_id = content['element_content']['task_metadata']['task_id']
+            element_id = content['element_id']
+            element_task_map[element_id] = task_id
+    
+    # 3. Associate segment events with tasks based on time containment
+    for event_type in ['recording_start', 'recording_stop', 'thinking_start', 'thinking_stop']:
+        for event_id, event_data in events[event_type].items():
+            event_time = float(event_data['timestamps'][0])
+            
+            # Find containing task
+            for task in task_windows:
+                if task['start_time'] <= event_time <= task['end_time']:
+                    # Add a reference to the containing task
+                    events[event_type][event_id]['containing_task_id'] = task['task_id']
+                    break
+    
+    return events, element_task_map
+```
+
+This approach:
+- Gets task_ids for elements directly from their metadata (100% reliable)
+- Uses time containment for segment events
+- No complex fallback methods needed
+
+### 2. Skip Task Processing
+
+```python
+def process_skip_tasks(events, tasks):
+    # For each skip_task event
+    for skip_id, skip_event in events['skip_task'].items():
+        skip_time = float(skip_event['timestamps'][0])
+        
+        # Find active task at skip time
+        active_task_id = None
+        for task_id, task in tasks.items():
+            if task['start_time'] <= skip_time <= task['end_time']:
+                active_task_id = task_id
+                break
+        
+        # If no active task found, look for next scheduled task
+        if not active_task_id:
+            next_tasks = [t for t in tasks.values() if t['start_time'] > skip_time]
+            if next_tasks:
+                next_task = min(next_tasks, key=lambda x: x['start_time'])
+                active_task_id = next_task['task_id']
+        
+        # Update task if found
+        if active_task_id:
+            tasks[active_task_id]['skipped'] = True
+            tasks[active_task_id]['skip_event_id'] = skip_id
+            
+            # Add skip event reference to the task
+            if 'events' not in tasks[active_task_id]:
+                tasks[active_task_id]['events'] = []
+            tasks[active_task_id]['events'].append({
+                'event_type': 'skip_task',
+                'event_id': skip_id,
+                'timestamp': skip_time
+            })
+    
+    return tasks
+```
+
+This approach:
+- Identifies the affected task via temporal containment
+- Adds a simple flag and reference
+- No complex element state tracking needed
+
+### 3. Simplified Event Type Processing
+
+```python
+def process_events(h5_file):
+    # Define known event categories based on actual data
+    event_categories = {
+        'element_events': ['element_sent', 'element_replied'],
+        'task_events': ['task_started', 'task_completed', 'skip_task'],
+        'segment_events': [
+            'recording_start', 'recording_stop',
+            'thinking_start', 'thinking_stop'
+        ]
+    }
+    
+    # Define event pairs for matching
+    event_pairs = {
+        'element': ('element_sent', 'element_replied'),
+        'task': ('task_started', 'task_completed'),
+        'recording': ('recording_start', 'recording_stop'),
+        'thinking': ('thinking_start', 'thinking_stop')
+    }
+    
+    # Extract raw events
+    events = {}
+    for event_type in extract_all_event_types(h5_file):
+        if any(event_type in category for category in event_categories.values()):
+            events[event_type] = extract_event_data(h5_file, event_type)
+    
+    # Process in logical order
+    # 1. Process tasks first
+    tasks = process_task_events(events, event_pairs['task'])
+    
+    # 2. Handle skip tasks
+    tasks = process_skip_tasks(events, tasks)
+    
+    # 3. Process elements and link to tasks
+    elements = process_element_events(events, event_pairs['element'])
+    elements, task_element_map = link_elements_to_tasks(elements, tasks)
+    
+    # 4. Process segment pairs
+    segments = {}
+    for segment_type in ['recording', 'thinking']:
+        start_type, stop_type = event_pairs[segment_type]
+        segments[segment_type] = process_segment_events(
+            events, start_type, stop_type
+        )
+    
+    # 5. Resolve task and element containment for segments
+    events, element_task_map = resolve_task_ids(events, tasks)
+    segments = associate_segments_with_containers(
+        segments, elements, tasks, events
+    )
+    
+    # Store results in tabular format
+    return create_tabular_output(tasks, elements, segments)
+```
+
+This approach:
+- Works with the known, fixed set of event types
+- Processes each category using specialized functions
+- Maintains clean data flow and dependencies
+- Much simpler than dynamic event type discovery
+
+### Processing Segments and Container Associations
+
+```python
+def associate_segments_with_containers(segments, elements, tasks, events):
+    # For each segment type (recording, thinking)
+    for segment_type, segment_list in segments.items():
+        for segment in segment_list:
+            # Get timestamps
+            start_time = segment['start_time']
+            end_time = segment['end_time']
+            
+            # Check element containment
+            contained_by_element = False
+            for element_id, element in elements.items():
+                if (element['start_time'] <= start_time and 
+                    element['end_time'] >= end_time):
+                    segment['containing_element_id'] = element_id
+                    contained_by_element = True
+                    break
+            
+            # Check task containment if not in an element
+            if not contained_by_element:
+                for task_id, task in tasks.items():
+                    if (task['start_time'] <= start_time and 
+                        task['end_time'] >= end_time):
+                        segment['containing_task_id'] = task_id
+                        break
+    
+    return segments
+```
+
+This directly links segments to their containing elements and tasks in a single pass, ensuring complete bidirectional relationships.
+
+## Example Event Data Queries
+
+```python
+# Get all eye task elements
+def get_eye_task_elements(events_dataset_path):
+    """Find all elements from 'eye' tasks"""
+    with h5py.File(events_dataset_path, 'r') as f:
+        # Get all elements from eye tasks
+        eye_elements = [
+            el for el in f['elements/table'][:]
+            if el['task_type'] == 'eye'
+        ]
+        
+        return [{
+            'element_id': el['element_id'],
+            'element_type': el['element_type'],
+            'content': json.loads(el['content_ref']),
+            'duration': el['duration'],
+            'response_time': el['response_time_seconds'],
+            'has_audio': el['has_audio']
+        } for el in eye_elements]
+
+# Find all thinking periods that happened within specific element types
+def get_thinking_periods_by_element_type(events_dataset_path, element_type):
+    """Find all thinking periods that occurred during specific element types"""
+    with h5py.File(events_dataset_path, 'r') as f:
+        # Use the index to find elements of the requested type
+        if f'indices/element_by_type/{element_type}' in f:
+            element_ids = f[f'indices/element_by_type/{element_type}'][:]
+            
+            # Get thinking segments contained in these elements
+            thinking_segments = []
+            
+            # For each element, check if it contains thinking segments
+            for element_id in element_ids:
+                element_id_str = element_id.decode('utf-8') if isinstance(element_id, bytes) else element_id
+                
+                # Find this element in the elements table
+                elements = [el for el in f['elements/table'][:] if el['element_id'] == element_id_str]
+                if not elements:
+                    continue
+                    
+                element = elements[0]
+                
+                # Get thinking segments contained in this element
+                if len(element['thinking_segments']) > 0:
+                    # For each segment ID, get the full segment data
+                    for segment_id in element['thinking_segments']:
+                        segment_id_str = segment_id.decode('utf-8') if isinstance(segment_id, bytes) else segment_id
+                        segments = [s for s in f['segments/thinking'][:] if s['segment_id'] == segment_id_str]
+                        if segments:
+                            thinking_segments.append({
+                                'segment_id': segment_id_str,
+                                'element_id': element_id_str,
+                                'element_type': element['element_type'],
+                                'start_time': segments[0]['start_time'],
+                                'end_time': segments[0]['end_time'],
+                                'duration': segments[0]['duration']
+                            })
+            
+            return thinking_segments
+        else:
+            return []
+
+# Find elements containing both recording and thinking segments
+def get_elements_with_both_segment_types(events_dataset_path):
+    """Find elements that contain both recording and thinking segments"""
+    with h5py.File(events_dataset_path, 'r') as f:
+        # Get all elements from the table
+        elements = f['elements/table'][:]
+        
+        # Filter for elements with both recording and thinking segments
+        matching_elements = []
+        for element in elements:
+            has_recording = len(element['recording_segments']) > 0
+            has_thinking = len(element['thinking_segments']) > 0
+            
+            if has_recording and has_thinking:
+                # Get segment details
+                recording_segments = []
+                for segment_id in element['recording_segments']:
+                    segment_id_str = segment_id.decode('utf-8') if isinstance(segment_id, bytes) else segment_id
+                    segments = [s for s in f['segments/recording'][:] if s['segment_id'] == segment_id_str]
+                    if segments:
+                        recording_segments.append({
+                            'segment_id': segment_id_str,
+                            'duration': segments[0]['duration']
+                        })
+                
+                thinking_segments = []
+                for segment_id in element['thinking_segments']:
+                    segment_id_str = segment_id.decode('utf-8') if isinstance(segment_id, bytes) else segment_id
+                    segments = [s for s in f['segments/thinking'][:] if s['segment_id'] == segment_id_str]
+                    if segments:
+                        thinking_segments.append({
+                            'segment_id': segment_id_str,
+                            'duration': segments[0]['duration']
+                        })
+                
+                matching_elements.append({
+                    'element_id': element['element_id'],
+                    'element_type': element['element_type'],
+                    'task_id': element['task_id'],
+                    'task_type': element['task_type'],
+                    'recording_segments': recording_segments,
+                    'thinking_segments': thinking_segments
+                })
+                
+        return matching_elements
+```
+
+## Conclusion
+
+This streamlined tabular approach for the T2E Events Transform provides several key advantages:
+
+1. **Clean separation of concerns**: Focuses only on event organization without duplicating window or language functionality
+2. **Efficient tabular structure**: Stores data in compact, normalized tables
+3. **Clear event relationships**: Maintains connections between events, elements, and tasks
+4. **Fast indexing**: Provides pre-computed indices for common query patterns
+5. **TileDB-ready**: Perfectly aligned with TileDB's array model
+
+By structuring event data in this clean tabular format, we enable future integration with window and language data in the eventual TileDB arrays while maintaining a clear separation of transforms. This approach creates modular, reusable data components that can be efficiently combined at the TileDB stage.
