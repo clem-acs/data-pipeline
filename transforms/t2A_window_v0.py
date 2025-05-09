@@ -30,7 +30,6 @@ try:
     from .neural_processing.fnirs_preprocessing import preprocess_fnirs
     from .neural_processing.windowing import create_windows
     from .neural_processing.postprocessing import postprocess_windows
-    from .neural_processing.window_dataset import WindowDataset
 except ImportError:
     try:
         # Fall back to direct import when running as script
@@ -38,7 +37,6 @@ except ImportError:
         from transforms.neural_processing.fnirs_preprocessing import preprocess_fnirs
         from transforms.neural_processing.windowing import create_windows
         from transforms.neural_processing.postprocessing import postprocess_windows
-        from transforms.neural_processing.window_dataset import WindowDataset
     except ImportError:
         # Last resort: try direct import if neural_processing is in the path
         import sys
@@ -46,12 +44,11 @@ except ImportError:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         neural_processing_dir = os.path.join(current_dir, 'neural_processing')
         sys.path.insert(0, neural_processing_dir)
-        
+
         from eeg_preprocessing import preprocess_eeg
         from fnirs_preprocessing import preprocess_fnirs
         from windowing import create_windows
         from postprocessing import postprocess_windows
-        from window_dataset import WindowDataset
 
 
 class WindowTransform(BaseTransform):
@@ -97,25 +94,25 @@ class WindowTransform(BaseTransform):
 
     def process_session(self, session: Session) -> Dict:
         """Process a single session.
-        
+
         This implementation:
         1. Finds the curated H5 file for the session
         2. Extracts and preprocesses EEG and fNIRS data
         3. Creates time-aligned windows
         4. Stores the windowed data
-        
+
         Args:
             session: Session object
-            
+
         Returns:
             Dict with processing results
         """
         session_id = session.session_id
         self.logger.info(f"Processing session: {session_id}")
-        
+
         # Look for H5 file in the source prefix
         h5_key = f"{self.source_prefix}{session_id}.h5"
-        
+
         # Check if the file exists
         try:
             self.s3.head_object(Bucket=self.s3_bucket, Key=h5_key)
@@ -129,15 +126,15 @@ class WindowTransform(BaseTransform):
                 "files_to_copy": [],
                 "files_to_upload": []
             }
-        
+
         # Download the H5 file
         local_h5_path = session.download_file(h5_key)
-        
+
         try:
             # 1. Extract data from H5 file
             with h5py.File(local_h5_path, 'r') as f:
                 eeg_data, eeg_timestamps, fnirs_data, fnirs_timestamps = self.extract_data_from_h5(f)
-            
+
             # 2. Create metadata
             metadata = {
                 "session_id": session_id,
@@ -145,7 +142,7 @@ class WindowTransform(BaseTransform):
                 "has_eeg": eeg_data is not None and eeg_timestamps is not None,
                 "has_fnirs": fnirs_data is not None and fnirs_timestamps is not None
             }
-            
+
             # At least one modality must be available
             if not metadata["has_eeg"] and not metadata["has_fnirs"]:
                 self.logger.error("No valid data found in the H5 file")
@@ -155,18 +152,18 @@ class WindowTransform(BaseTransform):
                     "files_to_copy": [],
                     "files_to_upload": []
                 }
-            
+
             # 3. Preprocess EEG and fNIRS data
             processed_eeg, processed_fnirs = self.preprocess_data(
                 eeg_data, eeg_timestamps, fnirs_data, fnirs_timestamps, metadata
             )
-            
+
             # 4. Create explicit windows
             windows = create_windows(
                 processed_eeg, processed_fnirs,
                 eeg_timestamps, fnirs_timestamps
             )
-            
+
             # Check if windows were created
             if not windows or len(windows) == 0:
                 self.logger.warning(f"No windows created for session {session_id}")
@@ -176,18 +173,18 @@ class WindowTransform(BaseTransform):
                     "files_to_copy": [],
                     "files_to_upload": []
                 }
-            
+
             # 5. Apply post-processing to windows
             eeg_processed, fnirs_processed, metadata_processed = postprocess_windows(
                 [w['eeg'] for w in windows],
                 [w['fnirs'] for w in windows],
                 [w['metadata'] for w in windows]
             )
-            
+
             # 6. Create output file
             output_filename = f"{session_id}_windowed.h5"
             local_output_path = session.create_upload_file(output_filename)
-            
+
             # 7. Save windows to output file
             with h5py.File(local_output_path, 'w') as f:
                 # Create file-level attributes
@@ -195,35 +192,35 @@ class WindowTransform(BaseTransform):
                 f.attrs['window_size_ms'] = 210
                 f.attrs['num_windows'] = len(windows)
                 f.attrs['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                
+
                 # Store alignment and missing frame information
                 if windows and len(windows) > 0:
                     # Extract metadata from the first window
                     first_window_meta = windows[0]['metadata']
-                    
+
                     # Store common time range information
                     if 'alignment_start_time' in first_window_meta and 'alignment_end_time' in first_window_meta:
                         start_time = float(first_window_meta['alignment_start_time'])
                         end_time = float(first_window_meta['alignment_end_time'])
-                        common_duration_ms = (end_time - start_time) * 1000
-                        
+                        common_duration_ms = (end_time - start_time)
+
                         f.attrs['alignment_start_time'] = start_time
                         f.attrs['alignment_end_time'] = end_time
                         f.attrs['common_time_range_ms'] = common_duration_ms
-                        
+
                         # Store info about trimmed data amounts
                         if 'eeg_trimmed_start_ms' in first_window_meta and 'eeg_trimmed_end_ms' in first_window_meta:
                             f.attrs['eeg_trimmed_start_ms'] = first_window_meta['eeg_trimmed_start_ms']
                             f.attrs['eeg_trimmed_end_ms'] = first_window_meta['eeg_trimmed_end_ms']
                             f.attrs['eeg_trimmed_percent'] = first_window_meta['eeg_trimmed_percent']
-                        
+
                         if 'fnirs_trimmed_start_ms' in first_window_meta and 'fnirs_trimmed_end_ms' in first_window_meta:
                             f.attrs['fnirs_trimmed_start_ms'] = first_window_meta['fnirs_trimmed_start_ms']
                             f.attrs['fnirs_trimmed_end_ms'] = first_window_meta['fnirs_trimmed_end_ms']
                             f.attrs['fnirs_trimmed_percent'] = first_window_meta['fnirs_trimmed_percent']
-                        
+
                         self.logger.info(f"Common time range: {start_time:.3f}s to {end_time:.3f}s ({common_duration_ms:.1f}ms)")
-                    
+
                     # Count windows with missing fNIRS data
                     missing_fnirs_count = sum(1 for w in windows if w['metadata'].get('missing_fnirs', False))
                     if missing_fnirs_count > 0:
@@ -231,12 +228,12 @@ class WindowTransform(BaseTransform):
                         f.attrs['missing_fnirs_count'] = missing_fnirs_count
                         f.attrs['missing_fnirs_percentage'] = missing_percentage
                         self.logger.info(f"Stored information about {missing_fnirs_count} windows ({missing_percentage}%) with missing fNIRS data")
-                
+
                 # Create data groups
                 eeg_group = f.create_group('eeg_windows')
                 fnirs_group = f.create_group('fnirs_windows')
                 metadata_group = f.create_group('metadata')
-                
+
                 # Store original data
                 if processed_eeg is not None:
                     f.create_dataset('eeg_data', data=processed_eeg, compression="gzip", compression_opts=4)
@@ -246,18 +243,18 @@ class WindowTransform(BaseTransform):
                     f.create_dataset('eeg_timestamps', data=eeg_timestamps, compression="gzip", compression_opts=4)
                 if fnirs_timestamps is not None:
                     f.create_dataset('fnirs_timestamps', data=fnirs_timestamps, compression="gzip", compression_opts=4)
-                
+
                 # Store each window
                 for i in range(len(windows)):
                     # Store processed data
                     eeg_group.create_dataset(f"window_{i}",
                                           data=eeg_processed[i] if isinstance(eeg_processed[i], np.ndarray) else eeg_processed[i].numpy(),
                                           compression="gzip", compression_opts=4)
-                    
+
                     fnirs_group.create_dataset(f"window_{i}",
                                             data=fnirs_processed[i] if isinstance(fnirs_processed[i], np.ndarray) else fnirs_processed[i].numpy(),
                                             compression="gzip", compression_opts=4)
-                    
+
                     # Convert any numpy arrays in metadata to native Python types
                     metadata_copy = {}
                     for k, v in metadata_processed[i].items():
@@ -267,11 +264,11 @@ class WindowTransform(BaseTransform):
                             metadata_copy[k] = v.item()    # Convert numpy scalar to native Python type
                         else:
                             metadata_copy[k] = v
-                    
+
                     # Store metadata as JSON string
                     metadata_json = json.dumps(metadata_copy)
                     metadata_group.create_dataset(f"window_{i}", data=metadata_json)
-            
+
             # 8. Create result metadata
             result_metadata = {
                 "session_id": session_id,
@@ -281,50 +278,50 @@ class WindowTransform(BaseTransform):
                 "has_fnirs": metadata["has_fnirs"],
                 "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             }
-            
+
             # Add alignment and gap information to metadata
             if windows and len(windows) > 0:
                 first_window_meta = windows[0]['metadata']
-                
+
                 # Add time range information to DynamoDB metadata
                 if 'alignment_start_time' in first_window_meta and 'alignment_end_time' in first_window_meta:
                     start_time = float(first_window_meta['alignment_start_time'])
                     end_time = float(first_window_meta['alignment_end_time'])
-                    common_duration_ms = (end_time - start_time) * 1000
-                    
+                    common_duration_ms = (end_time - start_time)
+
                     result_metadata['alignment_start_time'] = start_time
                     result_metadata['alignment_end_time'] = end_time
                     result_metadata['common_time_range_ms'] = common_duration_ms
-                    
+
                     # Also add trim percentages to DynamoDB metadata
                     if 'eeg_trimmed_percent' in first_window_meta:
                         result_metadata['eeg_trimmed_percent'] = float(first_window_meta['eeg_trimmed_percent'])
-                    
+
                     if 'fnirs_trimmed_percent' in first_window_meta:
                         result_metadata['fnirs_trimmed_percent'] = float(first_window_meta['fnirs_trimmed_percent'])
-                
+
                 # Count windows with missing fNIRS frames
                 missing_fnirs_count = sum(1 for w in windows if w['metadata'].get('missing_fnirs', False))
                 if missing_fnirs_count > 0:
                     result_metadata['missing_fnirs_count'] = missing_fnirs_count
                     result_metadata['missing_fnirs_percentage'] = round(100 * missing_fnirs_count / len(windows), 2)
-            
+
             if metadata["has_eeg"]:
                 result_metadata["eeg_channels"] = processed_eeg.shape[1] if len(processed_eeg.shape) > 1 else 0
-            
+
             if metadata["has_fnirs"]:
                 result_metadata["fnirs_channels"] = processed_fnirs.shape[1] if len(processed_fnirs.shape) > 1 else 0
-            
+
             # Define the destination key
             dest_key = f"{self.destination_prefix}{output_filename}"
-            
+
             return {
                 "status": "success",
                 "metadata": result_metadata,
                 "files_to_copy": [],
                 "files_to_upload": [(local_output_path, dest_key)]
             }
-            
+
         except Exception as e:
             self.logger.error(f"Error processing session {session_id}: {e}", exc_info=True)
             return {
