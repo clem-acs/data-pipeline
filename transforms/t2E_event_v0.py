@@ -456,7 +456,7 @@ class EventTransform(BaseTransform):
                 'session_fraction': task_metadata.get('fraction_session_completed', 0.0),
                 
                 # Presentation
-                'audio_mode': element_content.get('audio_mode', ''),
+                'audio_mode': element_content.get('audio_mode') or DEFAULT_AUDIO_MODE,
                 'has_audio': element_content.get('has_audio', False),
                 'with_interruptions': element_content.get('with_interruptions', False),
                 
@@ -639,21 +639,7 @@ class EventTransform(BaseTransform):
                         data=np.array(element_ids, dtype='S64')
                     )
             
-            # Create element_by_type index
-            element_by_type = indices_group.create_group('element_by_type')
-            element_types = defaultdict(list)
-            
-            for element_id, element in processed_data['elements'].items():
-                element_type = element['element_type']
-                if element_type:
-                    element_types[element_type].append(element_id)
-            
-            for element_type, element_ids in element_types.items():
-                element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in element_ids]
-                element_by_type.create_dataset(
-                    element_type,
-                    data=np.array(element_ids, dtype='S64')
-                )
+            # Element types can be queried directly from the elements table
             
             # Create segments_by_element index - built from segments table instead of element lists
             segments_by_element = indices_group.create_group('segments_by_element')
@@ -677,27 +663,7 @@ class EventTransform(BaseTransform):
                         data=np.array(segment_ids, dtype='S64')
                     )
             
-            # Create segments_by_task index - built from segments table instead of task lists
-            segments_by_task = indices_group.create_group('segments_by_task')
-            task_segments = {}
-
-            # Collect segments by their containing task
-            for segment_type, segment_list in processed_data['segments'].items():
-                for segment in segment_list:
-                    task_id = segment.get('containing_task_id', '')
-                    if task_id:
-                        if task_id not in task_segments:
-                            task_segments[task_id] = []
-                        task_segments[task_id].append(segment['segment_id'])
-
-            # Create datasets for each task's segments
-            for task_id, segment_ids in task_segments.items():
-                if segment_ids:
-                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in segment_ids]
-                    segments_by_task.create_dataset(
-                        task_id,
-                        data=np.array(segment_ids, dtype='S64')
-                    )
+            # Segments by task can be derived by combining segments_by_element with element_by_task indices
     
     def _create_element_dtype(self):
         """Create numpy dtype for elements table.

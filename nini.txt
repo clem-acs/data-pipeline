@@ -1,0 +1,467 @@
+Analyzing file: C:\Users\riopo\data-pipeline\nia_B1_20250508_130645_events.h5
+
+================================================================================
+FILE INFO
+================================================================================
+File path: C:\Users\riopo\data-pipeline\nia_B1_20250508_130645_events.h5
+File size: 0.26 MB
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+Group: elements/
+  Dataset: table (Shape: (306,), Type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O')])
+Group: indices/
+  Group: element_by_task/
+    Dataset: argument_1 (Shape: (6,), Type: |S64)
+    Dataset: breath_1 (Shape: (8,), Type: |S64)
+    Dataset: breath_2 (Shape: (8,), Type: |S64)
+    Dataset: chat_1 (Shape: (7,), Type: |S64)
+    Dataset: completion_1 (Shape: (4,), Type: |S64)
+    Dataset: completion_2 (Shape: (16,), Type: |S64)
+    Dataset: completion_4 (Shape: (26,), Type: |S64)
+    Dataset: eye_1 (Shape: (7,), Type: |S64)
+    Dataset: eye_2 (Shape: (7,), Type: |S64)
+    Dataset: language_2 (Shape: (6,), Type: |S64)
+    Dataset: learn_1 (Shape: (4,), Type: |S64)
+    Dataset: listen_1 (Shape: (7,), Type: |S64)
+    Dataset: listen_2 (Shape: (7,), Type: |S64)
+    Dataset: paraphrase_1 (Shape: (5,), Type: |S64)
+    Dataset: paraphrase_2 (Shape: (4,), Type: |S64)
+    Dataset: sentence_1 (Shape: (3,), Type: |S64)
+    Dataset: sentence_2 (Shape: (3,), Type: |S64)
+    Dataset: sentence_3 (Shape: (39,), Type: |S64)
+    Dataset: sentence_4 (Shape: (14,), Type: |S64)
+    Dataset: situation_1 (Shape: (1,), Type: |S64)
+    Dataset: wait_1 (Shape: (1,), Type: |S64)
+    Dataset: word_1 (Shape: (3,), Type: |S64)
+    Dataset: word_2 (Shape: (34,), Type: |S64)
+    Dataset: word_3 (Shape: (35,), Type: |S64)
+    Dataset: wordassociation_1 (Shape: (25,), Type: |S64)
+    Dataset: wordassociation_2 (Shape: (26,), Type: |S64)
+  Group: segments_by_element/
+    Dataset: element_sent_180 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_181 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_182 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_183 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_184 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_185 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_186 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_187 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_188 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_189 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_190 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_191 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_192 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_193 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_194 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_195 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_196 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_197 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_198 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_199 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_200 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_201 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_202 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_203 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_204 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_28 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_29 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_30 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_31 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_32 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_33 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_34 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_35 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_36 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_37 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_38 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_39 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_40 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_41 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_42 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_43 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_44 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_45 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_46 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_47 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_48 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_49 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_50 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_51 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_63 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_64 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_65 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_66 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_67 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_68 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_69 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_70 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_71 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_72 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_73 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_74 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_75 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_76 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_77 (Shape: (1,), Type: |S64)
+Group: metadata/
+  Group: stats/
+Group: segments/
+  Dataset: recording (Shape: (83,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+  Dataset: thinking (Shape: (49,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+Group: tasks/
+  Dataset: table (Shape: (28,), Type: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')])
+
+================================================================================
+TASKS INSPECTION
+================================================================================
+Tasks table shape: (28,)
+Tasks table dtype: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+
+Approach 1: Direct read of first task
+  task_id: wait_1
+  task_type: wait
+  sequence_number: 0
+  start_time: 1746734811074.0
+  end_time: 1746734868290.0
+  duration: 57216.0
+  session_fraction_start: 0.063252315
+  session_fraction_end: 0.72547454
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Approach 2: Field-by-field read
+  task_id: wait_1
+  task_type: wait
+  sequence_number: 0
+  start_time: 1746734811074.0
+  end_time: 1746734868290.0
+  duration: 57216.0
+  session_fraction_start: 0.063252315
+  session_fraction_end: 0.72547454
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Null check: Scanning for null/empty task_ids
+  No null/empty task_ids found
+
+Element IDs check: Examine element_ids arrays
+  No 'element_ids' field found in tasks table
+
+================================================================================
+ELEMENTS INSPECTION
+================================================================================
+Elements table shape: (306,)
+Elements table dtype: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O')]
+
+Approach 1: Direct read of first element
+  element_id: element_sent_1
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746734813362.0
+  end_time: 1746734868273.0
+  duration: 54911.0
+  session_fraction: 0.0
+  session_relative_time: 7753.0
+  audio_mode: text_only
+  has_audio: False
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: 54911.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+
+Approach 2: Field-by-field read
+  element_id: element_sent_1
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746734813362.0
+  end_time: 1746734868273.0
+  duration: 54911.0
+  session_fraction: 0.0
+  session_relative_time: 7753.0
+  audio_mode: text_only
+  has_audio: False
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: 54911.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+
+Approach 3: Numpy array conversion
+  Converted to array with shape: (1,)
+
+Null check: Scanning for critical fields with None/empty values
+  No null/empty values found in sampled elements (first 10)
+
+================================================================================
+SEGMENTS INSPECTION
+================================================================================
+
+Checking recording segments:
+  Shape: (83,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 15 out of 83
+  Segments with task container: 66 out of 83
+  Segments with no container: 2
+
+Checking thinking segments:
+  Shape: (49,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 49 out of 49
+  Segments with task container: 0 out of 49
+  Segments with no container: 0
+
+Checking pause segments:
+  No pause dataset found
+
+================================================================================
+INDEX INSPECTION
+================================================================================
+Found indices group with:
+
+Index type: element_by_task
+  Contains 26 entries:
+  Sample keys: ['argument_1', 'breath_1', 'breath_2', 'chat_1', 'completion_1']...
+  Sample data for 'argument_1':
+    Shape: (6,)
+    Type: |S64
+    First value: element_sent_248
+
+Index type: segments_by_element
+  Contains 64 entries:
+  Sample keys: ['element_sent_180', 'element_sent_181', 'element_sent_182', 'element_sent_183', 'element_sent_184']...
+  Sample data for 'element_sent_180':
+    Shape: (1,)
+    Type: |S64
+    First value: thinking_thinking_start_25
+
+================================================================================
+RELATIONSHIP VERIFICATION
+================================================================================
+
+Verifying task-element links:
+  Found 28 tasks and 306 elements
+  Tasks with element indexes: 26
+  Tasks with element_ids array: 0
+  Consistency check: 0 tasks with elements vs 26 indexed
+
+Verifying segment-container links:
+  Elements with segment indexes: 64
+  No segments_by_task index found
+
+================================================================================
+NULL POINTER ANALYSIS
+================================================================================
+
+VLEN field inspection:
+  Elements table: Found VLEN fields: ['element_id', 'element_type', 'title', 'task_id', 'task_type', 'audio_mode', 'input_modality', 'element_sent_id', 'element_replied_id']
+    Testing direct field access for 'element_id':
+      Read all data: 306 items
+    Testing direct field access for 'element_type':
+      Read all data: 306 items
+    Testing direct field access for 'title':
+      Read all data: 306 items
+    Testing direct field access for 'task_id':
+      Read all data: 306 items
+    Testing direct field access for 'task_type':
+      Read all data: 306 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 306 items
+    Testing direct field access for 'input_modality':
+      Read all data: 306 items
+    Testing direct field access for 'element_sent_id':
+      Read all data: 306 items
+    Testing direct field access for 'element_replied_id':
+      Read all data: 306 items
+  Tasks table: Found VLEN fields: ['task_id', 'task_type', 'audio_mode', 'input_modality', 'completion_status', 'skip_event_id', 'task_started_id', 'task_completed_id']
+    Testing direct field access for 'task_id':
+      Read all data: 28 items
+    Testing direct field access for 'task_type':
+      Read all data: 28 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 28 items
+    Testing direct field access for 'input_modality':
+      Read all data: 28 items
+    Testing direct field access for 'completion_status':
+      Read all data: 28 items
+    Testing direct field access for 'skip_event_id':
+      Read all data: 28 items
+    Testing direct field access for 'task_started_id':
+      Read all data: 28 items
+    Testing direct field access for 'task_completed_id':
+      Read all data: 28 items
+  recording segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'containing_task_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 83 items
+    Testing direct field access for 'segment_type':
+      Read all data: 83 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 83 items
+    Testing direct field access for 'containing_task_id':
+      Read all data: 83 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 83 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 83 items
+  thinking segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'containing_task_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 49 items
+    Testing direct field access for 'segment_type':
+      Read all data: 49 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 49 items
+    Testing direct field access for 'containing_task_id':
+      Read all data: 49 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 49 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 49 items
+
+================================================================================
+DIRECT READ ATTEMPTS
+================================================================================
+
+Attempting to read: elements/table
+  Dataset shape: (306,)
+  Dataset type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (306,)
+  Method 2: Field-by-field read
+    Field 'element_id' first value: element_sent_1
+    Field 'element_type' first value: text
+    Field 'title' first value: Wait Task
+    Field 'is_instruction' first value: True
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'sequence_idx' first value: 0
+    Field 'max_count' first value: 1
+    Field 'start_time' first value: 1746734813362.0
+    Field 'end_time' first value: 1746734868273.0
+    Field 'duration' first value: 54911.0
+    Field 'session_fraction' first value: 0.0
+    Field 'session_relative_time' first value: 7753.0
+    Field 'audio_mode' first value: text_only
+    Field 'has_audio' first value: False
+    Field 'with_interruptions' first value: False
+    Field 'input_modality' first value: text
+    Field 'response_time_seconds' first value: 54911.0
+    Field 'element_sent_id' first value: element_sent_1
+    Field 'element_replied_id' first value: element_replied_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: tasks/table
+  Dataset shape: (28,)
+  Dataset type: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (28,)
+  Method 2: Field-by-field read
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'sequence_number' first value: 0
+    Field 'start_time' first value: 1746734811074.0
+    Field 'end_time' first value: 1746734868290.0
+    Field 'duration' first value: 57216.0
+    Field 'session_fraction_start' first value: 0.063252315
+    Field 'session_fraction_end' first value: 0.72547454
+    Field 'count' first value: 1
+    Field 'allow_repeats' first value: False
+    Field 'with_interruptions' first value: False
+    Field 'audio_mode' first value: text_only
+    Field 'input_modality' first value: text
+    Field 'completion_status' first value: completed
+    Field 'skipped' first value: False
+    Field 'skip_time' first value: 0.0
+    Field 'skip_event_id' first value: 
+    Field 'task_started_id' first value: task_started_1
+    Field 'task_completed_id' first value: task_completed_1
+    Field 'element_count' first value: 1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/recording
+  Dataset shape: (83,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (83,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: recording_recording_start_1
+    Field 'segment_type' first value: recording
+    Field 'start_time' first value: 1746736362141.0
+    Field 'end_time' first value: 1746736378719.0
+    Field 'duration' first value: 16578.0
+    Field 'containing_element_id' first value: element_sent_63
+    Field 'containing_task_id' first value: 
+    Field 'element_relative_start' first value: 1591.0
+    Field 'task_relative_start' first value: 0.0
+    Field 'start_event_id' first value: recording_start_1
+    Field 'end_event_id' first value: recording_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/thinking
+  Dataset shape: (49,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (49,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: thinking_thinking_start_1
+    Field 'segment_type' first value: thinking
+    Field 'start_time' first value: 1746735390071.0
+    Field 'end_time' first value: 1746735393064.0
+    Field 'duration' first value: 2993.0
+    Field 'containing_element_id' first value: element_sent_28
+    Field 'containing_task_id' first value: 
+    Field 'element_relative_start' first value: 756.0
+    Field 'task_relative_start' first value: 0.0
+    Field 'start_event_id' first value: thinking_start_1
+    Field 'end_event_id' first value: thinking_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
