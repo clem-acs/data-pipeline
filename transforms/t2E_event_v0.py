@@ -381,8 +381,7 @@ class EventTransform(BaseTransform):
                 'skip_time': 0.0,
                 'skip_event_id': '',
                 
-                # Fields for elements
-                'element_ids': []
+                # Element count will be calculated, no need to store element IDs
             }
             
             # Calculate additional metadata
@@ -484,7 +483,10 @@ class EventTransform(BaseTransform):
             task_id = elements[element_id]['task_id']
             print(f"DEBUG-ELEMENT: Element {element_id} looking for task_id '{task_id}'")
             if task_id and task_id in tasks:
-                tasks[task_id]['element_ids'].append(element_id)
+                # Instead of storing element IDs directly, just increment the count
+                if 'element_count' not in tasks[task_id]:
+                    tasks[task_id]['element_count'] = 0
+                tasks[task_id]['element_count'] += 1
             else:
                 self.logger.warning(f"Element {element_id} could not be associated with any task (task_id='{task_id}')")
         
@@ -618,11 +620,20 @@ class EventTransform(BaseTransform):
             # Create indices
             indices_group = h5f.create_group('indices')
             
-            # Create element_by_task index
+            # Create element_by_task index - build directly from elements
             element_by_task = indices_group.create_group('element_by_task')
-            for task_id, task in processed_data['tasks'].items():
-                if task['element_ids']:
-                    element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in task['element_ids']]
+            task_to_elements = defaultdict(list)
+
+            # Collect elements by task_id
+            for element_id, element in processed_data['elements'].items():
+                task_id = element.get('task_id', '')
+                if task_id:
+                    task_to_elements[task_id].append(element_id)
+
+            # Create datasets for each task's elements
+            for task_id, element_ids in task_to_elements.items():
+                if element_ids:
+                    element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in element_ids]
                     element_by_task.create_dataset(
                         task_id,
                         data=np.array(element_ids, dtype='S64')
@@ -771,7 +782,6 @@ class EventTransform(BaseTransform):
 
             # 8. Element Relationships
             ('element_count', np.int32),
-            ('element_ids', h5py.special_dtype(vlen=np.dtype('S64'))),
 
             # Note: Segment relationships are now managed only through indices
         ])
@@ -816,10 +826,10 @@ class EventTransform(BaseTransform):
         array_data = np.zeros(len(items), dtype=dtype)
 
         # Define special fields that need array conversion by item type
-        # Note: Removed segment lists, only element_ids remains as special field for tasks
+        # Note: No more special fields requiring array conversion
         array_fields = {
-            'elements': [],  # No more segment arrays
-            'tasks': ['element_ids'],  # Only element_ids
+            'elements': [],  # No segment arrays
+            'tasks': [],     # No element_ids array
             'segments': []
         }
         special_fields = array_fields.get(item_type, [])
@@ -865,8 +875,9 @@ class EventTransform(BaseTransform):
 
                 # Task-specific post-processing
                 if item_type == 'tasks':
-                    # Calculate element count
-                    array_data[i]['element_count'] = len(item.get('element_ids', []))
+                    # Element count is now directly maintained
+                    if 'element_count' not in item:
+                        array_data[i]['element_count'] = 0
 
                     # Set defaults for optional fields
                     if not item.get('completion_status'):
