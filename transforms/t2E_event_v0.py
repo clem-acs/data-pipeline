@@ -429,17 +429,21 @@ class EventTransform(BaseTransform):
         # 3. Process element events
         element_pairs = self._pair_events(events, 'element_sent', 'element_replied')
         
-        for element_id, (sent_event, replied_event) in element_pairs.items():
+        for event_id, (sent_event, replied_event) in element_pairs.items():
             # Extract element data
             sent_data = sent_event['data']
             replied_data = replied_event['data'] if replied_event else {}
-            
+
             element_content = sent_data.get('element_content', {})
             task_metadata = element_content.get('task_metadata', {})
-            
+
+            # Extract the actual element_id from the data, fallback to event_id if not found
+            # First check in sent_data, then in element_content
+            actual_element_id = sent_data.get('element_id') or element_content.get('element_id', event_id)
+
             # Create element entry with extracted fields
-            elements[element_id] = {
-                'element_id': element_id,
+            elements[actual_element_id] = {
+                'element_id': actual_element_id,
                 'element_type': element_content.get('element_type', ''),
                 'title': element_content.get('title', ''),
                 'is_instruction': element_content.get('is_instruction', False),
@@ -463,25 +467,26 @@ class EventTransform(BaseTransform):
                 # Response
                 'input_modality': replied_data.get('input_modality', ''),
                 
-                # Event references
+                # Event references - keep original event IDs for reference
                 'element_sent_id': sent_event['event_ids'][0],
                 'element_replied_id': replied_event['event_ids'][0],
+                'event_id': event_id,  # Store the original pairing ID for reference
                 
                 # No segment placeholders needed
             }
             
             # Calculate derived fields
-            elements[element_id]['duration'] = (
-                elements[element_id]['end_time'] - elements[element_id]['start_time']
+            elements[actual_element_id]['duration'] = (
+                elements[actual_element_id]['end_time'] - elements[actual_element_id]['start_time']
             )
-            elements[element_id]['response_time_seconds'] = elements[element_id]['duration']
-            
+            elements[actual_element_id]['response_time_seconds'] = elements[actual_element_id]['duration']
+
             if session_start_time is not None:
-                elements[element_id]['session_relative_time'] = elements[element_id]['start_time'] - session_start_time
-            
+                elements[actual_element_id]['session_relative_time'] = elements[actual_element_id]['start_time'] - session_start_time
+
             # Add element to task's element list
-            task_id = elements[element_id]['task_id']
-            print(f"DEBUG-ELEMENT: Element {element_id} looking for task_id '{task_id}'")
+            task_id = elements[actual_element_id]['task_id']
+            print(f"DEBUG-ELEMENT: Element {actual_element_id} looking for task_id '{task_id}'")
             if task_id and task_id in tasks:
                 # Instead of storing element IDs directly, just increment the count
                 if 'element_count' not in tasks[task_id]:
@@ -703,6 +708,7 @@ class EventTransform(BaseTransform):
             # 6. Event References
             ('element_sent_id', h5py.special_dtype(vlen=str)),
             ('element_replied_id', h5py.special_dtype(vlen=str)),
+            ('event_id', h5py.special_dtype(vlen=str)),
 
             # Note: Segment relationships are now managed only through indices
         ])
