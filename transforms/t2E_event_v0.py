@@ -215,7 +215,7 @@ class EventTransform(BaseTransform):
         
         # Process each pair
         for i, (start_id, (start_event, end_event)) in enumerate(pairs.items()):
-            segment_id = f"{segment_type}_{start_id}"
+            segment_id = start_id
             start_time = float(start_event['timestamps'][0])
             end_time = float(end_event['timestamps'][0])
             
@@ -228,9 +228,7 @@ class EventTransform(BaseTransform):
                 'start_event_id': start_event['event_ids'][0],
                 'end_event_id': end_event['event_ids'][0],
                 'containing_element_id': '',
-                'containing_task_id': '',
-                'element_relative_start': 0.0,
-                'task_relative_start': 0.0
+                'element_relative_start': 0.0
             })
     
     def _pair_events(self, events, start_type, end_type):
@@ -479,7 +477,17 @@ class EventTransform(BaseTransform):
             elements[actual_element_id]['duration'] = (
                 elements[actual_element_id]['end_time'] - elements[actual_element_id]['start_time']
             )
-            elements[actual_element_id]['response_time_seconds'] = elements[actual_element_id]['duration']
+
+            # Get configured response time limit from element_content or task config
+            # First check directly in element_content
+            # Then check in task_metadata's config if present
+            # Default to -1 if not configured
+            response_config = task_metadata.get('config', {})
+            elements[actual_element_id]['response_time_seconds'] = (
+                element_content.get('response_time_seconds') or
+                response_config.get('response_time_seconds') or
+                -1
+            )
 
             if session_start_time is not None:
                 elements[actual_element_id]['session_relative_time'] = elements[actual_element_id]['start_time'] - session_start_time
@@ -514,32 +522,19 @@ class EventTransform(BaseTransform):
                 start_time = segment['start_time']
                 end_time = segment['end_time']
                 
-                # Check element containment
-                contained_by_element = False
+                # Check element containment - only check if start time is within element timespan
                 for element_id, element in elements.items():
                     if (element['start_time'] <= start_time and
-                        element['end_time'] >= end_time):
+                        element['end_time'] >= start_time):
                         # Add reference only to segment - no bidirectional references
                         segment['containing_element_id'] = element_id
 
                         # Calculate relative position
                         segment['element_relative_start'] = start_time - element['start_time']
 
-                        contained_by_element = True
                         break
-                
-                # Check task containment if not in an element
-                if not contained_by_element:
-                    for task_id, task in tasks.items():
-                        if (task['start_time'] <= start_time and 
-                            task['end_time'] >= end_time):
-                            # Add reference only to segment - no bidirectional references
-                            segment['containing_task_id'] = task_id
 
-                            # Calculate relative position
-                            segment['task_relative_start'] = start_time - task['start_time']
-                            
-                            break
+                # No fallback to task containment - segments are only contained by elements
         
         return {
             'tasks': tasks,
@@ -774,9 +769,7 @@ class EventTransform(BaseTransform):
             
             # 2. Container Relationships
             ('containing_element_id', h5py.special_dtype(vlen=str)),
-            ('containing_task_id', h5py.special_dtype(vlen=str)),
             ('element_relative_start', np.float64),
-            ('task_relative_start', np.float64),
             
             # 3. Event References
             ('start_event_id', h5py.special_dtype(vlen=str)),
