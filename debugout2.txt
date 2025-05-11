@@ -1,0 +1,537 @@
+Analyzing file: C:\Users\riopo\data-pipeline\Arjun_B3_20250505_130041_events.h5
+
+================================================================================
+FILE INFO
+================================================================================
+File path: C:\Users\riopo\data-pipeline\Arjun_B3_20250505_130041_events.h5
+File size: 0.49 MB
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+Group: elements/
+  Dataset: table (Shape: (527,), Type: {'names': ['element_id', 'element_type', 'title', 'is_instruction', 'task_id', 'task_type', 'sequence_idx', 'max_count', 'start_time', 'end_time', 'duration', 'session_fraction', 'session_relative_time', 'audio_mode', 'display_text', 'has_audio', 'auto_advance_seconds', 'with_interruptions', 'input_modality', 'user_input_length', 'response_required', 'response_time_seconds', 'element_sent_id', 'element_replied_id', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', 'O', '?', 'O', 'O', '<i4', '<i4', '<f8', '<f8', '<f8', '<f4', '<f8', 'O', '?', '?', '<f8', '?', 'O', '<i4', '?', '<f8', 'O', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 24, 25, 33, 41, 45, 49, 57, 65, 73, 77, 85, 93, 94, 95, 103, 104, 112, 116, 117, 125, 133, 141, 157, 173], 'itemsize': 189})
+Group: indices/
+  Group: element_by_task/
+    Dataset: argument_1 (Shape: (5,), Type: |S64)
+    Dataset: breath_1 (Shape: (8,), Type: |S64)
+    Dataset: breath_2 (Shape: (8,), Type: |S64)
+    Dataset: chat_1 (Shape: (12,), Type: |S64)
+    Dataset: completion_1 (Shape: (13,), Type: |S64)
+    Dataset: completion_2 (Shape: (13,), Type: |S64)
+    Dataset: completion_3 (Shape: (19,), Type: |S64)
+    Dataset: completion_4 (Shape: (19,), Type: |S64)
+    Dataset: completion_5 (Shape: (12,), Type: |S64)
+    Dataset: completion_6 (Shape: (17,), Type: |S64)
+    Dataset: eye_1 (Shape: (7,), Type: |S64)
+    Dataset: eye_2 (Shape: (7,), Type: |S64)
+    Dataset: eye_3 (Shape: (7,), Type: |S64)
+    Dataset: feedback_1 (Shape: (4,), Type: |S64)
+    Dataset: finish_1 (Shape: (1,), Type: |S64)
+    Dataset: language_1 (Shape: (6,), Type: |S64)
+    Dataset: language_2 (Shape: (6,), Type: |S64)
+    Dataset: learn_1 (Shape: (8,), Type: |S64)
+    Dataset: listen_1 (Shape: (7,), Type: |S64)
+    Dataset: listen_2 (Shape: (7,), Type: |S64)
+    Dataset: paraphrase_1 (Shape: (6,), Type: |S64)
+    Dataset: paraphrase_2 (Shape: (5,), Type: |S64)
+    Dataset: sentence_1 (Shape: (16,), Type: |S64)
+    Dataset: sentence_2 (Shape: (17,), Type: |S64)
+    Dataset: sentence_3 (Shape: (32,), Type: |S64)
+    Dataset: sentence_4 (Shape: (20,), Type: |S64)
+    Dataset: situation_1 (Shape: (4,), Type: |S64)
+    Dataset: wait_1 (Shape: (1,), Type: |S64)
+    Dataset: word_1 (Shape: (43,), Type: |S64)
+    Dataset: word_2 (Shape: (80,), Type: |S64)
+    Dataset: word_3 (Shape: (55,), Type: |S64)
+    Dataset: wordassociation_1 (Shape: (32,), Type: |S64)
+    Dataset: wordassociation_2 (Shape: (30,), Type: |S64)
+  Group: element_by_type/
+    Dataset: input (Shape: (440,), Type: |S64)
+    Dataset: text (Shape: (87,), Type: |S64)
+  Group: segments_by_element/
+    Dataset: element_sent_146 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_147 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_148 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_149 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_150 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_151 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_152 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_153 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_154 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_155 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_156 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_157 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_307 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_308 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_309 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_310 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_311 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_312 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_313 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_314 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_315 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_316 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_317 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_318 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_319 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_320 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_321 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_322 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_323 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_324 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_325 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_326 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_327 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_328 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_329 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_330 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_331 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_332 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_333 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_334 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_335 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_68 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_69 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_70 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_71 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_72 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_73 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_74 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_75 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_76 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_77 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_78 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_79 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_80 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_81 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_82 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_83 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_84 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_85 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_86 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_87 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_88 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_89 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_90 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_91 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_92 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_93 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_94 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_95 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_96 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_97 (Shape: (1,), Type: |S64)
+    Dataset: element_sent_98 (Shape: (1,), Type: |S64)
+  Group: segments_by_task/
+    Dataset: completion_4 (Shape: (16,), Type: |S64)
+    Dataset: completion_5 (Shape: (9,), Type: |S64)
+    Dataset: sentence_3 (Shape: (29,), Type: |S64)
+    Dataset: situation_1 (Shape: (1,), Type: |S64)
+Group: metadata/
+  Group: stats/
+Group: segments/
+  Dataset: recording (Shape: (73,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+  Dataset: thinking (Shape: (60,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+Group: tasks/
+  Dataset: table (Shape: (33,), Type: {'names': ['task_id', 'task_type', 'sequence_number', 'start_time', 'end_time', 'duration', 'session_fraction_start', 'session_fraction_end', 'count', 'allow_repeats', 'with_interruptions', 'audio_mode', 'intro_delay_seconds', 'eyes_closed_seconds', 'eyes_open_seconds', 'normal_breathing_seconds', 'breath_hold_seconds', 'sound_seconds', 'quiet_seconds', 'input_modality', 'element_during_answer', 'answer_display', 'delay', 'completion_status', 'skipped', 'skip_time', 'skip_event_id', 'task_started_id', 'task_completed_id', 'element_count', 'element_ids', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', '<i4', '<f8', '<f8', '<f8', '<f4', '<f4', '<i4', '?', '?', 'O', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', 'O', 'O', 'O', '<i4', 'O', '?', '<f8', 'O', 'O', 'O', '<i4', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 20, 28, 36, 44, 48, 52, 56, 57, 58, 66, 74, 82, 90, 98, 106, 114, 122, 130, 138, 146, 150, 158, 159, 167, 175, 183, 191, 195, 211, 227, 243], 'itemsize': 259})
+
+================================================================================
+TASKS INSPECTION
+================================================================================
+Tasks table shape: (33,)
+Tasks table dtype: {'names': ['task_id', 'task_type', 'sequence_number', 'start_time', 'end_time', 'duration', 'session_fraction_start', 'session_fraction_end', 'count', 'allow_repeats', 'with_interruptions', 'audio_mode', 'intro_delay_seconds', 'eyes_closed_seconds', 'eyes_open_seconds', 'normal_breathing_seconds', 'breath_hold_seconds', 'sound_seconds', 'quiet_seconds', 'input_modality', 'element_during_answer', 'answer_display', 'delay', 'completion_status', 'skipped', 'skip_time', 'skip_event_id', 'task_started_id', 'task_completed_id', 'element_count', 'element_ids', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', '<i4', '<f8', '<f8', '<f8', '<f4', '<f4', '<i4', '?', '?', 'O', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', 'O', 'O', 'O', '<i4', 'O', '?', '<f8', 'O', 'O', 'O', '<i4', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 20, 28, 36, 44, 48, 52, 56, 57, 58, 66, 74, 82, 90, 98, 106, 114, 122, 130, 138, 146, 150, 158, 159, 167, 175, 183, 191, 195, 211, 227, 243], 'itemsize': 259}
+
+Approach 1: Direct read of first task
+Error in Approach 1: Cannot create cython.array from NULL pointer
+
+Approach 2: Field-by-field read
+  task_id: [Error: Cannot create cython.array from NULL pointer]
+  task_type: [Error: Cannot create cython.array from NULL pointer]
+  sequence_number: [Error: Cannot create cython.array from NULL pointer]
+  start_time: [Error: Cannot create cython.array from NULL pointer]
+  end_time: [Error: Cannot create cython.array from NULL pointer]
+  duration: [Error: Cannot create cython.array from NULL pointer]
+  session_fraction_start: [Error: Cannot create cython.array from NULL pointer]
+  session_fraction_end: [Error: Cannot create cython.array from NULL pointer]
+  count: [Error: Cannot create cython.array from NULL pointer]
+  allow_repeats: [Error: Cannot create cython.array from NULL pointer]
+  with_interruptions: [Error: Cannot create cython.array from NULL pointer]
+  audio_mode: [Error: Cannot create cython.array from NULL pointer]
+  intro_delay_seconds: [Error: Cannot create cython.array from NULL pointer]
+  eyes_closed_seconds: [Error: Cannot create cython.array from NULL pointer]
+  eyes_open_seconds: [Error: Cannot create cython.array from NULL pointer]
+  normal_breathing_seconds: [Error: Cannot create cython.array from NULL pointer]
+  breath_hold_seconds: [Error: Cannot create cython.array from NULL pointer]
+  sound_seconds: [Error: Cannot create cython.array from NULL pointer]
+  quiet_seconds: [Error: Cannot create cython.array from NULL pointer]
+  input_modality: [Error: Cannot create cython.array from NULL pointer]
+  element_during_answer: [Error: Cannot create cython.array from NULL pointer]
+  answer_display: [Error: Cannot create cython.array from NULL pointer]
+  delay: [Error: Cannot create cython.array from NULL pointer]
+  completion_status: [Error: Cannot create cython.array from NULL pointer]
+  skipped: [Error: Cannot create cython.array from NULL pointer]
+  skip_time: [Error: Cannot create cython.array from NULL pointer]
+  skip_event_id: [Error: Cannot create cython.array from NULL pointer]
+  task_started_id: [Error: Cannot create cython.array from NULL pointer]
+  task_completed_id: [Error: Cannot create cython.array from NULL pointer]
+  element_count: [Error: Cannot create cython.array from NULL pointer]
+  element_ids: [Error: Cannot create cython.array from NULL pointer]
+  recording_segments: [Error: Cannot create cython.array from NULL pointer]
+  thinking_segments: [Error: Cannot create cython.array from NULL pointer]
+  pause_segments: [Error: Cannot create cython.array from NULL pointer]
+
+Null check: Scanning for null/empty task_ids
+  Found 33 tasks with null/empty task_ids
+
+Element IDs check: Examine element_ids arrays
+  Tasks with empty element_ids: 33 out of 33
+
+================================================================================
+ELEMENTS INSPECTION
+================================================================================
+Elements table shape: (527,)
+Elements table dtype: {'names': ['element_id', 'element_type', 'title', 'is_instruction', 'task_id', 'task_type', 'sequence_idx', 'max_count', 'start_time', 'end_time', 'duration', 'session_fraction', 'session_relative_time', 'audio_mode', 'display_text', 'has_audio', 'auto_advance_seconds', 'with_interruptions', 'input_modality', 'user_input_length', 'response_required', 'response_time_seconds', 'element_sent_id', 'element_replied_id', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', 'O', '?', 'O', 'O', '<i4', '<i4', '<f8', '<f8', '<f8', '<f4', '<f8', 'O', '?', '?', '<f8', '?', 'O', '<i4', '?', '<f8', 'O', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 24, 25, 33, 41, 45, 49, 57, 65, 73, 77, 85, 93, 94, 95, 103, 104, 112, 116, 117, 125, 133, 141, 157, 173], 'itemsize': 189}
+
+Approach 1: Direct read of first element
+Error in Approach 1: Cannot create cython.array from NULL pointer
+
+Approach 2: Field-by-field read
+  element_id: [Error: Cannot create cython.array from NULL pointer]
+  element_type: [Error: Cannot create cython.array from NULL pointer]
+  title: [Error: Cannot create cython.array from NULL pointer]
+  is_instruction: [Error: Cannot create cython.array from NULL pointer]
+  task_id: [Error: Cannot create cython.array from NULL pointer]
+  task_type: [Error: Cannot create cython.array from NULL pointer]
+  sequence_idx: [Error: Cannot create cython.array from NULL pointer]
+  max_count: [Error: Cannot create cython.array from NULL pointer]
+  start_time: [Error: Cannot create cython.array from NULL pointer]
+  end_time: [Error: Cannot create cython.array from NULL pointer]
+  duration: [Error: Cannot create cython.array from NULL pointer]
+  session_fraction: [Error: Cannot create cython.array from NULL pointer]
+  session_relative_time: [Error: Cannot create cython.array from NULL pointer]
+  audio_mode: [Error: Cannot create cython.array from NULL pointer]
+  display_text: [Error: Cannot create cython.array from NULL pointer]
+  has_audio: [Error: Cannot create cython.array from NULL pointer]
+  auto_advance_seconds: [Error: Cannot create cython.array from NULL pointer]
+  with_interruptions: [Error: Cannot create cython.array from NULL pointer]
+  input_modality: [Error: Cannot create cython.array from NULL pointer]
+  user_input_length: [Error: Cannot create cython.array from NULL pointer]
+  response_required: [Error: Cannot create cython.array from NULL pointer]
+  response_time_seconds: [Error: Cannot create cython.array from NULL pointer]
+  element_sent_id: [Error: Cannot create cython.array from NULL pointer]
+  element_replied_id: [Error: Cannot create cython.array from NULL pointer]
+  recording_segments: [Error: Cannot create cython.array from NULL pointer]
+  thinking_segments: [Error: Cannot create cython.array from NULL pointer]
+  pause_segments: [Error: Cannot create cython.array from NULL pointer]
+
+Approach 3: Numpy array conversion
+Error in Approach 3: Cannot create cython.array from NULL pointer
+
+Null check: Scanning for critical fields with None/empty values
+  Found null/empty values in critical fields:
+    element_id: 10 nulls, first few at indices [0, 1, 2, 3, 4]
+    task_id: 10 nulls, first few at indices [0, 1, 2, 3, 4]
+    task_type: 10 nulls, first few at indices [0, 1, 2, 3, 4]
+
+================================================================================
+SEGMENTS INSPECTION
+================================================================================
+
+Checking recording segments:
+  Shape: (73,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 12 out of 73
+  Segments with task container: 55 out of 73
+  Segments with no container: 6
+
+Checking thinking segments:
+  Shape: (60,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 60 out of 60
+  Segments with task container: 0 out of 60
+  Segments with no container: 0
+
+Checking pause segments:
+  No pause dataset found
+
+================================================================================
+INDEX INSPECTION
+================================================================================
+Found indices group with:
+
+Index type: element_by_task
+  Contains 33 entries:
+  Sample keys: ['argument_1', 'breath_1', 'breath_2', 'chat_1', 'completion_1']...
+  Sample data for 'argument_1':
+    Shape: (5,)
+    Type: |S64
+    First value: element_sent_374
+
+Index type: element_by_type
+  Contains 2 entries:
+  Sample keys: ['input', 'text']...
+  Sample data for 'input':
+    Shape: (440,)
+    Type: |S64
+    First value: element_sent_25
+
+Index type: segments_by_element
+  Contains 72 entries:
+  Sample keys: ['element_sent_146', 'element_sent_147', 'element_sent_148', 'element_sent_149', 'element_sent_150']...
+  Sample data for 'element_sent_146':
+    Shape: (1,)
+    Type: |S64
+    First value: recording_recording_start_1
+
+Index type: segments_by_task
+  Contains 4 entries:
+  Sample keys: ['completion_4', 'completion_5', 'sentence_3', 'situation_1']...
+  Sample data for 'completion_4':
+    Shape: (16,)
+    Type: |S64
+    First value: recording_recording_start_47
+
+================================================================================
+RELATIONSHIP VERIFICATION
+================================================================================
+
+Verifying task-element links:
+  Found 33 tasks and 527 elements
+  Tasks with element indexes: 33
+  Tasks with element_ids array: 0
+  Consistency check: 0 tasks with elements vs 33 indexed
+
+Verifying segment-container links:
+  Elements with segment indexes: 72
+  Tasks with segment indexes: 4
+
+================================================================================
+NULL POINTER ANALYSIS
+================================================================================
+
+VLEN field inspection:
+  Elements table: Found VLEN fields: ['element_id', 'element_type', 'title', 'task_id', 'task_type', 'audio_mode', 'input_modality', 'element_sent_id', 'element_replied_id', 'recording_segments', 'thinking_segments', 'pause_segments']
+    Testing direct field access for 'element_id':
+      Read all data: 527 items
+    Testing direct field access for 'element_type':
+      Read all data: 527 items
+    Testing direct field access for 'title':
+      Read all data: 527 items
+    Testing direct field access for 'task_id':
+      Read all data: 527 items
+    Testing direct field access for 'task_type':
+      Read all data: 527 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 527 items
+    Testing direct field access for 'input_modality':
+      Read all data: 527 items
+    Testing direct field access for 'element_sent_id':
+      Read all data: 527 items
+    Testing direct field access for 'element_replied_id':
+      Read all data: 527 items
+    Testing direct field access for 'recording_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+    Testing direct field access for 'thinking_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+    Testing direct field access for 'pause_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+  Tasks table: Found VLEN fields: ['task_id', 'task_type', 'audio_mode', 'input_modality', 'element_during_answer', 'answer_display', 'completion_status', 'skip_event_id', 'task_started_id', 'task_completed_id', 'element_ids', 'recording_segments', 'thinking_segments', 'pause_segments']
+    Testing direct field access for 'task_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_type':
+      Read all data: 33 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 33 items
+    Testing direct field access for 'input_modality':
+      Read all data: 33 items
+    Testing direct field access for 'element_during_answer':
+      Read all data: 33 items
+    Testing direct field access for 'answer_display':
+      Read all data: 33 items
+    Testing direct field access for 'completion_status':
+      Read all data: 33 items
+    Testing direct field access for 'skip_event_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_started_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_completed_id':
+      Read all data: 33 items
+    Testing direct field access for 'element_ids':
+      Read all data: 33 items
+    Testing direct field access for 'recording_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+    Testing direct field access for 'thinking_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+    Testing direct field access for 'pause_segments':
+      Failed to read all data: Cannot create cython.array from NULL pointer
+      Item-by-item: 0 successes, 20 errors, 0 nulls
+  recording segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'containing_task_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 73 items
+    Testing direct field access for 'segment_type':
+      Read all data: 73 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 73 items
+    Testing direct field access for 'containing_task_id':
+      Read all data: 73 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 73 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 73 items
+  thinking segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'containing_task_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 60 items
+    Testing direct field access for 'segment_type':
+      Read all data: 60 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 60 items
+    Testing direct field access for 'containing_task_id':
+      Read all data: 60 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 60 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 60 items
+
+================================================================================
+DIRECT READ ATTEMPTS
+================================================================================
+
+Attempting to read: elements/table
+  Dataset shape: (527,)
+  Dataset type: {'names': ['element_id', 'element_type', 'title', 'is_instruction', 'task_id', 'task_type', 'sequence_idx', 'max_count', 'start_time', 'end_time', 'duration', 'session_fraction', 'session_relative_time', 'audio_mode', 'display_text', 'has_audio', 'auto_advance_seconds', 'with_interruptions', 'input_modality', 'user_input_length', 'response_required', 'response_time_seconds', 'element_sent_id', 'element_replied_id', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', 'O', '?', 'O', 'O', '<i4', '<i4', '<f8', '<f8', '<f8', '<f4', '<f8', 'O', '?', '?', '<f8', '?', 'O', '<i4', '?', '<f8', 'O', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 24, 25, 33, 41, 45, 49, 57, 65, 73, 77, 85, 93, 94, 95, 103, 104, 112, 116, 117, 125, 133, 141, 157, 173], 'itemsize': 189}
+  Method 1: Direct read with [:]
+    Failed: Cannot create cython.array from NULL pointer
+  Method 2: Field-by-field read
+    Failed for field 'element_id': Cannot create cython.array from NULL pointer
+    Failed for field 'element_type': Cannot create cython.array from NULL pointer
+    Failed for field 'title': Cannot create cython.array from NULL pointer
+    Failed for field 'is_instruction': Cannot create cython.array from NULL pointer
+    Failed for field 'task_id': Cannot create cython.array from NULL pointer
+    Failed for field 'task_type': Cannot create cython.array from NULL pointer
+    Failed for field 'sequence_idx': Cannot create cython.array from NULL pointer
+    Failed for field 'max_count': Cannot create cython.array from NULL pointer
+    Failed for field 'start_time': Cannot create cython.array from NULL pointer
+    Failed for field 'end_time': Cannot create cython.array from NULL pointer
+    Failed for field 'duration': Cannot create cython.array from NULL pointer
+    Failed for field 'session_fraction': Cannot create cython.array from NULL pointer
+    Failed for field 'session_relative_time': Cannot create cython.array from NULL pointer
+    Failed for field 'audio_mode': Cannot create cython.array from NULL pointer
+    Failed for field 'display_text': Cannot create cython.array from NULL pointer
+    Failed for field 'has_audio': Cannot create cython.array from NULL pointer
+    Failed for field 'auto_advance_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'with_interruptions': Cannot create cython.array from NULL pointer
+    Failed for field 'input_modality': Cannot create cython.array from NULL pointer
+    Failed for field 'user_input_length': Cannot create cython.array from NULL pointer
+    Failed for field 'response_required': Cannot create cython.array from NULL pointer
+    Failed for field 'response_time_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'element_sent_id': Cannot create cython.array from NULL pointer
+    Failed for field 'element_replied_id': Cannot create cython.array from NULL pointer
+    Failed for field 'recording_segments': Cannot create cython.array from NULL pointer
+    Failed for field 'thinking_segments': Cannot create cython.array from NULL pointer
+    Failed for field 'pause_segments': Cannot create cython.array from NULL pointer
+  Method 3: Item-by-item read
+    Failed for item 0: Cannot create cython.array from NULL pointer
+    Failed for item 1: Cannot create cython.array from NULL pointer
+    Failed for item 2: Cannot create cython.array from NULL pointer
+    Failed for item 3: Cannot create cython.array from NULL pointer
+    Failed for item 4: Cannot create cython.array from NULL pointer
+
+Attempting to read: tasks/table
+  Dataset shape: (33,)
+  Dataset type: {'names': ['task_id', 'task_type', 'sequence_number', 'start_time', 'end_time', 'duration', 'session_fraction_start', 'session_fraction_end', 'count', 'allow_repeats', 'with_interruptions', 'audio_mode', 'intro_delay_seconds', 'eyes_closed_seconds', 'eyes_open_seconds', 'normal_breathing_seconds', 'breath_hold_seconds', 'sound_seconds', 'quiet_seconds', 'input_modality', 'element_during_answer', 'answer_display', 'delay', 'completion_status', 'skipped', 'skip_time', 'skip_event_id', 'task_started_id', 'task_completed_id', 'element_count', 'element_ids', 'recording_segments', 'thinking_segments', 'pause_segments'], 'formats': ['O', 'O', '<i4', '<f8', '<f8', '<f8', '<f4', '<f4', '<i4', '?', '?', 'O', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', '<f8', 'O', 'O', 'O', '<i4', 'O', '?', '<f8', 'O', 'O', 'O', '<i4', 'O', 'O', 'O', 'O'], 'offsets': [0, 8, 16, 20, 28, 36, 44, 48, 52, 56, 57, 58, 66, 74, 82, 90, 98, 106, 114, 122, 130, 138, 146, 150, 158, 159, 167, 175, 183, 191, 195, 211, 227, 243], 'itemsize': 259}
+  Method 1: Direct read with [:]
+    Failed: Cannot create cython.array from NULL pointer
+  Method 2: Field-by-field read
+    Failed for field 'task_id': Cannot create cython.array from NULL pointer
+    Failed for field 'task_type': Cannot create cython.array from NULL pointer
+    Failed for field 'sequence_number': Cannot create cython.array from NULL pointer
+    Failed for field 'start_time': Cannot create cython.array from NULL pointer
+    Failed for field 'end_time': Cannot create cython.array from NULL pointer
+    Failed for field 'duration': Cannot create cython.array from NULL pointer
+    Failed for field 'session_fraction_start': Cannot create cython.array from NULL pointer
+    Failed for field 'session_fraction_end': Cannot create cython.array from NULL pointer
+    Failed for field 'count': Cannot create cython.array from NULL pointer
+    Failed for field 'allow_repeats': Cannot create cython.array from NULL pointer
+    Failed for field 'with_interruptions': Cannot create cython.array from NULL pointer
+    Failed for field 'audio_mode': Cannot create cython.array from NULL pointer
+    Failed for field 'intro_delay_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'eyes_closed_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'eyes_open_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'normal_breathing_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'breath_hold_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'sound_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'quiet_seconds': Cannot create cython.array from NULL pointer
+    Failed for field 'input_modality': Cannot create cython.array from NULL pointer
+    Failed for field 'element_during_answer': Cannot create cython.array from NULL pointer
+    Failed for field 'answer_display': Cannot create cython.array from NULL pointer
+    Failed for field 'delay': Cannot create cython.array from NULL pointer
+    Failed for field 'completion_status': Cannot create cython.array from NULL pointer
+    Failed for field 'skipped': Cannot create cython.array from NULL pointer
+    Failed for field 'skip_time': Cannot create cython.array from NULL pointer
+    Failed for field 'skip_event_id': Cannot create cython.array from NULL pointer
+    Failed for field 'task_started_id': Cannot create cython.array from NULL pointer
+    Failed for field 'task_completed_id': Cannot create cython.array from NULL pointer
+    Failed for field 'element_count': Cannot create cython.array from NULL pointer
+    Failed for field 'element_ids': Cannot create cython.array from NULL pointer
+    Failed for field 'recording_segments': Cannot create cython.array from NULL pointer
+    Failed for field 'thinking_segments': Cannot create cython.array from NULL pointer
+    Failed for field 'pause_segments': Cannot create cython.array from NULL pointer
+  Method 3: Item-by-item read
+    Failed for item 0: Cannot create cython.array from NULL pointer
+    Failed for item 1: Cannot create cython.array from NULL pointer
+    Failed for item 2: Cannot create cython.array from NULL pointer
+    Failed for item 3: Cannot create cython.array from NULL pointer
+    Failed for item 4: Cannot create cython.array from NULL pointer
+
+Attempting to read: segments/recording
+  Dataset shape: (73,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (73,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: recording_recording_start_1
+    Field 'segment_type' first value: recording
+    Field 'start_time' first value: 1746476379334.0
+    Field 'end_time' first value: 1746476392758.0
+    Field 'duration' first value: 13424.0
+    Field 'containing_element_id' first value: element_sent_146
+    Field 'containing_task_id' first value: 
+    Field 'element_relative_start' first value: 2216.0
+    Field 'task_relative_start' first value: 0.0
+    Field 'start_event_id' first value: recording_start_1
+    Field 'end_event_id' first value: recording_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/thinking
+  Dataset shape: (60,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('containing_task_id', 'O'), ('element_relative_start', '<f8'), ('task_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (60,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: thinking_thinking_start_1
+    Field 'segment_type' first value: thinking
+    Field 'start_time' first value: 1746475672919.0
+    Field 'end_time' first value: 1746475675923.0
+    Field 'duration' first value: 3004.0
+    Field 'containing_element_id' first value: element_sent_68
+    Field 'containing_task_id' first value: 
+    Field 'element_relative_start' first value: 747.0
+    Field 'task_relative_start' first value: 0.0
+    Field 'start_event_id' first value: thinking_start_1
+    Field 'end_event_id' first value: thinking_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>

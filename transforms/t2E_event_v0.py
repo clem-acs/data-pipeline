@@ -17,6 +17,10 @@ from collections import defaultdict
 # Import base transform
 from base_transform import BaseTransform, Session
 
+# Constants for default values
+DEFAULT_AUDIO_MODE = "text_only"
+DEFAULT_INPUT_MODALITY = "text"
+
 # Module logger - only used before class initialization
 logger = logging.getLogger(__name__)
 
@@ -361,24 +365,12 @@ class EventTransform(BaseTransform):
                 'count': config.get('count', 0),
                 'allow_repeats': config.get('allow_repeats', False),
                 'with_interruptions': config.get('with_interruptions', False),
-                'audio_mode': config.get('audio_mode', ''),
-                'intro_delay_seconds': config.get('intro_delay_seconds', 0.0),
+                'audio_mode': config.get('audio_mode') or DEFAULT_AUDIO_MODE,
                 
-                # Task-specific timing parameters
-                'eyes_closed_seconds': config.get('eyes_closed_seconds', 0.0),
-                'eyes_open_seconds': config.get('eyes_open_seconds', 0.0),
-                'normal_breathing_seconds': config.get('normal_breathing_seconds', 0.0),
-                'breath_hold_seconds': config.get('breath_hold_seconds', 0.0),
-                'sound_seconds': config.get('sound_seconds', 0.0),
-                'quiet_seconds': config.get('quiet_seconds', 0.0),
                 
                 # Input configuration parameters - variable by task type
-                'input_modality': config.get('input_modality', ''),
-                'element_during_answer': config.get('element_during_answer', ''),
-                'answer_display': config.get('answer_display', ''),
+                'input_modality': config.get('input_modality') or DEFAULT_INPUT_MODALITY,
                 
-                # Word task specific parameters
-                'delay': config.get('delay', 0),  # Millisecond delay between elements
                 
                 # Event references
                 'task_started_id': start_event['event_ids'][0],
@@ -389,11 +381,8 @@ class EventTransform(BaseTransform):
                 'skip_time': 0.0,
                 'skip_event_id': '',
                 
-                # Fields for elements and segments
-                'element_ids': [],
-                'recording_segments': [],
-                'thinking_segments': [],
-                'pause_segments': []
+                # Fields for elements
+                'element_ids': []
             }
             
             # Calculate additional metadata
@@ -469,24 +458,17 @@ class EventTransform(BaseTransform):
                 
                 # Presentation
                 'audio_mode': element_content.get('audio_mode', ''),
-                'display_text': element_content.get('display_text', True),
                 'has_audio': element_content.get('has_audio', False),
-                'auto_advance_seconds': element_content.get('auto_advance_seconds', 0.0),
                 'with_interruptions': element_content.get('with_interruptions', False),
                 
                 # Response
                 'input_modality': replied_data.get('input_modality', ''),
-                'user_input_length': len(replied_data.get('user_input', '')),
-                'response_required': element_content.get('response_expected', True),
                 
                 # Event references
                 'element_sent_id': sent_event['event_ids'][0],
                 'element_replied_id': replied_event['event_ids'][0],
                 
-                # Placeholders for segments
-                'recording_segments': [],
-                'thinking_segments': [],
-                'pause_segments': []
+                # No segment placeholders needed
             }
             
             # Calculate derived fields
@@ -528,15 +510,14 @@ class EventTransform(BaseTransform):
                 # Check element containment
                 contained_by_element = False
                 for element_id, element in elements.items():
-                    if (element['start_time'] <= start_time and 
+                    if (element['start_time'] <= start_time and
                         element['end_time'] >= end_time):
-                        # Add reference in both directions
+                        # Add reference only to segment - no bidirectional references
                         segment['containing_element_id'] = element_id
-                        elements[element_id][f'{segment_type}_segments'].append(segment['segment_id'])
-                        
+
                         # Calculate relative position
                         segment['element_relative_start'] = start_time - element['start_time']
-                        
+
                         contained_by_element = True
                         break
                 
@@ -545,10 +526,9 @@ class EventTransform(BaseTransform):
                     for task_id, task in tasks.items():
                         if (task['start_time'] <= start_time and 
                             task['end_time'] >= end_time):
-                            # Add reference in both directions
+                            # Add reference only to segment - no bidirectional references
                             segment['containing_task_id'] = task_id
-                            tasks[task_id][f'{segment_type}_segments'].append(segment['segment_id'])
-                            
+
                             # Calculate relative position
                             segment['task_relative_start'] = start_time - task['start_time']
                             
@@ -664,29 +644,45 @@ class EventTransform(BaseTransform):
                     data=np.array(element_ids, dtype='S64')
                 )
             
-            # Create segments_by_element index
+            # Create segments_by_element index - built from segments table instead of element lists
             segments_by_element = indices_group.create_group('segments_by_element')
-            for element_id, element in processed_data['elements'].items():
-                all_segments = []
-                for segment_type in ['recording', 'thinking', 'pause']:
-                    all_segments.extend(element[f'{segment_type}_segments'])
-                
-                if all_segments:
-                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in all_segments]
+            element_segments = {}
+
+            # Collect segments by their containing element
+            for segment_type, segment_list in processed_data['segments'].items():
+                for segment in segment_list:
+                    element_id = segment.get('containing_element_id', '')
+                    if element_id:
+                        if element_id not in element_segments:
+                            element_segments[element_id] = []
+                        element_segments[element_id].append(segment['segment_id'])
+
+            # Create datasets for each element's segments
+            for element_id, segment_ids in element_segments.items():
+                if segment_ids:
+                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in segment_ids]
                     segments_by_element.create_dataset(
                         element_id,
                         data=np.array(segment_ids, dtype='S64')
                     )
             
-            # Create segments_by_task index
+            # Create segments_by_task index - built from segments table instead of task lists
             segments_by_task = indices_group.create_group('segments_by_task')
-            for task_id, task in processed_data['tasks'].items():
-                all_segments = []
-                for segment_type in ['recording', 'thinking', 'pause']:
-                    all_segments.extend(task[f'{segment_type}_segments'])
-                
-                if all_segments:
-                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in all_segments]
+            task_segments = {}
+
+            # Collect segments by their containing task
+            for segment_type, segment_list in processed_data['segments'].items():
+                for segment in segment_list:
+                    task_id = segment.get('containing_task_id', '')
+                    if task_id:
+                        if task_id not in task_segments:
+                            task_segments[task_id] = []
+                        task_segments[task_id].append(segment['segment_id'])
+
+            # Create datasets for each task's segments
+            for task_id, segment_ids in task_segments.items():
+                if segment_ids:
+                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in segment_ids]
                     segments_by_task.create_dataset(
                         task_id,
                         data=np.array(segment_ids, dtype='S64')
@@ -694,7 +690,7 @@ class EventTransform(BaseTransform):
     
     def _create_element_dtype(self):
         """Create numpy dtype for elements table.
-        
+
         Returns:
             np.dtype: Element table dtype
         """
@@ -704,46 +700,39 @@ class EventTransform(BaseTransform):
             ('element_type', h5py.special_dtype(vlen=str)),
             ('title', h5py.special_dtype(vlen=str)),
             ('is_instruction', np.bool_),
-            
+
             # 2. Task Relationships
             ('task_id', h5py.special_dtype(vlen=str)),
             ('task_type', h5py.special_dtype(vlen=str)),
             ('sequence_idx', np.int32),
             ('max_count', np.int32),
-            
+
             # 3. Timing & Position
             ('start_time', np.float64),
             ('end_time', np.float64),
             ('duration', np.float64),
             ('session_fraction', np.float32),
             ('session_relative_time', np.float64),
-            
+
             # 4. Presentation Configuration
             ('audio_mode', h5py.special_dtype(vlen=str)),
-            ('display_text', np.bool_),
             ('has_audio', np.bool_),
-            ('auto_advance_seconds', np.float64),
             ('with_interruptions', np.bool_),
-            
+
             # 5. Response Characteristics
             ('input_modality', h5py.special_dtype(vlen=str)),
-            ('user_input_length', np.int32),
-            ('response_required', np.bool_),
             ('response_time_seconds', np.float64),
-            
+
             # 6. Event References
             ('element_sent_id', h5py.special_dtype(vlen=str)),
             ('element_replied_id', h5py.special_dtype(vlen=str)),
-            
-            # 7. Segment Containment
-            ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
-            ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
-            ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+
+            # Note: Segment relationships are now managed only through indices
         ])
     
     def _create_task_dtype(self):
         """Create numpy dtype for tasks table.
-        
+
         Returns:
             np.dtype: Task table dtype
         """
@@ -752,53 +741,39 @@ class EventTransform(BaseTransform):
             ('task_id', h5py.special_dtype(vlen=str)),
             ('task_type', h5py.special_dtype(vlen=str)),
             ('sequence_number', np.int32),
-            
+
             # 2. Timing
             ('start_time', np.float64),
             ('end_time', np.float64),
             ('duration', np.float64),
             ('session_fraction_start', np.float32),
             ('session_fraction_end', np.float32),
-            
+
             # 3. Core Configuration
             ('count', np.int32),
             ('allow_repeats', np.bool_),
             ('with_interruptions', np.bool_),
             ('audio_mode', h5py.special_dtype(vlen=str)),
-            ('intro_delay_seconds', np.float64),
-            
-            # 4. Task-Type Specific Parameters
-            ('eyes_closed_seconds', np.float64),
-            ('eyes_open_seconds', np.float64),
-            ('normal_breathing_seconds', np.float64),
-            ('breath_hold_seconds', np.float64),
-            ('sound_seconds', np.float64),
-            ('quiet_seconds', np.float64),
-            
+
+
             # 5. Input Configuration
             ('input_modality', h5py.special_dtype(vlen=str)),
-            ('element_during_answer', h5py.special_dtype(vlen=str)),
-            ('answer_display', h5py.special_dtype(vlen=str)),
-            ('delay', np.int32),  # Added for word task delay parameter
-            
+
             # 6. Status Information
             ('completion_status', h5py.special_dtype(vlen=str)),
             ('skipped', np.bool_),
             ('skip_time', np.float64),
             ('skip_event_id', h5py.special_dtype(vlen=str)),
-            
+
             # 7. Event References
             ('task_started_id', h5py.special_dtype(vlen=str)),
             ('task_completed_id', h5py.special_dtype(vlen=str)),
-            
+
             # 8. Element Relationships
             ('element_count', np.int32),
             ('element_ids', h5py.special_dtype(vlen=np.dtype('S64'))),
-            
-            # 9. Segment Containment
-            ('recording_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
-            ('thinking_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
-            ('pause_segments', h5py.special_dtype(vlen=np.dtype('S64'))),
+
+            # Note: Segment relationships are now managed only through indices
         ])
     
     def _create_segment_dtype(self):
@@ -827,60 +802,79 @@ class EventTransform(BaseTransform):
         ])
     
     def _convert_to_array(self, items, dtype, item_type='elements'):
-        """Convert items to a structured numpy array.
-        
+        """Convert items to a structured numpy array with NULL safety.
+
         Args:
             items: Dictionary or list of items
             dtype: Numpy dtype for the array
             item_type: Type of items ('elements', 'tasks', or 'segments')
-            
+
         Returns:
             np.ndarray: Structured array
         """
         # Initialize array
         array_data = np.zeros(len(items), dtype=dtype)
-        
+
         # Define special fields that need array conversion by item type
+        # Note: Removed segment lists, only element_ids remains as special field for tasks
         array_fields = {
-            'elements': ['recording_segments', 'thinking_segments', 'pause_segments'],
-            'tasks': ['element_ids', 'recording_segments', 'thinking_segments', 'pause_segments'],
+            'elements': [],  # No more segment arrays
+            'tasks': ['element_ids'],  # Only element_ids
             'segments': []
         }
         special_fields = array_fields.get(item_type, [])
-        
-        # Convert items to array
+
+        # Convert items based on type
         if item_type == 'segments':
-            # Segments are a list, not a dictionary
+            # Segments handling (unchanged)
             for i, item in enumerate(items):
                 for field in dtype.names:
                     if field in item:
                         array_data[i][field] = item[field]
         else:
-            # Elements and tasks are dictionaries
+            # Handle dictionary items (tasks, elements)
             for i, (item_id, item) in enumerate(items.items()):
                 for field in dtype.names:
-                    if field in item:
-                        # Handle string arrays
+                    if field not in item:
+                        # Initialize array fields to empty arrays instead of skipping
                         if field in special_fields:
-                            if isinstance(item[field], list):
-                                # Convert string IDs to byte arrays
-                                ids = [id_val.encode('utf-8') if isinstance(id_val, str) else id_val for id_val in item[field]]
-                                array_data[i][field] = np.array(ids, dtype='S64')
+                            array_data[i][field] = np.array([], dtype='S64')
+                        continue
+
+                    # Handle special field arrays with NULL safety
+                    if field in special_fields:
+                        # Always create a valid array, even if item[field] is None
+                        if item[field] is None:
+                            array_data[i][field] = np.array([], dtype='S64')
+                        elif isinstance(item[field], list):
+                            # Filter out None values and convert strings to bytes
+                            ids = []
+                            for id_val in item[field]:
+                                if id_val is not None:
+                                    if isinstance(id_val, str):
+                                        ids.append(id_val.encode('utf-8'))
+                                    else:
+                                        ids.append(id_val)
+                            array_data[i][field] = np.array(ids, dtype='S64')
                         else:
-                            array_data[i][field] = item[field]
-                
+                            # Non-list value, create empty array
+                            array_data[i][field] = np.array([], dtype='S64')
+                    else:
+                        # Regular non-array field
+                        array_data[i][field] = item[field]
+
                 # Task-specific post-processing
                 if item_type == 'tasks':
                     # Calculate element count
                     array_data[i]['element_count'] = len(item.get('element_ids', []))
-                    
+
                     # Set defaults for optional fields
                     if not item.get('completion_status'):
                         array_data[i]['completion_status'] = 'completed'
-                    
+
                     if 'skipped' not in item:
                         array_data[i]['skipped'] = False
-        
+
         return array_data
     
     @classmethod
