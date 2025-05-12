@@ -521,9 +521,16 @@ class EventTransform(BaseTransform):
                 # Get timestamps
                 start_time = segment['start_time']
                 end_time = segment['end_time']
-                
+
+                # DEBUG: Print segment information
+                print(f"DEBUG-SEGMENT: Processing {segment_type} segment '{segment['segment_id']}' with start_time={start_time}")
+
                 # Check element containment - only check if start time is within element timespan
+                found_containing_element = False
                 for element_id, element in elements.items():
+                    # DEBUG: Print element time bounds being checked
+                    print(f"DEBUG-ELEMENT-TIMES: Checking element '{element_id}' with start={element['start_time']}, end={element['end_time']}")
+
                     if (element['start_time'] <= start_time and
                         element['end_time'] >= start_time):
                         # Add reference only to segment - no bidirectional references
@@ -532,7 +539,14 @@ class EventTransform(BaseTransform):
                         # Calculate relative position
                         segment['element_relative_start'] = start_time - element['start_time']
 
+                        # DEBUG: Print successful containment
+                        print(f"DEBUG-CONTAINMENT: Segment '{segment['segment_id']}' is contained by element '{element_id}'")
+                        found_containing_element = True
                         break
+
+                # DEBUG: Print warning if no element contains this segment
+                if not found_containing_element:
+                    print(f"DEBUG-CONTAINMENT-WARNING: Segment '{segment['segment_id']}' is not contained by any element!")
 
                 # No fallback to task containment - segments are only contained by elements
         

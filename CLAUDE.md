@@ -49,17 +49,11 @@ Your task
 
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
-I want a transform like T2e or something that extracts all the types of event data in various ways
+look in particular at the tamuz_inspected.txt file
 
-after that, i'll later combine the output of window, lang, and this event transform into a tiledb dataset for very easy large model training
+then look in two other files. first, in deantime.txt which is the output from time.py
 
-so think about the deserata of the eventual tiledb dataset - super easy, fast querying for training lots of things with just a line or two of code to query. that will be like t4a or something. but we aren't really coding that up yet, we just need to keep that goal in mind and really grok what we need to do for it
+then, look in contain.txt which is the output of the t2e transform. look iin particular at the timestamps of elements (element sent and element replied events, or start and end time of elements). go through each element in these two files (which act on the same underlying h5 file) and discuss any discrepincies in element durations in them - you may have to look at underlying timestamps and calculate in the contain one. in particular, there seem to be issues in the contain where after a certain point, segments can no longer be associated with elements because of element timing issues. compare these to the deantime file. what is working, what is going wrong. analyze in detail, report back, ultrathink
 
-read the file tamuz-inspected.txt in full and consider the actual kinds of events at play here. some are saved as two event types, for example (element sent and element replied make up one full element, for example, same with some others), so we'll want to save those differently from one-shot events, like a display event for example. really look at all the data, the shapes, how this is similar to aspects of lang or window, etc.
 
-then look carefully at the t2e transform, which attempts to do this
 
-however, there are issues.
-most centrally, there are some null issues in the tasks and in the elements data that cause downstream null pointer issues. however, more pressingly, this is hard to debug because the code was written by my junior, who wrote code in a clunky way that's hard to debug - lots of duplicated code, etc.
-write a report to report.txt that explains how to massively simplify/eliminate type issues/get rid of duplicate code
-think hard, really read and grok each line, and then write the issues and specific fixes to report.txt ultrathink

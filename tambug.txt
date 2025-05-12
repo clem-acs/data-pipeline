@@ -1,0 +1,561 @@
+Analyzing file: C:\Users\riopo\data-pipeline\Tamuz_B3_20250506_175629_events.h5
+
+================================================================================
+FILE INFO
+================================================================================
+File path: C:\Users\riopo\data-pipeline\Tamuz_B3_20250506_175629_events.h5
+File size: 0.40 MB
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+Group: elements/
+  Dataset: table (Shape: (448,), Type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')])
+Group: indices/
+  Group: element_by_task/
+    Dataset: argument_1 (Shape: (15,), Type: |S64)
+    Dataset: breath_1 (Shape: (8,), Type: |S64)
+    Dataset: breath_2 (Shape: (8,), Type: |S64)
+    Dataset: chat_1 (Shape: (26,), Type: |S64)
+    Dataset: completion_1 (Shape: (5,), Type: |S64)
+    Dataset: completion_2 (Shape: (17,), Type: |S64)
+    Dataset: completion_3 (Shape: (21,), Type: |S64)
+    Dataset: completion_4 (Shape: (25,), Type: |S64)
+    Dataset: completion_5 (Shape: (15,), Type: |S64)
+    Dataset: completion_6 (Shape: (18,), Type: |S64)
+    Dataset: eye_1 (Shape: (7,), Type: |S64)
+    Dataset: eye_2 (Shape: (7,), Type: |S64)
+    Dataset: eye_3 (Shape: (7,), Type: |S64)
+    Dataset: feedback_1 (Shape: (4,), Type: |S64)
+    Dataset: language_1 (Shape: (6,), Type: |S64)
+    Dataset: language_2 (Shape: (6,), Type: |S64)
+    Dataset: learn_1 (Shape: (10,), Type: |S64)
+    Dataset: listen_1 (Shape: (7,), Type: |S64)
+    Dataset: listen_2 (Shape: (7,), Type: |S64)
+    Dataset: paraphrase_1 (Shape: (6,), Type: |S64)
+    Dataset: paraphrase_2 (Shape: (10,), Type: |S64)
+    Dataset: sentence_1 (Shape: (5,), Type: |S64)
+    Dataset: sentence_2 (Shape: (4,), Type: |S64)
+    Dataset: sentence_3 (Shape: (40,), Type: |S64)
+    Dataset: sentence_4 (Shape: (21,), Type: |S64)
+    Dataset: situation_1 (Shape: (11,), Type: |S64)
+    Dataset: wait_1 (Shape: (1,), Type: |S64)
+    Dataset: word_1 (Shape: (12,), Type: |S64)
+    Dataset: word_2 (Shape: (40,), Type: |S64)
+    Dataset: word_3 (Shape: (25,), Type: |S64)
+    Dataset: wordassociation_1 (Shape: (26,), Type: |S64)
+    Dataset: wordassociation_2 (Shape: (28,), Type: |S64)
+  Group: segments_by_element/
+    Dataset: completion_2_completion_10 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_114 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_134 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_201 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_286 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_349 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_373 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_374 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_377 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_398 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_401 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_448 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_454 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_487 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_495 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_81 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_101 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_113 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_115 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_128 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_136 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_161 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_181 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_204 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_21 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_223 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_253 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_259 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_308 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_327 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_355 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_380 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_409 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_428 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_434 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_441 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_482 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_486 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_504 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_6 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_149 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_196 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_201 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_241 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_302 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_315 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_357 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_364 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_380 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_421 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_488 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_65 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_74 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_88 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1016 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1062 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1142 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1323 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1332 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1433 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1560 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1682 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1723 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1743 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1981 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2046 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2115 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2132 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2176 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2182 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2306 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2327 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2389 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2470 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2497 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2516 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2527 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2648 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2659 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2682 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2689 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2726 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2847 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_304 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_497 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_53 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_62 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_667 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_68 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_722 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_841 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_856 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_909 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_15 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_21 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_27 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_3 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_34 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_4 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_43 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_49 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_53 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_56 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_1 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_10 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_11 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_12 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_13 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_14 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_15 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_16 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_17 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_18 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_19 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_2 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_20 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_21 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_22 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_23 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_24 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_25 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_3 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_4 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_5 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_6 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_7 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_8 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_9 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_1 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_10 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_11 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_12 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_13 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_14 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_15 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_16 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_17 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_18 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_19 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_2 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_20 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_21 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_22 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_23 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_24 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_25 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_26 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_27 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_3 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_4 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_5 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_6 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_7 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_8 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_9 (Shape: (1,), Type: |S64)
+Group: metadata/
+  Group: stats/
+Group: segments/
+  Dataset: recording (Shape: (103,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+  Dataset: thinking (Shape: (52,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+Group: tasks/
+  Dataset: table (Shape: (32,), Type: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')])
+
+================================================================================
+TASKS INSPECTION
+================================================================================
+Tasks table shape: (32,)
+Tasks table dtype: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+
+Approach 1: Direct read of first task
+  task_id: wait_1
+  task_type: wait
+  sequence_number: 0
+  start_time: 1746579397983.0
+  end_time: 1746579484941.0
+  duration: 86958.0
+  session_fraction_start: 0.09284722
+  session_fraction_end: 1.0993055
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Approach 2: Field-by-field read
+  task_id: wait_1
+  task_type: wait
+  sequence_number: 0
+  start_time: 1746579397983.0
+  end_time: 1746579484941.0
+  duration: 86958.0
+  session_fraction_start: 0.09284722
+  session_fraction_end: 1.0993055
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Null check: Scanning for null/empty task_ids
+  No null/empty task_ids found
+
+Element IDs check: Examine element_ids arrays
+  No 'element_ids' field found in tasks table
+
+================================================================================
+ELEMENTS INSPECTION
+================================================================================
+Elements table shape: (448,)
+Elements table dtype: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')]
+
+Approach 1: Direct read of first element
+  element_id: wait_1_intro
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746579400288.0
+  end_time: 1746579484933.0
+  duration: 84645.0
+  session_fraction: 0.0
+  session_relative_time: 10327.0
+  audio_mode: text_only
+  has_audio: False
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: -1.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+  event_id: element_sent_1
+
+Approach 2: Field-by-field read
+  element_id: wait_1_intro
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746579400288.0
+  end_time: 1746579484933.0
+  duration: 84645.0
+  session_fraction: 0.0
+  session_relative_time: 10327.0
+  audio_mode: text_only
+  has_audio: False
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: -1.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+  event_id: element_sent_1
+
+Approach 3: Numpy array conversion
+  Converted to array with shape: (1,)
+
+Null check: Scanning for critical fields with None/empty values
+  No null/empty values found in sampled elements (first 10)
+
+================================================================================
+SEGMENTS INSPECTION
+================================================================================
+
+Checking recording segments:
+  Shape: (103,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 103 out of 103
+  Segments with task container: 0 out of 103
+  Segments with no container: 0
+
+Checking thinking segments:
+  Shape: (52,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 52 out of 52
+  Segments with task container: 0 out of 52
+  Segments with no container: 0
+
+Checking pause segments:
+  No pause dataset found
+
+================================================================================
+INDEX INSPECTION
+================================================================================
+Found indices group with:
+
+Index type: element_by_task
+  Contains 32 entries:
+  Sample keys: ['argument_1', 'breath_1', 'breath_2', 'chat_1', 'completion_1']...
+  Sample data for 'argument_1':
+    Shape: (15,)
+    Type: |S64
+    First value: argument_1_intro
+
+Index type: segments_by_element
+  Contains 155 entries:
+  Sample keys: ['completion_2_completion_10', 'completion_2_completion_114', 'completion_2_completion_134', 'completion_2_completion_201', 'completion_2_completion_286']...
+  Sample data for 'completion_2_completion_10':
+    Shape: (1,)
+    Type: |S64
+    First value: recording_start_1
+
+================================================================================
+RELATIONSHIP VERIFICATION
+================================================================================
+
+Verifying task-element links:
+  Found 32 tasks and 448 elements
+  Tasks with element indexes: 32
+  Tasks with element_ids array: 0
+  Consistency check: 0 tasks with elements vs 32 indexed
+
+Verifying segment-container links:
+  Elements with segment indexes: 155
+  No segments_by_task index found
+
+================================================================================
+NULL POINTER ANALYSIS
+================================================================================
+
+VLEN field inspection:
+  Elements table: Found VLEN fields: ['element_id', 'element_type', 'title', 'task_id', 'task_type', 'audio_mode', 'input_modality', 'element_sent_id', 'element_replied_id', 'event_id']
+    Testing direct field access for 'element_id':
+      Read all data: 448 items
+    Testing direct field access for 'element_type':
+      Read all data: 448 items
+    Testing direct field access for 'title':
+      Read all data: 448 items
+    Testing direct field access for 'task_id':
+      Read all data: 448 items
+    Testing direct field access for 'task_type':
+      Read all data: 448 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 448 items
+    Testing direct field access for 'input_modality':
+      Read all data: 448 items
+    Testing direct field access for 'element_sent_id':
+      Read all data: 448 items
+    Testing direct field access for 'element_replied_id':
+      Read all data: 448 items
+    Testing direct field access for 'event_id':
+      Read all data: 448 items
+  Tasks table: Found VLEN fields: ['task_id', 'task_type', 'audio_mode', 'input_modality', 'completion_status', 'skip_event_id', 'task_started_id', 'task_completed_id']
+    Testing direct field access for 'task_id':
+      Read all data: 32 items
+    Testing direct field access for 'task_type':
+      Read all data: 32 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 32 items
+    Testing direct field access for 'input_modality':
+      Read all data: 32 items
+    Testing direct field access for 'completion_status':
+      Read all data: 32 items
+    Testing direct field access for 'skip_event_id':
+      Read all data: 32 items
+    Testing direct field access for 'task_started_id':
+      Read all data: 32 items
+    Testing direct field access for 'task_completed_id':
+      Read all data: 32 items
+  recording segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 103 items
+    Testing direct field access for 'segment_type':
+      Read all data: 103 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 103 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 103 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 103 items
+  thinking segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 52 items
+    Testing direct field access for 'segment_type':
+      Read all data: 52 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 52 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 52 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 52 items
+
+================================================================================
+DIRECT READ ATTEMPTS
+================================================================================
+
+Attempting to read: elements/table
+  Dataset shape: (448,)
+  Dataset type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('has_audio', '?'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (448,)
+  Method 2: Field-by-field read
+    Field 'element_id' first value: wait_1_intro
+    Field 'element_type' first value: text
+    Field 'title' first value: Wait Task
+    Field 'is_instruction' first value: True
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'sequence_idx' first value: 0
+    Field 'max_count' first value: 1
+    Field 'start_time' first value: 1746579400288.0
+    Field 'end_time' first value: 1746579484933.0
+    Field 'duration' first value: 84645.0
+    Field 'session_fraction' first value: 0.0
+    Field 'session_relative_time' first value: 10327.0
+    Field 'audio_mode' first value: text_only
+    Field 'has_audio' first value: False
+    Field 'with_interruptions' first value: False
+    Field 'input_modality' first value: text
+    Field 'response_time_seconds' first value: -1.0
+    Field 'element_sent_id' first value: element_sent_1
+    Field 'element_replied_id' first value: element_replied_1
+    Field 'event_id' first value: element_sent_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: tasks/table
+  Dataset shape: (32,)
+  Dataset type: [('task_id', 'O'), ('task_type', 'O'), ('sequence_number', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (32,)
+  Method 2: Field-by-field read
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'sequence_number' first value: 0
+    Field 'start_time' first value: 1746579397983.0
+    Field 'end_time' first value: 1746579484941.0
+    Field 'duration' first value: 86958.0
+    Field 'session_fraction_start' first value: 0.09284722
+    Field 'session_fraction_end' first value: 1.0993055
+    Field 'count' first value: 1
+    Field 'allow_repeats' first value: False
+    Field 'with_interruptions' first value: False
+    Field 'audio_mode' first value: text_only
+    Field 'input_modality' first value: text
+    Field 'completion_status' first value: completed
+    Field 'skipped' first value: False
+    Field 'skip_time' first value: 0.0
+    Field 'skip_event_id' first value: 
+    Field 'task_started_id' first value: task_started_1
+    Field 'task_completed_id' first value: task_completed_1
+    Field 'element_count' first value: 1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/recording
+  Dataset shape: (103,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (103,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: recording_start_1
+    Field 'segment_type' first value: recording
+    Field 'start_time' first value: 1746580699769.0
+    Field 'end_time' first value: 1746580710677.0
+    Field 'duration' first value: 10908.0
+    Field 'containing_element_id' first value: completion_2_completion_10
+    Field 'element_relative_start' first value: 1680.0
+    Field 'start_event_id' first value: recording_start_1
+    Field 'end_event_id' first value: recording_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/thinking
+  Dataset shape: (52,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (52,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: thinking_start_1
+    Field 'segment_type' first value: thinking
+    Field 'start_time' first value: 1746579904963.0
+    Field 'end_time' first value: 1746579907964.0
+    Field 'duration' first value: 3001.0
+    Field 'containing_element_id' first value: wordassociation_1_word_1
+    Field 'element_relative_start' first value: 740.0
+    Field 'start_event_id' first value: thinking_start_1
+    Field 'end_event_id' first value: thinking_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>

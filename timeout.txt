@@ -1,0 +1,41 @@
+Loading events from C:\Users\riopo\data-pipeline\Tamuz_B3_20250506_175629.h5...
+
+================================================================================
+TIMESTAMP ANALYSIS RESULTS
+================================================================================
+
+1. ELEMENT SEND/REPLY DURATIONS
+----------------------------------------
+Total elements analyzed: 448
+
+Duration statistics (milliseconds):
+  Client-side durations:
+    Min: 1900.00 ms
+    Max: 163382.00 ms
+    Mean: 14729.41 ms
+    Median: 9502.00 ms
+    Std Dev: 16458.99 ms
+
+  Server-side durations:
+    Min: 1899.00 ms
+    Max: 163373.00 ms
+    Mean: 14846.92 ms
+    Median: 9843.50 ms
+    Std Dev: 16308.83 ms
+
+Individual element durations:
+
+Element 1: wait_1_intro
+  Sent event: element_sent_1
+  Replied event: element_replied_1
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\time.py", line 737, in <module>
+    main()
+  File "C:\Users\riopo\data-pipeline\time.py", line 697, in main
+    print_analysis_results(durations, task_durations, gap_analysis, timing_analysis)
+  File "C:\Users\riopo\data-pipeline\time.py", line 445, in print_analysis_results
+    print(f"  Client timestamps: {format_timestamp(row['client_sent_ts'])} \u2192 {format_timestamp(row['client_replied_ts'])}")
+  File "C:\Users\riopo\anaconda3\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 45: character maps to <undefined>

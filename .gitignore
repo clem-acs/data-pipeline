@@ -10,3 +10,4 @@ __pycache__
 .env.secrets
 transform_workdir
 *.h5
+**/.claude/settings.local.json
