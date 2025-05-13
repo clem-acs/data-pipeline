@@ -27,6 +27,7 @@ except ImportError:
     from transforms.t2A_window_v0 import WindowTransform
     from transforms.t2D_validate_v0 import ValidateTransform
     from transforms.t2E_analysis_v0 import AnalysisTransform
+    from transforms.t2F_audio_v0 import AudioExtractTransform
     from utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -53,6 +54,7 @@ TRANSFORMS = {
     'window': WindowTransform,
     'validate': ValidateTransform,
     'analyze': AnalysisTransform,
+    'audio': AudioExtractTransform,
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
     # 'extract': FeatureExtractionTransform,

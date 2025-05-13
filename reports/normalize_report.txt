@@ -1,0 +1,50 @@
+# fNIRS Normalization Analysis - Implementation Report
+
+## Overview
+This report documents the implementation of an exploratory approach to understanding the fNIRS data in the pipeline. Rather than immediately implementing a complete normalization solution, we've first focused on understanding the structure and characteristics of the data.
+
+## Implementation Details
+
+### Approach
+- Transformed `normalize.py` into an exploratory data analysis tool
+- Removed complex plotting code that was not functioning properly
+- Added detailed statistics gathering by moment and wavelength
+- Added source-detector distance calculation and reporting
+- Modified error handling to fail explicitly rather than continue with unnormalized data
+
+### Data Exploration Focus
+1. **Moment and Wavelength Analysis**: Collecting basic statistics (mean, std, min, max) for each combination of moment and wavelength
+2. **Channel Distance Analysis**: Calculating distances between sources and detectors for retained channels
+3. **Data Structure Understanding**: Validating assumptions about data shapes and organization
+
+### Key Changes
+1. **Simplification**: Removed complex plotting code in favor of basic statistics
+2. **Statistics**: Added comprehensive logging of statistics for each moment/wavelength combination
+3. **Distance Calculation**: Added calculation and reporting of source-detector distances
+4. **Error Handling**: Changed to fail explicitly when problems occur, according to pipeline principles
+
+## Integration with WindowTransform
+- Added normalization step to `process_session` method after windowing
+- Modified to extract `retained_fnirs_indices` from `summary_meta`
+- Changed error handling to allow failures to propagate up the stack
+- Added `normalization_applied` attribute to output files and metadata
+
+## Findings and Next Steps
+
+### Initial Findings
+The exploratory code will provide:
+- Mean/std/min/max values for each moment/wavelength combination
+- Distribution of source-detector distances for retained channels
+- Validation of data structure assumptions
+
+### Next Steps
+1. **Complete Analysis**: Run the transform and analyze the logged statistics
+2. **Normalization Design**: Based on findings, design appropriate normalization strategies
+3. **Implementation**: Implement normalization logic with proper error handling
+4. **Validation**: Add validation to ensure normalization produces expected results
+
+### Future Work
+- Consider per-window vs. global normalization approaches
+- Investigate relationships between channel values and distances
+- Develop visualization tools to better understand the data
+- Implement proper normalization based on the findings from this exploratory phase

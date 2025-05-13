@@ -11,10 +11,12 @@ from .eeg_preprocessing import preprocess_eeg
 from .fnirs_preprocessing import preprocess_fnirs
 from .windowing import create_windows
 from .window_dataset import WindowDataset
+from .normalize import normalize_window_dataset
 
 __all__ = [
     'preprocess_eeg',
     'preprocess_fnirs',
     'create_windows',
-    'WindowDataset'
+    'WindowDataset',
+    'normalize_window_dataset'
 ]
