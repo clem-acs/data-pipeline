@@ -1,0 +1,2092 @@
+[
+  {
+    "id": "recording_start_1",
+    "type": "recording_start",
+    "server_timestamp": 1746836420784,
+    "client_timestamp": 1746836420783,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836420783,
+      "server_timestamp": 1746836420784
+    }
+  },
+  {
+    "id": "recording_stop_1",
+    "type": "recording_stop",
+    "server_timestamp": 1746836422441,
+    "client_timestamp": 1746836422437,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836422437,
+      "server_timestamp": 1746836422441
+    }
+  },
+  {
+    "id": "recording_start_2",
+    "type": "recording_start",
+    "server_timestamp": 1746836426521,
+    "client_timestamp": 1746836426501,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836426501,
+      "server_timestamp": 1746836426521
+    }
+  },
+  {
+    "id": "recording_stop_2",
+    "type": "recording_stop",
+    "server_timestamp": 1746836434897,
+    "client_timestamp": 1746836434892,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836434892,
+      "server_timestamp": 1746836434897
+    }
+  },
+  {
+    "id": "recording_start_3",
+    "type": "recording_start",
+    "server_timestamp": 1746836438936,
+    "client_timestamp": 1746836438934,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836438934,
+      "server_timestamp": 1746836438936
+    }
+  },
+  {
+    "id": "recording_stop_3",
+    "type": "recording_stop",
+    "server_timestamp": 1746836451305,
+    "client_timestamp": 1746836451301,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836451301,
+      "server_timestamp": 1746836451305
+    }
+  },
+  {
+    "id": "recording_start_4",
+    "type": "recording_start",
+    "server_timestamp": 1746836455861,
+    "client_timestamp": 1746836455860,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836455860,
+      "server_timestamp": 1746836455861
+    }
+  },
+  {
+    "id": "recording_stop_4",
+    "type": "recording_stop",
+    "server_timestamp": 1746836460960,
+    "client_timestamp": 1746836460948,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836460948,
+      "server_timestamp": 1746836460960
+    }
+  },
+  {
+    "id": "recording_start_5",
+    "type": "recording_start",
+    "server_timestamp": 1746836464861,
+    "client_timestamp": 1746836464859,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836464859,
+      "server_timestamp": 1746836464861
+    }
+  },
+  {
+    "id": "recording_stop_5",
+    "type": "recording_stop",
+    "server_timestamp": 1746836468679,
+    "client_timestamp": 1746836468676,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836468676,
+      "server_timestamp": 1746836468679
+    }
+  },
+  {
+    "id": "recording_start_6",
+    "type": "recording_start",
+    "server_timestamp": 1746836471985,
+    "client_timestamp": 1746836471970,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836471970,
+      "server_timestamp": 1746836471985
+    }
+  },
+  {
+    "id": "recording_stop_6",
+    "type": "recording_stop",
+    "server_timestamp": 1746836474913,
+    "client_timestamp": 1746836474909,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836474909,
+      "server_timestamp": 1746836474913
+    }
+  },
+  {
+    "id": "recording_start_7",
+    "type": "recording_start",
+    "server_timestamp": 1746836478544,
+    "client_timestamp": 1746836478542,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836478542,
+      "server_timestamp": 1746836478544
+    }
+  },
+  {
+    "id": "recording_stop_7",
+    "type": "recording_stop",
+    "server_timestamp": 1746836481740,
+    "client_timestamp": 1746836481733,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836481733,
+      "server_timestamp": 1746836481740
+    }
+  },
+  {
+    "id": "recording_start_8",
+    "type": "recording_start",
+    "server_timestamp": 1746836484918,
+    "client_timestamp": 1746836484915,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836484915,
+      "server_timestamp": 1746836484918
+    }
+  },
+  {
+    "id": "recording_stop_8",
+    "type": "recording_stop",
+    "server_timestamp": 1746836487929,
+    "client_timestamp": 1746836487924,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836487924,
+      "server_timestamp": 1746836487929
+    }
+  },
+  {
+    "id": "recording_start_9",
+    "type": "recording_start",
+    "server_timestamp": 1746836491619,
+    "client_timestamp": 1746836491618,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836491618,
+      "server_timestamp": 1746836491619
+    }
+  },
+  {
+    "id": "recording_stop_9",
+    "type": "recording_stop",
+    "server_timestamp": 1746836495753,
+    "client_timestamp": 1746836495748,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836495748,
+      "server_timestamp": 1746836495753
+    }
+  },
+  {
+    "id": "recording_start_10",
+    "type": "recording_start",
+    "server_timestamp": 1746836499018,
+    "client_timestamp": 1746836499017,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836499017,
+      "server_timestamp": 1746836499018
+    }
+  },
+  {
+    "id": "recording_stop_10",
+    "type": "recording_stop",
+    "server_timestamp": 1746836502576,
+    "client_timestamp": 1746836502572,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836502572,
+      "server_timestamp": 1746836502576
+    }
+  },
+  {
+    "id": "recording_start_11",
+    "type": "recording_start",
+    "server_timestamp": 1746836506067,
+    "client_timestamp": 1746836506064,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836506064,
+      "server_timestamp": 1746836506067
+    }
+  },
+  {
+    "id": "recording_stop_11",
+    "type": "recording_stop",
+    "server_timestamp": 1746836509433,
+    "client_timestamp": 1746836509428,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836509428,
+      "server_timestamp": 1746836509433
+    }
+  },
+  {
+    "id": "recording_start_12",
+    "type": "recording_start",
+    "server_timestamp": 1746836512598,
+    "client_timestamp": 1746836512596,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836512596,
+      "server_timestamp": 1746836512598
+    }
+  },
+  {
+    "id": "recording_stop_12",
+    "type": "recording_stop",
+    "server_timestamp": 1746836515656,
+    "client_timestamp": 1746836515652,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836515652,
+      "server_timestamp": 1746836515656
+    }
+  },
+  {
+    "id": "recording_start_13",
+    "type": "recording_start",
+    "server_timestamp": 1746836518811,
+    "client_timestamp": 1746836518810,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836518810,
+      "server_timestamp": 1746836518811
+    }
+  },
+  {
+    "id": "recording_stop_13",
+    "type": "recording_stop",
+    "server_timestamp": 1746836521249,
+    "client_timestamp": 1746836521245,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836521245,
+      "server_timestamp": 1746836521249
+    }
+  },
+  {
+    "id": "recording_start_14",
+    "type": "recording_start",
+    "server_timestamp": 1746836526743,
+    "client_timestamp": 1746836526741,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836526741,
+      "server_timestamp": 1746836526743
+    }
+  },
+  {
+    "id": "recording_stop_14",
+    "type": "recording_stop",
+    "server_timestamp": 1746836530296,
+    "client_timestamp": 1746836530292,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836530292,
+      "server_timestamp": 1746836530296
+    }
+  },
+  {
+    "id": "recording_start_15",
+    "type": "recording_start",
+    "server_timestamp": 1746836533478,
+    "client_timestamp": 1746836533476,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836533476,
+      "server_timestamp": 1746836533478
+    }
+  },
+  {
+    "id": "recording_stop_15",
+    "type": "recording_stop",
+    "server_timestamp": 1746836536441,
+    "client_timestamp": 1746836536436,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836536436,
+      "server_timestamp": 1746836536441
+    }
+  },
+  {
+    "id": "recording_start_16",
+    "type": "recording_start",
+    "server_timestamp": 1746836539378,
+    "client_timestamp": 1746836539377,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836539377,
+      "server_timestamp": 1746836539378
+    }
+  },
+  {
+    "id": "recording_stop_16",
+    "type": "recording_stop",
+    "server_timestamp": 1746836542944,
+    "client_timestamp": 1746836542940,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836542940,
+      "server_timestamp": 1746836542944
+    }
+  },
+  {
+    "id": "recording_start_17",
+    "type": "recording_start",
+    "server_timestamp": 1746836545847,
+    "client_timestamp": 1746836545845,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836545845,
+      "server_timestamp": 1746836545847
+    }
+  },
+  {
+    "id": "recording_stop_17",
+    "type": "recording_stop",
+    "server_timestamp": 1746836548120,
+    "client_timestamp": 1746836548116,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836548116,
+      "server_timestamp": 1746836548119
+    }
+  },
+  {
+    "id": "recording_start_18",
+    "type": "recording_start",
+    "server_timestamp": 1746836551318,
+    "client_timestamp": 1746836551299,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836551299,
+      "server_timestamp": 1746836551318
+    }
+  },
+  {
+    "id": "recording_stop_18",
+    "type": "recording_stop",
+    "server_timestamp": 1746836554729,
+    "client_timestamp": 1746836554724,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836554724,
+      "server_timestamp": 1746836554729
+    }
+  },
+  {
+    "id": "recording_start_19",
+    "type": "recording_start",
+    "server_timestamp": 1746836557733,
+    "client_timestamp": 1746836557731,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836557731,
+      "server_timestamp": 1746836557733
+    }
+  },
+  {
+    "id": "recording_stop_19",
+    "type": "recording_stop",
+    "server_timestamp": 1746836560048,
+    "client_timestamp": 1746836560044,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836560044,
+      "server_timestamp": 1746836560048
+    }
+  },
+  {
+    "id": "recording_start_20",
+    "type": "recording_start",
+    "server_timestamp": 1746836563271,
+    "client_timestamp": 1746836563269,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836563269,
+      "server_timestamp": 1746836563271
+    }
+  },
+  {
+    "id": "recording_stop_20",
+    "type": "recording_stop",
+    "server_timestamp": 1746836565279,
+    "client_timestamp": 1746836565277,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836565277,
+      "server_timestamp": 1746836565279
+    }
+  },
+  {
+    "id": "recording_start_21",
+    "type": "recording_start",
+    "server_timestamp": 1746836568299,
+    "client_timestamp": 1746836568298,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836568298,
+      "server_timestamp": 1746836568299
+    }
+  },
+  {
+    "id": "recording_stop_21",
+    "type": "recording_stop",
+    "server_timestamp": 1746836578264,
+    "client_timestamp": 1746836578260,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746836578260,
+      "server_timestamp": 1746836578264
+    }
+  },
+  {
+    "id": "recording_start_22",
+    "type": "recording_start",
+    "server_timestamp": 1746838294251,
+    "client_timestamp": 1746838294249,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838294249,
+      "server_timestamp": 1746838294251
+    }
+  },
+  {
+    "id": "recording_stop_22",
+    "type": "recording_stop",
+    "server_timestamp": 1746838329713,
+    "client_timestamp": 1746838329708,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838329708,
+      "server_timestamp": 1746838329713
+    }
+  },
+  {
+    "id": "recording_start_23",
+    "type": "recording_start",
+    "server_timestamp": 1746838358811,
+    "client_timestamp": 1746838358809,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838358809,
+      "server_timestamp": 1746838358811
+    }
+  },
+  {
+    "id": "recording_stop_23",
+    "type": "recording_stop",
+    "server_timestamp": 1746838399920,
+    "client_timestamp": 1746838399916,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838399916,
+      "server_timestamp": 1746838399920
+    }
+  },
+  {
+    "id": "recording_start_24",
+    "type": "recording_start",
+    "server_timestamp": 1746838416941,
+    "client_timestamp": 1746838416939,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838416939,
+      "server_timestamp": 1746838416941
+    }
+  },
+  {
+    "id": "recording_stop_24",
+    "type": "recording_stop",
+    "server_timestamp": 1746838475288,
+    "client_timestamp": 1746838475284,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838475284,
+      "server_timestamp": 1746838475288
+    }
+  },
+  {
+    "id": "recording_start_25",
+    "type": "recording_start",
+    "server_timestamp": 1746838496140,
+    "client_timestamp": 1746838496138,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838496138,
+      "server_timestamp": 1746838496140
+    }
+  },
+  {
+    "id": "recording_stop_25",
+    "type": "recording_stop",
+    "server_timestamp": 1746838523138,
+    "client_timestamp": 1746838523132,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838523132,
+      "server_timestamp": 1746838523138
+    }
+  },
+  {
+    "id": "recording_start_26",
+    "type": "recording_start",
+    "server_timestamp": 1746838537746,
+    "client_timestamp": 1746838537720,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838537720,
+      "server_timestamp": 1746838537746
+    }
+  },
+  {
+    "id": "recording_stop_26",
+    "type": "recording_stop",
+    "server_timestamp": 1746838578327,
+    "client_timestamp": 1746838578324,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838578324,
+      "server_timestamp": 1746838578327
+    }
+  },
+  {
+    "id": "recording_start_27",
+    "type": "recording_start",
+    "server_timestamp": 1746838600376,
+    "client_timestamp": 1746838600374,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838600374,
+      "server_timestamp": 1746838600376
+    }
+  },
+  {
+    "id": "recording_stop_27",
+    "type": "recording_stop",
+    "server_timestamp": 1746838637897,
+    "client_timestamp": 1746838637892,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838637892,
+      "server_timestamp": 1746838637897
+    }
+  },
+  {
+    "id": "recording_start_28",
+    "type": "recording_start",
+    "server_timestamp": 1746838922019,
+    "client_timestamp": 1746838922018,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838922018,
+      "server_timestamp": 1746838922019
+    }
+  },
+  {
+    "id": "recording_stop_28",
+    "type": "recording_stop",
+    "server_timestamp": 1746838928608,
+    "client_timestamp": 1746838928604,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838928604,
+      "server_timestamp": 1746838928608
+    }
+  },
+  {
+    "id": "recording_start_29",
+    "type": "recording_start",
+    "server_timestamp": 1746838933419,
+    "client_timestamp": 1746838933418,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838933418,
+      "server_timestamp": 1746838933419
+    }
+  },
+  {
+    "id": "recording_stop_29",
+    "type": "recording_stop",
+    "server_timestamp": 1746838937319,
+    "client_timestamp": 1746838937316,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838937316,
+      "server_timestamp": 1746838937319
+    }
+  },
+  {
+    "id": "recording_start_30",
+    "type": "recording_start",
+    "server_timestamp": 1746838941239,
+    "client_timestamp": 1746838941238,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838941238,
+      "server_timestamp": 1746838941239
+    }
+  },
+  {
+    "id": "recording_stop_30",
+    "type": "recording_stop",
+    "server_timestamp": 1746838944856,
+    "client_timestamp": 1746838944852,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838944852,
+      "server_timestamp": 1746838944856
+    }
+  },
+  {
+    "id": "recording_start_31",
+    "type": "recording_start",
+    "server_timestamp": 1746838948785,
+    "client_timestamp": 1746838948782,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838948782,
+      "server_timestamp": 1746838948785
+    }
+  },
+  {
+    "id": "recording_stop_31",
+    "type": "recording_stop",
+    "server_timestamp": 1746838954921,
+    "client_timestamp": 1746838954916,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838954916,
+      "server_timestamp": 1746838954921
+    }
+  },
+  {
+    "id": "recording_start_32",
+    "type": "recording_start",
+    "server_timestamp": 1746838959318,
+    "client_timestamp": 1746838959317,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838959317,
+      "server_timestamp": 1746838959318
+    }
+  },
+  {
+    "id": "recording_stop_32",
+    "type": "recording_stop",
+    "server_timestamp": 1746838962801,
+    "client_timestamp": 1746838962797,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838962797,
+      "server_timestamp": 1746838962801
+    }
+  },
+  {
+    "id": "recording_start_33",
+    "type": "recording_start",
+    "server_timestamp": 1746838966861,
+    "client_timestamp": 1746838966860,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838966860,
+      "server_timestamp": 1746838966861
+    }
+  },
+  {
+    "id": "recording_stop_33",
+    "type": "recording_stop",
+    "server_timestamp": 1746838971218,
+    "client_timestamp": 1746838971212,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838971212,
+      "server_timestamp": 1746838971218
+    }
+  },
+  {
+    "id": "recording_start_34",
+    "type": "recording_start",
+    "server_timestamp": 1746838975859,
+    "client_timestamp": 1746838975857,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838975857,
+      "server_timestamp": 1746838975859
+    }
+  },
+  {
+    "id": "recording_stop_34",
+    "type": "recording_stop",
+    "server_timestamp": 1746838979015,
+    "client_timestamp": 1746838979012,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838979012,
+      "server_timestamp": 1746838979015
+    }
+  },
+  {
+    "id": "recording_start_35",
+    "type": "recording_start",
+    "server_timestamp": 1746838982658,
+    "client_timestamp": 1746838982657,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838982657,
+      "server_timestamp": 1746838982658
+    }
+  },
+  {
+    "id": "recording_stop_35",
+    "type": "recording_stop",
+    "server_timestamp": 1746838984607,
+    "client_timestamp": 1746838984604,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838984604,
+      "server_timestamp": 1746838984607
+    }
+  },
+  {
+    "id": "recording_start_36",
+    "type": "recording_start",
+    "server_timestamp": 1746838987919,
+    "client_timestamp": 1746838987919,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838987919,
+      "server_timestamp": 1746838987919
+    }
+  },
+  {
+    "id": "recording_stop_36",
+    "type": "recording_stop",
+    "server_timestamp": 1746838991296,
+    "client_timestamp": 1746838991292,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838991292,
+      "server_timestamp": 1746838991296
+    }
+  },
+  {
+    "id": "recording_start_37",
+    "type": "recording_start",
+    "server_timestamp": 1746838994990,
+    "client_timestamp": 1746838994937,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838994937,
+      "server_timestamp": 1746838994990
+    }
+  },
+  {
+    "id": "recording_stop_37",
+    "type": "recording_stop",
+    "server_timestamp": 1746838997679,
+    "client_timestamp": 1746838997676,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838997676,
+      "server_timestamp": 1746838997679
+    }
+  },
+  {
+    "id": "recording_start_38",
+    "type": "recording_start",
+    "server_timestamp": 1746839001815,
+    "client_timestamp": 1746839001813,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839001813,
+      "server_timestamp": 1746839001815
+    }
+  },
+  {
+    "id": "recording_stop_38",
+    "type": "recording_stop",
+    "server_timestamp": 1746839004519,
+    "client_timestamp": 1746839004516,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839004516,
+      "server_timestamp": 1746839004519
+    }
+  },
+  {
+    "id": "recording_start_39",
+    "type": "recording_start",
+    "server_timestamp": 1746839007864,
+    "client_timestamp": 1746839007861,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839007861,
+      "server_timestamp": 1746839007864
+    }
+  },
+  {
+    "id": "recording_stop_39",
+    "type": "recording_stop",
+    "server_timestamp": 1746839010248,
+    "client_timestamp": 1746839010244,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839010244,
+      "server_timestamp": 1746839010248
+    }
+  },
+  {
+    "id": "recording_start_40",
+    "type": "recording_start",
+    "server_timestamp": 1746839013498,
+    "client_timestamp": 1746839013496,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839013496,
+      "server_timestamp": 1746839013498
+    }
+  },
+  {
+    "id": "recording_stop_40",
+    "type": "recording_stop",
+    "server_timestamp": 1746839016959,
+    "client_timestamp": 1746839016956,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839016956,
+      "server_timestamp": 1746839016959
+    }
+  },
+  {
+    "id": "recording_start_41",
+    "type": "recording_start",
+    "server_timestamp": 1746839021299,
+    "client_timestamp": 1746839021277,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839021277,
+      "server_timestamp": 1746839021299
+    }
+  },
+  {
+    "id": "recording_stop_41",
+    "type": "recording_stop",
+    "server_timestamp": 1746839024978,
+    "client_timestamp": 1746839024972,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839024972,
+      "server_timestamp": 1746839024977
+    }
+  },
+  {
+    "id": "recording_start_42",
+    "type": "recording_start",
+    "server_timestamp": 1746839029326,
+    "client_timestamp": 1746839029325,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839029325,
+      "server_timestamp": 1746839029326
+    }
+  },
+  {
+    "id": "recording_stop_42",
+    "type": "recording_stop",
+    "server_timestamp": 1746839032657,
+    "client_timestamp": 1746839032652,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839032652,
+      "server_timestamp": 1746839032657
+    }
+  },
+  {
+    "id": "recording_start_43",
+    "type": "recording_start",
+    "server_timestamp": 1746839036053,
+    "client_timestamp": 1746839035936,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839035936,
+      "server_timestamp": 1746839036053
+    }
+  },
+  {
+    "id": "recording_stop_43",
+    "type": "recording_stop",
+    "server_timestamp": 1746839038894,
+    "client_timestamp": 1746839038884,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839038884,
+      "server_timestamp": 1746839038894
+    }
+  },
+  {
+    "id": "recording_start_44",
+    "type": "recording_start",
+    "server_timestamp": 1746839042640,
+    "client_timestamp": 1746839042637,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839042637,
+      "server_timestamp": 1746839042640
+    }
+  },
+  {
+    "id": "recording_stop_44",
+    "type": "recording_stop",
+    "server_timestamp": 1746839045928,
+    "client_timestamp": 1746839045924,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839045924,
+      "server_timestamp": 1746839045928
+    }
+  },
+  {
+    "id": "recording_start_45",
+    "type": "recording_start",
+    "server_timestamp": 1746839049708,
+    "client_timestamp": 1746839049707,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839049707,
+      "server_timestamp": 1746839049708
+    }
+  },
+  {
+    "id": "recording_stop_45",
+    "type": "recording_stop",
+    "server_timestamp": 1746839053265,
+    "client_timestamp": 1746839053260,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839053260,
+      "server_timestamp": 1746839053265
+    }
+  },
+  {
+    "id": "recording_start_46",
+    "type": "recording_start",
+    "server_timestamp": 1746839056788,
+    "client_timestamp": 1746839056677,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839056677,
+      "server_timestamp": 1746839056788
+    }
+  },
+  {
+    "id": "recording_stop_46",
+    "type": "recording_stop",
+    "server_timestamp": 1746839059440,
+    "client_timestamp": 1746839059436,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839059436,
+      "server_timestamp": 1746839059440
+    }
+  },
+  {
+    "id": "recording_start_47",
+    "type": "recording_start",
+    "server_timestamp": 1746839063506,
+    "client_timestamp": 1746839063504,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839063504,
+      "server_timestamp": 1746839063506
+    }
+  },
+  {
+    "id": "recording_stop_47",
+    "type": "recording_stop",
+    "server_timestamp": 1746839066535,
+    "client_timestamp": 1746839066532,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839066532,
+      "server_timestamp": 1746839066535
+    }
+  },
+  {
+    "id": "recording_start_48",
+    "type": "recording_start",
+    "server_timestamp": 1746839070112,
+    "client_timestamp": 1746839070077,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839070077,
+      "server_timestamp": 1746839070112
+    }
+  },
+  {
+    "id": "recording_stop_48",
+    "type": "recording_stop",
+    "server_timestamp": 1746839077536,
+    "client_timestamp": 1746839077532,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839077532,
+      "server_timestamp": 1746839077536
+    }
+  },
+  {
+    "id": "recording_start_49",
+    "type": "recording_start",
+    "server_timestamp": 1746839082371,
+    "client_timestamp": 1746839082369,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839082369,
+      "server_timestamp": 1746839082371
+    }
+  },
+  {
+    "id": "recording_stop_49",
+    "type": "recording_stop",
+    "server_timestamp": 1746839086169,
+    "client_timestamp": 1746839086165,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839086165,
+      "server_timestamp": 1746839086169
+    }
+  },
+  {
+    "id": "recording_start_50",
+    "type": "recording_start",
+    "server_timestamp": 1746839090848,
+    "client_timestamp": 1746839090845,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839090845,
+      "server_timestamp": 1746839090848
+    }
+  },
+  {
+    "id": "recording_stop_50",
+    "type": "recording_stop",
+    "server_timestamp": 1746839093423,
+    "client_timestamp": 1746839093420,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839093420,
+      "server_timestamp": 1746839093423
+    }
+  },
+  {
+    "id": "recording_start_51",
+    "type": "recording_start",
+    "server_timestamp": 1746839096974,
+    "client_timestamp": 1746839096972,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839096972,
+      "server_timestamp": 1746839096974
+    }
+  },
+  {
+    "id": "recording_stop_51",
+    "type": "recording_stop",
+    "server_timestamp": 1746839099031,
+    "client_timestamp": 1746839099028,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839099028,
+      "server_timestamp": 1746839099031
+    }
+  },
+  {
+    "id": "recording_start_52",
+    "type": "recording_start",
+    "server_timestamp": 1746839102378,
+    "client_timestamp": 1746839102376,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839102376,
+      "server_timestamp": 1746839102377
+    }
+  },
+  {
+    "id": "recording_stop_52",
+    "type": "recording_stop",
+    "server_timestamp": 1746839104824,
+    "client_timestamp": 1746839104820,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839104820,
+      "server_timestamp": 1746839104822
+    }
+  },
+  {
+    "id": "recording_start_53",
+    "type": "recording_start",
+    "server_timestamp": 1746839108311,
+    "client_timestamp": 1746839108246,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839108246,
+      "server_timestamp": 1746839108311
+    }
+  },
+  {
+    "id": "recording_stop_53",
+    "type": "recording_stop",
+    "server_timestamp": 1746839110969,
+    "client_timestamp": 1746839110964,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839110964,
+      "server_timestamp": 1746839110969
+    }
+  },
+  {
+    "id": "recording_start_54",
+    "type": "recording_start",
+    "server_timestamp": 1746839114940,
+    "client_timestamp": 1746839114937,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839114937,
+      "server_timestamp": 1746839114940
+    }
+  },
+  {
+    "id": "recording_stop_54",
+    "type": "recording_stop",
+    "server_timestamp": 1746839117456,
+    "client_timestamp": 1746839117452,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839117452,
+      "server_timestamp": 1746839117456
+    }
+  },
+  {
+    "id": "recording_start_55",
+    "type": "recording_start",
+    "server_timestamp": 1746839121738,
+    "client_timestamp": 1746839121736,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839121736,
+      "server_timestamp": 1746839121738
+    }
+  },
+  {
+    "id": "recording_stop_55",
+    "type": "recording_stop",
+    "server_timestamp": 1746839123761,
+    "client_timestamp": 1746839123756,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839123756,
+      "server_timestamp": 1746839123761
+    }
+  },
+  {
+    "id": "recording_start_56",
+    "type": "recording_start",
+    "server_timestamp": 1746839127460,
+    "client_timestamp": 1746839127458,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839127458,
+      "server_timestamp": 1746839127460
+    }
+  },
+  {
+    "id": "recording_stop_56",
+    "type": "recording_stop",
+    "server_timestamp": 1746839130065,
+    "client_timestamp": 1746839130060,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839130060,
+      "server_timestamp": 1746839130065
+    }
+  },
+  {
+    "id": "recording_start_57",
+    "type": "recording_start",
+    "server_timestamp": 1746839134167,
+    "client_timestamp": 1746839134165,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839134165,
+      "server_timestamp": 1746839134167
+    }
+  },
+  {
+    "id": "recording_stop_57",
+    "type": "recording_stop",
+    "server_timestamp": 1746839136448,
+    "client_timestamp": 1746839136444,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839136444,
+      "server_timestamp": 1746839136448
+    }
+  },
+  {
+    "id": "recording_start_58",
+    "type": "recording_start",
+    "server_timestamp": 1746839140155,
+    "client_timestamp": 1746839140116,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839140116,
+      "server_timestamp": 1746839140155
+    }
+  },
+  {
+    "id": "recording_stop_58",
+    "type": "recording_stop",
+    "server_timestamp": 1746839142961,
+    "client_timestamp": 1746839142956,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839142956,
+      "server_timestamp": 1746839142961
+    }
+  },
+  {
+    "id": "recording_start_59",
+    "type": "recording_start",
+    "server_timestamp": 1746839147018,
+    "client_timestamp": 1746839147016,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839147016,
+      "server_timestamp": 1746839147018
+    }
+  },
+  {
+    "id": "recording_stop_59",
+    "type": "recording_stop",
+    "server_timestamp": 1746839150769,
+    "client_timestamp": 1746839150764,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839150764,
+      "server_timestamp": 1746839150769
+    }
+  },
+  {
+    "id": "recording_start_60",
+    "type": "recording_start",
+    "server_timestamp": 1746839155019,
+    "client_timestamp": 1746839154956,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839154956,
+      "server_timestamp": 1746839155019
+    }
+  },
+  {
+    "id": "recording_stop_60",
+    "type": "recording_stop",
+    "server_timestamp": 1746839157921,
+    "client_timestamp": 1746839157916,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746839157916,
+      "server_timestamp": 1746839157920
+    }
+  },
+  {
+    "id": "recording_start_61",
+    "type": "recording_start",
+    "server_timestamp": 1746840862279,
+    "client_timestamp": 1746840862277,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840862277,
+      "server_timestamp": 1746840862279
+    }
+  },
+  {
+    "id": "recording_stop_61",
+    "type": "recording_stop",
+    "server_timestamp": 1746840868856,
+    "client_timestamp": 1746840868852,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840868852,
+      "server_timestamp": 1746840868856
+    }
+  },
+  {
+    "id": "recording_start_62",
+    "type": "recording_start",
+    "server_timestamp": 1746840873813,
+    "client_timestamp": 1746840873812,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840873812,
+      "server_timestamp": 1746840873813
+    }
+  },
+  {
+    "id": "recording_stop_62",
+    "type": "recording_stop",
+    "server_timestamp": 1746840888017,
+    "client_timestamp": 1746840888011,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840888011,
+      "server_timestamp": 1746840888017
+    }
+  },
+  {
+    "id": "recording_start_63",
+    "type": "recording_start",
+    "server_timestamp": 1746840893335,
+    "client_timestamp": 1746840893314,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840893314,
+      "server_timestamp": 1746840893335
+    }
+  },
+  {
+    "id": "recording_stop_63",
+    "type": "recording_stop",
+    "server_timestamp": 1746840905064,
+    "client_timestamp": 1746840905060,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840905060,
+      "server_timestamp": 1746840905064
+    }
+  },
+  {
+    "id": "recording_start_64",
+    "type": "recording_start",
+    "server_timestamp": 1746840909749,
+    "client_timestamp": 1746840909749,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840909749,
+      "server_timestamp": 1746840909749
+    }
+  },
+  {
+    "id": "recording_stop_64",
+    "type": "recording_stop",
+    "server_timestamp": 1746840920477,
+    "client_timestamp": 1746840920468,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840920468,
+      "server_timestamp": 1746840920475
+    }
+  },
+  {
+    "id": "recording_start_65",
+    "type": "recording_start",
+    "server_timestamp": 1746840924628,
+    "client_timestamp": 1746840924627,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840924627,
+      "server_timestamp": 1746840924628
+    }
+  },
+  {
+    "id": "recording_stop_65",
+    "type": "recording_stop",
+    "server_timestamp": 1746840930721,
+    "client_timestamp": 1746840930716,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840930716,
+      "server_timestamp": 1746840930721
+    }
+  },
+  {
+    "id": "recording_start_66",
+    "type": "recording_start",
+    "server_timestamp": 1746840934423,
+    "client_timestamp": 1746840934384,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840934384,
+      "server_timestamp": 1746840934423
+    }
+  },
+  {
+    "id": "recording_stop_66",
+    "type": "recording_stop",
+    "server_timestamp": 1746840942825,
+    "client_timestamp": 1746840942820,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840942820,
+      "server_timestamp": 1746840942823
+    }
+  },
+  {
+    "id": "recording_start_67",
+    "type": "recording_start",
+    "server_timestamp": 1746840945968,
+    "client_timestamp": 1746840945966,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840945966,
+      "server_timestamp": 1746840945968
+    }
+  },
+  {
+    "id": "recording_stop_67",
+    "type": "recording_stop",
+    "server_timestamp": 1746840956057,
+    "client_timestamp": 1746840956052,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840956052,
+      "server_timestamp": 1746840956057
+    }
+  },
+  {
+    "id": "recording_start_68",
+    "type": "recording_start",
+    "server_timestamp": 1746840960524,
+    "client_timestamp": 1746840960522,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840960522,
+      "server_timestamp": 1746840960524
+    }
+  },
+  {
+    "id": "recording_stop_68",
+    "type": "recording_stop",
+    "server_timestamp": 1746840969032,
+    "client_timestamp": 1746840969028,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840969028,
+      "server_timestamp": 1746840969032
+    }
+  },
+  {
+    "id": "recording_start_69",
+    "type": "recording_start",
+    "server_timestamp": 1746840972871,
+    "client_timestamp": 1746840972759,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840972759,
+      "server_timestamp": 1746840972871
+    }
+  },
+  {
+    "id": "recording_stop_69",
+    "type": "recording_stop",
+    "server_timestamp": 1746840977456,
+    "client_timestamp": 1746840977451,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840977451,
+      "server_timestamp": 1746840977455
+    }
+  },
+  {
+    "id": "recording_start_70",
+    "type": "recording_start",
+    "server_timestamp": 1746840980984,
+    "client_timestamp": 1746840980892,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840980892,
+      "server_timestamp": 1746840980984
+    }
+  },
+  {
+    "id": "recording_stop_70",
+    "type": "recording_stop",
+    "server_timestamp": 1746840990039,
+    "client_timestamp": 1746840990036,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840990036,
+      "server_timestamp": 1746840990039
+    }
+  },
+  {
+    "id": "recording_start_71",
+    "type": "recording_start",
+    "server_timestamp": 1746840994002,
+    "client_timestamp": 1746840994001,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746840994001,
+      "server_timestamp": 1746840994002
+    }
+  },
+  {
+    "id": "recording_stop_71",
+    "type": "recording_stop",
+    "server_timestamp": 1746841001225,
+    "client_timestamp": 1746841001220,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841001220,
+      "server_timestamp": 1746841001225
+    }
+  },
+  {
+    "id": "recording_start_72",
+    "type": "recording_start",
+    "server_timestamp": 1746841005317,
+    "client_timestamp": 1746841005315,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841005315,
+      "server_timestamp": 1746841005317
+    }
+  },
+  {
+    "id": "recording_stop_72",
+    "type": "recording_stop",
+    "server_timestamp": 1746841019096,
+    "client_timestamp": 1746841019092,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841019092,
+      "server_timestamp": 1746841019096
+    }
+  },
+  {
+    "id": "recording_start_73",
+    "type": "recording_start",
+    "server_timestamp": 1746841023945,
+    "client_timestamp": 1746841023942,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841023942,
+      "server_timestamp": 1746841023943
+    }
+  },
+  {
+    "id": "recording_stop_73",
+    "type": "recording_stop",
+    "server_timestamp": 1746841030687,
+    "client_timestamp": 1746841030684,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841030684,
+      "server_timestamp": 1746841030687
+    }
+  },
+  {
+    "id": "recording_start_74",
+    "type": "recording_start",
+    "server_timestamp": 1746841034004,
+    "client_timestamp": 1746841034002,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841034002,
+      "server_timestamp": 1746841034004
+    }
+  },
+  {
+    "id": "recording_stop_74",
+    "type": "recording_stop",
+    "server_timestamp": 1746841040583,
+    "client_timestamp": 1746841040579,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841040579,
+      "server_timestamp": 1746841040583
+    }
+  },
+  {
+    "id": "recording_start_75",
+    "type": "recording_start",
+    "server_timestamp": 1746841044433,
+    "client_timestamp": 1746841044432,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841044432,
+      "server_timestamp": 1746841044433
+    }
+  },
+  {
+    "id": "recording_stop_75",
+    "type": "recording_stop",
+    "server_timestamp": 1746841050377,
+    "client_timestamp": 1746841050372,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841050372,
+      "server_timestamp": 1746841050377
+    }
+  },
+  {
+    "id": "recording_start_76",
+    "type": "recording_start",
+    "server_timestamp": 1746841054770,
+    "client_timestamp": 1746841054769,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841054769,
+      "server_timestamp": 1746841054770
+    }
+  },
+  {
+    "id": "recording_stop_76",
+    "type": "recording_stop",
+    "server_timestamp": 1746841063009,
+    "client_timestamp": 1746841063004,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841063004,
+      "server_timestamp": 1746841063009
+    }
+  },
+  {
+    "id": "recording_start_77",
+    "type": "recording_start",
+    "server_timestamp": 1746841066959,
+    "client_timestamp": 1746841066816,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841066816,
+      "server_timestamp": 1746841066958
+    }
+  },
+  {
+    "id": "recording_stop_77",
+    "type": "recording_stop",
+    "server_timestamp": 1746841071711,
+    "client_timestamp": 1746841071708,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841071708,
+      "server_timestamp": 1746841071710
+    }
+  },
+  {
+    "id": "recording_start_78",
+    "type": "recording_start",
+    "server_timestamp": 1746841076603,
+    "client_timestamp": 1746841076601,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841076601,
+      "server_timestamp": 1746841076603
+    }
+  },
+  {
+    "id": "recording_stop_78",
+    "type": "recording_stop",
+    "server_timestamp": 1746841082240,
+    "client_timestamp": 1746841082236,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841082236,
+      "server_timestamp": 1746841082240
+    }
+  },
+  {
+    "id": "recording_start_79",
+    "type": "recording_start",
+    "server_timestamp": 1746841085689,
+    "client_timestamp": 1746841085648,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841085648,
+      "server_timestamp": 1746841085689
+    }
+  },
+  {
+    "id": "recording_stop_79",
+    "type": "recording_stop",
+    "server_timestamp": 1746841093383,
+    "client_timestamp": 1746841093380,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746841093380,
+      "server_timestamp": 1746841093383
+    }
+  },
+  {
+    "id": "recording_start_80",
+    "type": "recording_start",
+    "server_timestamp": 1746842015653,
+    "client_timestamp": 1746842014645,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842014645,
+      "server_timestamp": 1746842015653
+    }
+  },
+  {
+    "id": "recording_stop_80",
+    "type": "recording_stop",
+    "server_timestamp": 1746842023506,
+    "client_timestamp": 1746842023499,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842023499,
+      "server_timestamp": 1746842023506
+    }
+  },
+  {
+    "id": "recording_start_81",
+    "type": "recording_start",
+    "server_timestamp": 1746842028169,
+    "client_timestamp": 1746842027394,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842027394,
+      "server_timestamp": 1746842028169
+    }
+  },
+  {
+    "id": "recording_stop_81",
+    "type": "recording_stop",
+    "server_timestamp": 1746842034761,
+    "client_timestamp": 1746842034755,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842034755,
+      "server_timestamp": 1746842034761
+    }
+  },
+  {
+    "id": "recording_start_82",
+    "type": "recording_start",
+    "server_timestamp": 1746842038416,
+    "client_timestamp": 1746842037748,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842037748,
+      "server_timestamp": 1746842038416
+    }
+  },
+  {
+    "id": "recording_stop_82",
+    "type": "recording_stop",
+    "server_timestamp": 1746842043703,
+    "client_timestamp": 1746842043699,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842043699,
+      "server_timestamp": 1746842043703
+    }
+  },
+  {
+    "id": "recording_start_83",
+    "type": "recording_start",
+    "server_timestamp": 1746842048119,
+    "client_timestamp": 1746842047050,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842047050,
+      "server_timestamp": 1746842048119
+    }
+  },
+  {
+    "id": "recording_stop_83",
+    "type": "recording_stop",
+    "server_timestamp": 1746842051809,
+    "client_timestamp": 1746842051803,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842051803,
+      "server_timestamp": 1746842051809
+    }
+  },
+  {
+    "id": "recording_start_84",
+    "type": "recording_start",
+    "server_timestamp": 1746842055867,
+    "client_timestamp": 1746842055151,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842055151,
+      "server_timestamp": 1746842055867
+    }
+  },
+  {
+    "id": "recording_stop_84",
+    "type": "recording_stop",
+    "server_timestamp": 1746842059880,
+    "client_timestamp": 1746842059875,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842059875,
+      "server_timestamp": 1746842059880
+    }
+  },
+  {
+    "id": "recording_start_85",
+    "type": "recording_start",
+    "server_timestamp": 1746842063979,
+    "client_timestamp": 1746842062783,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842062783,
+      "server_timestamp": 1746842063979
+    }
+  },
+  {
+    "id": "recording_stop_85",
+    "type": "recording_stop",
+    "server_timestamp": 1746842066479,
+    "client_timestamp": 1746842066475,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842066475,
+      "server_timestamp": 1746842066479
+    }
+  },
+  {
+    "id": "recording_start_86",
+    "type": "recording_start",
+    "server_timestamp": 1746842070321,
+    "client_timestamp": 1746842069151,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842069151,
+      "server_timestamp": 1746842070321
+    }
+  },
+  {
+    "id": "recording_stop_86",
+    "type": "recording_stop",
+    "server_timestamp": 1746842077079,
+    "client_timestamp": 1746842077075,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842077075,
+      "server_timestamp": 1746842077079
+    }
+  },
+  {
+    "id": "recording_start_87",
+    "type": "recording_start",
+    "server_timestamp": 1746842080288,
+    "client_timestamp": 1746842079682,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842079682,
+      "server_timestamp": 1746842080288
+    }
+  },
+  {
+    "id": "recording_stop_87",
+    "type": "recording_stop",
+    "server_timestamp": 1746842084920,
+    "client_timestamp": 1746842084915,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842084915,
+      "server_timestamp": 1746842084920
+    }
+  },
+  {
+    "id": "recording_start_88",
+    "type": "recording_start",
+    "server_timestamp": 1746842090230,
+    "client_timestamp": 1746842088631,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842088631,
+      "server_timestamp": 1746842090230
+    }
+  },
+  {
+    "id": "recording_stop_88",
+    "type": "recording_stop",
+    "server_timestamp": 1746842094313,
+    "client_timestamp": 1746842094307,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842094307,
+      "server_timestamp": 1746842094313
+    }
+  },
+  {
+    "id": "recording_start_89",
+    "type": "recording_start",
+    "server_timestamp": 1746842097747,
+    "client_timestamp": 1746842096913,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842096913,
+      "server_timestamp": 1746842097747
+    }
+  },
+  {
+    "id": "recording_stop_89",
+    "type": "recording_stop",
+    "server_timestamp": 1746842102408,
+    "client_timestamp": 1746842102403,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842102403,
+      "server_timestamp": 1746842102408
+    }
+  },
+  {
+    "id": "recording_start_90",
+    "type": "recording_start",
+    "server_timestamp": 1746842106706,
+    "client_timestamp": 1746842105501,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842105501,
+      "server_timestamp": 1746842106706
+    }
+  },
+  {
+    "id": "recording_stop_90",
+    "type": "recording_stop",
+    "server_timestamp": 1746842111218,
+    "client_timestamp": 1746842111213,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842111213,
+      "server_timestamp": 1746842111218
+    }
+  },
+  {
+    "id": "recording_start_91",
+    "type": "recording_start",
+    "server_timestamp": 1746842115003,
+    "client_timestamp": 1746842114008,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842114008,
+      "server_timestamp": 1746842115003
+    }
+  },
+  {
+    "id": "recording_stop_91",
+    "type": "recording_stop",
+    "server_timestamp": 1746842122912,
+    "client_timestamp": 1746842122907,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842122907,
+      "server_timestamp": 1746842122912
+    }
+  },
+  {
+    "id": "recording_start_92",
+    "type": "recording_start",
+    "server_timestamp": 1746842127038,
+    "client_timestamp": 1746842126220,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842126220,
+      "server_timestamp": 1746842127038
+    }
+  },
+  {
+    "id": "recording_stop_92",
+    "type": "recording_stop",
+    "server_timestamp": 1746842131903,
+    "client_timestamp": 1746842131899,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842131899,
+      "server_timestamp": 1746842131903
+    }
+  },
+  {
+    "id": "recording_start_93",
+    "type": "recording_start",
+    "server_timestamp": 1746842135686,
+    "client_timestamp": 1746842134561,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842134561,
+      "server_timestamp": 1746842135686
+    }
+  },
+  {
+    "id": "recording_stop_93",
+    "type": "recording_stop",
+    "server_timestamp": 1746842141872,
+    "client_timestamp": 1746842141867,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842141867,
+      "server_timestamp": 1746842141872
+    }
+  },
+  {
+    "id": "recording_start_94",
+    "type": "recording_start",
+    "server_timestamp": 1746842146314,
+    "client_timestamp": 1746842145063,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842145063,
+      "server_timestamp": 1746842146314
+    }
+  },
+  {
+    "id": "recording_stop_94",
+    "type": "recording_stop",
+    "server_timestamp": 1746842150299,
+    "client_timestamp": 1746842150291,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842150291,
+      "server_timestamp": 1746842150299
+    }
+  },
+  {
+    "id": "recording_start_95",
+    "type": "recording_start",
+    "server_timestamp": 1746842153903,
+    "client_timestamp": 1746842152950,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842152950,
+      "server_timestamp": 1746842153903
+    }
+  },
+  {
+    "id": "recording_stop_95",
+    "type": "recording_stop",
+    "server_timestamp": 1746842158569,
+    "client_timestamp": 1746842158563,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746842158563,
+      "server_timestamp": 1746842158569
+    }
+  }
+]

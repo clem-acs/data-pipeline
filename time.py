@@ -275,10 +275,10 @@ def analyze_task_durations(events_by_type):
 def analyze_timestamp_gaps(events_by_type):
     """
     Analyze gaps between client and server timestamps for the same events
-    
+
     Args:
         events_by_type: Dictionary mapping event types to event lists
-        
+
     Returns:
         Dictionary with timestamp gap analysis results
     """
@@ -286,15 +286,15 @@ def analyze_timestamp_gaps(events_by_type):
         'large_gaps': [],
         'gap_stats_by_type': {}
     }
-    
+
     for event_type, events in events_by_type.items():
         gaps = []
-        
+
         for event in events:
             # Calculate the absolute gap between client and server timestamps
             gap_ms = abs(event['client_timestamp'] - event['server_timestamp'])
             gaps.append(gap_ms)
-            
+
             # Record large gaps
             if gap_ms > TIME_THRESHOLD_MS:
                 results['large_gaps'].append({
@@ -304,7 +304,7 @@ def analyze_timestamp_gaps(events_by_type):
                     'server_timestamp': event['server_timestamp'],
                     'gap_ms': gap_ms
                 })
-        
+
         # Calculate gap statistics for this event type
         if gaps:
             results['gap_stats_by_type'][event_type] = {
@@ -315,7 +315,7 @@ def analyze_timestamp_gaps(events_by_type):
                 'std_ms': np.std(gaps),
                 'event_count': len(gaps)
             }
-    
+
     return results
 
 def analyze_inter_event_timing(events_by_type):

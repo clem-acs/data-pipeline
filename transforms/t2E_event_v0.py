@@ -216,8 +216,8 @@ class EventTransform(BaseTransform):
         # Process each pair
         for i, (start_id, (start_event, end_event)) in enumerate(pairs.items()):
             segment_id = start_id
-            start_time = float(start_event['timestamps'][0])
-            end_time = float(end_event['timestamps'][0])
+            start_time = start_event['client_timestamp']
+            end_time = end_event['client_timestamp']
             
             segments[segment_type].append({
                 'segment_id': segment_id,
@@ -260,13 +260,15 @@ class EventTransform(BaseTransform):
                 start_data = {
                     'data': start_events['data'][i] if i < len(start_events['data']) else {},
                     'event_ids': [start_id],
-                    'timestamps': start_events['timestamps'][i] if i < len(start_events['timestamps']) else []
+                    'client_timestamp': float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0,
+                    'server_timestamp': float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
                 }
                 
                 end_data = {
                     'data': end_events['data'][i] if i < len(end_events['data']) else {},
                     'event_ids': [end_id],
-                    'timestamps': end_events['timestamps'][i] if i < len(end_events['timestamps']) else []
+                    'client_timestamp': float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0,
+                    'server_timestamp': float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
                 }
                 
                 pairs[start_id] = (start_data, end_data)
@@ -296,13 +298,15 @@ class EventTransform(BaseTransform):
                         start_data = {
                             'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
                             'event_ids': [start_id],
-                            'timestamps': start_events['timestamps'][start_idx] if start_idx < len(start_events['timestamps']) else []
+                            'client_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0,
+                            'server_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0
                         }
                         
                         end_data = {
                             'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
                             'event_ids': [end_id],
-                            'timestamps': end_events['timestamps'][end_idx] if end_idx < len(end_events['timestamps']) else []
+                            'client_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0,
+                            'server_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0
                         }
                         
                         pairs[start_id] = (start_data, end_data)
@@ -353,8 +357,8 @@ class EventTransform(BaseTransform):
                 'task_id': actual_task_id,  # Use the actual task ID from data
                 'task_type': task_data.get('task_type', ''),
                 'sequence_number': int(task_data.get('sequence', 0)),  # Extract sequence number
-                'start_time': float(start_event['timestamps'][0]),
-                'end_time': float(end_event['timestamps'][0]),
+                'start_time': start_event['client_timestamp'],
+                'end_time': end_event['client_timestamp'],
                 'completion_status': 'completed',
                 # Store the original event IDs for reference
                 'task_started_event_id': event_id,
@@ -453,8 +457,8 @@ class EventTransform(BaseTransform):
                 'max_count': task_metadata.get('max_count', 0),
                 
                 # Timing
-                'start_time': float(sent_event['timestamps'][0]),
-                'end_time': float(replied_event['timestamps'][0]),
+                'start_time': sent_event['client_timestamp'],
+                'end_time': replied_event['client_timestamp'],
                 'session_fraction': task_metadata.get('fraction_session_completed', 0.0),
                 
                 # Presentation

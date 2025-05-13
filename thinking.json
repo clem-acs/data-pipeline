@@ -1,0 +1,1278 @@
+[
+  {
+    "id": "thinking_start_1",
+    "type": "thinking_start",
+    "server_timestamp": 1746835714604,
+    "client_timestamp": 1746835714602,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835714602,
+      "server_timestamp": 1746835714604
+    }
+  },
+  {
+    "id": "thinking_stop_1",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835717619,
+    "client_timestamp": 1746835717617,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835717617,
+      "server_timestamp": 1746835717619
+    }
+  },
+  {
+    "id": "thinking_start_2",
+    "type": "thinking_start",
+    "server_timestamp": 1746835721406,
+    "client_timestamp": 1746835721404,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835721404,
+      "server_timestamp": 1746835721406
+    }
+  },
+  {
+    "id": "thinking_stop_2",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835724408,
+    "client_timestamp": 1746835724406,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835724406,
+      "server_timestamp": 1746835724408
+    }
+  },
+  {
+    "id": "thinking_start_3",
+    "type": "thinking_start",
+    "server_timestamp": 1746835727552,
+    "client_timestamp": 1746835727551,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835727551,
+      "server_timestamp": 1746835727552
+    }
+  },
+  {
+    "id": "thinking_stop_3",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835730554,
+    "client_timestamp": 1746835730551,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835730551,
+      "server_timestamp": 1746835730554
+    }
+  },
+  {
+    "id": "thinking_start_4",
+    "type": "thinking_start",
+    "server_timestamp": 1746835733861,
+    "client_timestamp": 1746835733860,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835733860,
+      "server_timestamp": 1746835733861
+    }
+  },
+  {
+    "id": "thinking_stop_4",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835736861,
+    "client_timestamp": 1746835736861,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835736861,
+      "server_timestamp": 1746835736861
+    }
+  },
+  {
+    "id": "thinking_start_5",
+    "type": "thinking_start",
+    "server_timestamp": 1746835739109,
+    "client_timestamp": 1746835739107,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835739107,
+      "server_timestamp": 1746835739109
+    }
+  },
+  {
+    "id": "thinking_stop_5",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835742111,
+    "client_timestamp": 1746835742109,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835742109,
+      "server_timestamp": 1746835742111
+    }
+  },
+  {
+    "id": "thinking_start_6",
+    "type": "thinking_start",
+    "server_timestamp": 1746835744915,
+    "client_timestamp": 1746835744913,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835744913,
+      "server_timestamp": 1746835744915
+    }
+  },
+  {
+    "id": "thinking_stop_6",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835747916,
+    "client_timestamp": 1746835747914,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835747914,
+      "server_timestamp": 1746835747916
+    }
+  },
+  {
+    "id": "thinking_start_7",
+    "type": "thinking_start",
+    "server_timestamp": 1746835750064,
+    "client_timestamp": 1746835750063,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835750063,
+      "server_timestamp": 1746835750064
+    }
+  },
+  {
+    "id": "thinking_stop_7",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835753066,
+    "client_timestamp": 1746835753064,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835753064,
+      "server_timestamp": 1746835753066
+    }
+  },
+  {
+    "id": "thinking_start_8",
+    "type": "thinking_start",
+    "server_timestamp": 1746835755178,
+    "client_timestamp": 1746835755175,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835755175,
+      "server_timestamp": 1746835755178
+    }
+  },
+  {
+    "id": "thinking_stop_8",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835758179,
+    "client_timestamp": 1746835758177,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835758177,
+      "server_timestamp": 1746835758179
+    }
+  },
+  {
+    "id": "thinking_start_9",
+    "type": "thinking_start",
+    "server_timestamp": 1746835760005,
+    "client_timestamp": 1746835760003,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835760003,
+      "server_timestamp": 1746835760005
+    }
+  },
+  {
+    "id": "thinking_stop_9",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835763004,
+    "client_timestamp": 1746835763003,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835763003,
+      "server_timestamp": 1746835763004
+    }
+  },
+  {
+    "id": "thinking_start_10",
+    "type": "thinking_start",
+    "server_timestamp": 1746835765106,
+    "client_timestamp": 1746835765104,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835765104,
+      "server_timestamp": 1746835765106
+    }
+  },
+  {
+    "id": "thinking_stop_10",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835768105,
+    "client_timestamp": 1746835768104,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835768104,
+      "server_timestamp": 1746835768105
+    }
+  },
+  {
+    "id": "thinking_start_11",
+    "type": "thinking_start",
+    "server_timestamp": 1746835771685,
+    "client_timestamp": 1746835771683,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835771683,
+      "server_timestamp": 1746835771685
+    }
+  },
+  {
+    "id": "thinking_stop_11",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835774686,
+    "client_timestamp": 1746835774684,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835774684,
+      "server_timestamp": 1746835774686
+    }
+  },
+  {
+    "id": "thinking_start_12",
+    "type": "thinking_start",
+    "server_timestamp": 1746835776830,
+    "client_timestamp": 1746835776828,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835776828,
+      "server_timestamp": 1746835776830
+    }
+  },
+  {
+    "id": "thinking_stop_12",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835779830,
+    "client_timestamp": 1746835779829,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835779829,
+      "server_timestamp": 1746835779830
+    }
+  },
+  {
+    "id": "thinking_start_13",
+    "type": "thinking_start",
+    "server_timestamp": 1746835782441,
+    "client_timestamp": 1746835782439,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835782439,
+      "server_timestamp": 1746835782441
+    }
+  },
+  {
+    "id": "thinking_stop_13",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835785442,
+    "client_timestamp": 1746835785440,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835785440,
+      "server_timestamp": 1746835785442
+    }
+  },
+  {
+    "id": "thinking_start_14",
+    "type": "thinking_start",
+    "server_timestamp": 1746835789025,
+    "client_timestamp": 1746835789023,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835789023,
+      "server_timestamp": 1746835789025
+    }
+  },
+  {
+    "id": "thinking_stop_14",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835792027,
+    "client_timestamp": 1746835792025,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835792025,
+      "server_timestamp": 1746835792027
+    }
+  },
+  {
+    "id": "thinking_start_15",
+    "type": "thinking_start",
+    "server_timestamp": 1746835794062,
+    "client_timestamp": 1746835794060,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835794060,
+      "server_timestamp": 1746835794062
+    }
+  },
+  {
+    "id": "thinking_stop_15",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835797064,
+    "client_timestamp": 1746835797061,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835797061,
+      "server_timestamp": 1746835797064
+    }
+  },
+  {
+    "id": "thinking_start_16",
+    "type": "thinking_start",
+    "server_timestamp": 1746835799456,
+    "client_timestamp": 1746835799454,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835799454,
+      "server_timestamp": 1746835799455
+    }
+  },
+  {
+    "id": "thinking_stop_16",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835802457,
+    "client_timestamp": 1746835802456,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835802456,
+      "server_timestamp": 1746835802457
+    }
+  },
+  {
+    "id": "thinking_start_17",
+    "type": "thinking_start",
+    "server_timestamp": 1746835804701,
+    "client_timestamp": 1746835804699,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835804699,
+      "server_timestamp": 1746835804701
+    }
+  },
+  {
+    "id": "thinking_stop_17",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835807703,
+    "client_timestamp": 1746835807701,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835807701,
+      "server_timestamp": 1746835807703
+    }
+  },
+  {
+    "id": "thinking_start_18",
+    "type": "thinking_start",
+    "server_timestamp": 1746835809575,
+    "client_timestamp": 1746835809571,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835809571,
+      "server_timestamp": 1746835809575
+    }
+  },
+  {
+    "id": "thinking_stop_18",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835812575,
+    "client_timestamp": 1746835812573,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835812573,
+      "server_timestamp": 1746835812575
+    }
+  },
+  {
+    "id": "thinking_start_19",
+    "type": "thinking_start",
+    "server_timestamp": 1746835816123,
+    "client_timestamp": 1746835816121,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835816121,
+      "server_timestamp": 1746835816123
+    }
+  },
+  {
+    "id": "thinking_stop_19",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835819124,
+    "client_timestamp": 1746835819122,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835819122,
+      "server_timestamp": 1746835819123
+    }
+  },
+  {
+    "id": "thinking_start_20",
+    "type": "thinking_start",
+    "server_timestamp": 1746835822974,
+    "client_timestamp": 1746835822972,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835822972,
+      "server_timestamp": 1746835822974
+    }
+  },
+  {
+    "id": "thinking_stop_20",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835825975,
+    "client_timestamp": 1746835825974,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835825974,
+      "server_timestamp": 1746835825975
+    }
+  },
+  {
+    "id": "thinking_start_21",
+    "type": "thinking_start",
+    "server_timestamp": 1746835829736,
+    "client_timestamp": 1746835829735,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835829735,
+      "server_timestamp": 1746835829736
+    }
+  },
+  {
+    "id": "thinking_stop_21",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835832738,
+    "client_timestamp": 1746835832736,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835832736,
+      "server_timestamp": 1746835832738
+    }
+  },
+  {
+    "id": "thinking_start_22",
+    "type": "thinking_start",
+    "server_timestamp": 1746835834728,
+    "client_timestamp": 1746835834728,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835834728,
+      "server_timestamp": 1746835834728
+    }
+  },
+  {
+    "id": "thinking_stop_22",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835837730,
+    "client_timestamp": 1746835837728,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835837728,
+      "server_timestamp": 1746835837730
+    }
+  },
+  {
+    "id": "thinking_start_23",
+    "type": "thinking_start",
+    "server_timestamp": 1746835839486,
+    "client_timestamp": 1746835839484,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835839484,
+      "server_timestamp": 1746835839486
+    }
+  },
+  {
+    "id": "thinking_stop_23",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835842486,
+    "client_timestamp": 1746835842485,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835842485,
+      "server_timestamp": 1746835842486
+    }
+  },
+  {
+    "id": "thinking_start_24",
+    "type": "thinking_start",
+    "server_timestamp": 1746835844075,
+    "client_timestamp": 1746835844073,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835844073,
+      "server_timestamp": 1746835844075
+    }
+  },
+  {
+    "id": "thinking_stop_24",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835847077,
+    "client_timestamp": 1746835847075,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835847075,
+      "server_timestamp": 1746835847077
+    }
+  },
+  {
+    "id": "thinking_start_25",
+    "type": "thinking_start",
+    "server_timestamp": 1746835850810,
+    "client_timestamp": 1746835850809,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835850809,
+      "server_timestamp": 1746835850810
+    }
+  },
+  {
+    "id": "thinking_stop_25",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835853812,
+    "client_timestamp": 1746835853810,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835853810,
+      "server_timestamp": 1746835853812
+    }
+  },
+  {
+    "id": "thinking_start_26",
+    "type": "thinking_start",
+    "server_timestamp": 1746835856865,
+    "client_timestamp": 1746835856862,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835856862,
+      "server_timestamp": 1746835856864
+    }
+  },
+  {
+    "id": "thinking_stop_26",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835859866,
+    "client_timestamp": 1746835859864,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835859864,
+      "server_timestamp": 1746835859866
+    }
+  },
+  {
+    "id": "thinking_start_27",
+    "type": "thinking_start",
+    "server_timestamp": 1746835862431,
+    "client_timestamp": 1746835862430,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835862430,
+      "server_timestamp": 1746835862431
+    }
+  },
+  {
+    "id": "thinking_stop_27",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835865441,
+    "client_timestamp": 1746835865439,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835865439,
+      "server_timestamp": 1746835865441
+    }
+  },
+  {
+    "id": "thinking_start_28",
+    "type": "thinking_start",
+    "server_timestamp": 1746835868295,
+    "client_timestamp": 1746835868292,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835868292,
+      "server_timestamp": 1746835868295
+    }
+  },
+  {
+    "id": "thinking_stop_28",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835871294,
+    "client_timestamp": 1746835871293,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835871293,
+      "server_timestamp": 1746835871294
+    }
+  },
+  {
+    "id": "thinking_start_29",
+    "type": "thinking_start",
+    "server_timestamp": 1746835873663,
+    "client_timestamp": 1746835873661,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835873661,
+      "server_timestamp": 1746835873663
+    }
+  },
+  {
+    "id": "thinking_stop_29",
+    "type": "thinking_stop",
+    "server_timestamp": 1746835876665,
+    "client_timestamp": 1746835876663,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746835876663,
+      "server_timestamp": 1746835876665
+    }
+  },
+  {
+    "id": "thinking_start_30",
+    "type": "thinking_start",
+    "server_timestamp": 1746838746318,
+    "client_timestamp": 1746838746315,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838746315,
+      "server_timestamp": 1746838746318
+    }
+  },
+  {
+    "id": "thinking_stop_30",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838749319,
+    "client_timestamp": 1746838749316,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838749316,
+      "server_timestamp": 1746838749319
+    }
+  },
+  {
+    "id": "thinking_start_31",
+    "type": "thinking_start",
+    "server_timestamp": 1746838751821,
+    "client_timestamp": 1746838751817,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838751817,
+      "server_timestamp": 1746838751821
+    }
+  },
+  {
+    "id": "thinking_stop_31",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838754819,
+    "client_timestamp": 1746838754818,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838754818,
+      "server_timestamp": 1746838754819
+    }
+  },
+  {
+    "id": "thinking_start_32",
+    "type": "thinking_start",
+    "server_timestamp": 1746838756691,
+    "client_timestamp": 1746838756691,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838756691,
+      "server_timestamp": 1746838756691
+    }
+  },
+  {
+    "id": "thinking_stop_32",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838759692,
+    "client_timestamp": 1746838759692,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838759692,
+      "server_timestamp": 1746838759692
+    }
+  },
+  {
+    "id": "thinking_start_33",
+    "type": "thinking_start",
+    "server_timestamp": 1746838763425,
+    "client_timestamp": 1746838763424,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838763424,
+      "server_timestamp": 1746838763425
+    }
+  },
+  {
+    "id": "thinking_stop_33",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838766428,
+    "client_timestamp": 1746838766426,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838766426,
+      "server_timestamp": 1746838766428
+    }
+  },
+  {
+    "id": "thinking_start_34",
+    "type": "thinking_start",
+    "server_timestamp": 1746838768950,
+    "client_timestamp": 1746838768947,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838768947,
+      "server_timestamp": 1746838768948
+    }
+  },
+  {
+    "id": "thinking_stop_34",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838771955,
+    "client_timestamp": 1746838771952,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838771952,
+      "server_timestamp": 1746838771955
+    }
+  },
+  {
+    "id": "thinking_start_35",
+    "type": "thinking_start",
+    "server_timestamp": 1746838774290,
+    "client_timestamp": 1746838774288,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838774288,
+      "server_timestamp": 1746838774290
+    }
+  },
+  {
+    "id": "thinking_stop_35",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838777292,
+    "client_timestamp": 1746838777290,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838777290,
+      "server_timestamp": 1746838777292
+    }
+  },
+  {
+    "id": "thinking_start_36",
+    "type": "thinking_start",
+    "server_timestamp": 1746838780285,
+    "client_timestamp": 1746838780284,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838780284,
+      "server_timestamp": 1746838780285
+    }
+  },
+  {
+    "id": "thinking_stop_36",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838783292,
+    "client_timestamp": 1746838783290,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838783290,
+      "server_timestamp": 1746838783292
+    }
+  },
+  {
+    "id": "thinking_start_37",
+    "type": "thinking_start",
+    "server_timestamp": 1746838787150,
+    "client_timestamp": 1746838787148,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838787148,
+      "server_timestamp": 1746838787150
+    }
+  },
+  {
+    "id": "thinking_stop_37",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838790151,
+    "client_timestamp": 1746838790149,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838790149,
+      "server_timestamp": 1746838790151
+    }
+  },
+  {
+    "id": "thinking_start_38",
+    "type": "thinking_start",
+    "server_timestamp": 1746838793818,
+    "client_timestamp": 1746838793816,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838793816,
+      "server_timestamp": 1746838793818
+    }
+  },
+  {
+    "id": "thinking_stop_38",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838796819,
+    "client_timestamp": 1746838796817,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838796817,
+      "server_timestamp": 1746838796819
+    }
+  },
+  {
+    "id": "thinking_start_39",
+    "type": "thinking_start",
+    "server_timestamp": 1746838800631,
+    "client_timestamp": 1746838800629,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838800629,
+      "server_timestamp": 1746838800631
+    }
+  },
+  {
+    "id": "thinking_stop_39",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838803632,
+    "client_timestamp": 1746838803630,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838803630,
+      "server_timestamp": 1746838803632
+    }
+  },
+  {
+    "id": "thinking_start_40",
+    "type": "thinking_start",
+    "server_timestamp": 1746838807127,
+    "client_timestamp": 1746838807125,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838807125,
+      "server_timestamp": 1746838807127
+    }
+  },
+  {
+    "id": "thinking_stop_40",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838810127,
+    "client_timestamp": 1746838810126,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838810126,
+      "server_timestamp": 1746838810127
+    }
+  },
+  {
+    "id": "thinking_start_41",
+    "type": "thinking_start",
+    "server_timestamp": 1746838812601,
+    "client_timestamp": 1746838812599,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838812599,
+      "server_timestamp": 1746838812600
+    }
+  },
+  {
+    "id": "thinking_stop_41",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838815603,
+    "client_timestamp": 1746838815601,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838815601,
+      "server_timestamp": 1746838815603
+    }
+  },
+  {
+    "id": "thinking_start_42",
+    "type": "thinking_start",
+    "server_timestamp": 1746838817982,
+    "client_timestamp": 1746838817979,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838817979,
+      "server_timestamp": 1746838817982
+    }
+  },
+  {
+    "id": "thinking_stop_42",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838820984,
+    "client_timestamp": 1746838820981,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838820981,
+      "server_timestamp": 1746838820984
+    }
+  },
+  {
+    "id": "thinking_start_43",
+    "type": "thinking_start",
+    "server_timestamp": 1746838824511,
+    "client_timestamp": 1746838824509,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838824509,
+      "server_timestamp": 1746838824511
+    }
+  },
+  {
+    "id": "thinking_stop_43",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838827527,
+    "client_timestamp": 1746838827524,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838827524,
+      "server_timestamp": 1746838827526
+    }
+  },
+  {
+    "id": "thinking_start_44",
+    "type": "thinking_start",
+    "server_timestamp": 1746838829554,
+    "client_timestamp": 1746838829551,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838829551,
+      "server_timestamp": 1746838829554
+    }
+  },
+  {
+    "id": "thinking_stop_44",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838832554,
+    "client_timestamp": 1746838832552,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838832552,
+      "server_timestamp": 1746838832554
+    }
+  },
+  {
+    "id": "thinking_start_45",
+    "type": "thinking_start",
+    "server_timestamp": 1746838835983,
+    "client_timestamp": 1746838835981,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838835981,
+      "server_timestamp": 1746838835983
+    }
+  },
+  {
+    "id": "thinking_stop_45",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838838984,
+    "client_timestamp": 1746838838982,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838838982,
+      "server_timestamp": 1746838838984
+    }
+  },
+  {
+    "id": "thinking_start_46",
+    "type": "thinking_start",
+    "server_timestamp": 1746838841911,
+    "client_timestamp": 1746838841907,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838841907,
+      "server_timestamp": 1746838841911
+    }
+  },
+  {
+    "id": "thinking_stop_46",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838844911,
+    "client_timestamp": 1746838844908,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838844908,
+      "server_timestamp": 1746838844911
+    }
+  },
+  {
+    "id": "thinking_start_47",
+    "type": "thinking_start",
+    "server_timestamp": 1746838847307,
+    "client_timestamp": 1746838847306,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838847306,
+      "server_timestamp": 1746838847307
+    }
+  },
+  {
+    "id": "thinking_stop_47",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838850307,
+    "client_timestamp": 1746838850306,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838850306,
+      "server_timestamp": 1746838850307
+    }
+  },
+  {
+    "id": "thinking_start_48",
+    "type": "thinking_start",
+    "server_timestamp": 1746838852649,
+    "client_timestamp": 1746838852647,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838852647,
+      "server_timestamp": 1746838852649
+    }
+  },
+  {
+    "id": "thinking_stop_48",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838855651,
+    "client_timestamp": 1746838855648,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838855648,
+      "server_timestamp": 1746838855649
+    }
+  },
+  {
+    "id": "thinking_start_49",
+    "type": "thinking_start",
+    "server_timestamp": 1746838857799,
+    "client_timestamp": 1746838857798,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838857798,
+      "server_timestamp": 1746838857799
+    }
+  },
+  {
+    "id": "thinking_stop_49",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838860802,
+    "client_timestamp": 1746838860800,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838860800,
+      "server_timestamp": 1746838860802
+    }
+  },
+  {
+    "id": "thinking_start_50",
+    "type": "thinking_start",
+    "server_timestamp": 1746838864942,
+    "client_timestamp": 1746838864940,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838864940,
+      "server_timestamp": 1746838864942
+    }
+  },
+  {
+    "id": "thinking_stop_50",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838867942,
+    "client_timestamp": 1746838867941,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838867941,
+      "server_timestamp": 1746838867942
+    }
+  },
+  {
+    "id": "thinking_start_51",
+    "type": "thinking_start",
+    "server_timestamp": 1746838870775,
+    "client_timestamp": 1746838870774,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838870774,
+      "server_timestamp": 1746838870775
+    }
+  },
+  {
+    "id": "thinking_stop_51",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838873776,
+    "client_timestamp": 1746838873774,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838873774,
+      "server_timestamp": 1746838873776
+    }
+  },
+  {
+    "id": "thinking_start_52",
+    "type": "thinking_start",
+    "server_timestamp": 1746838876495,
+    "client_timestamp": 1746838876493,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838876493,
+      "server_timestamp": 1746838876495
+    }
+  },
+  {
+    "id": "thinking_stop_52",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838879496,
+    "client_timestamp": 1746838879494,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838879494,
+      "server_timestamp": 1746838879496
+    }
+  },
+  {
+    "id": "thinking_start_53",
+    "type": "thinking_start",
+    "server_timestamp": 1746838881263,
+    "client_timestamp": 1746838881262,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838881262,
+      "server_timestamp": 1746838881263
+    }
+  },
+  {
+    "id": "thinking_stop_53",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838884264,
+    "client_timestamp": 1746838884263,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838884263,
+      "server_timestamp": 1746838884264
+    }
+  },
+  {
+    "id": "thinking_start_54",
+    "type": "thinking_start",
+    "server_timestamp": 1746838887931,
+    "client_timestamp": 1746838887928,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838887928,
+      "server_timestamp": 1746838887930
+    }
+  },
+  {
+    "id": "thinking_stop_54",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838890930,
+    "client_timestamp": 1746838890929,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838890929,
+      "server_timestamp": 1746838890930
+    }
+  },
+  {
+    "id": "thinking_start_55",
+    "type": "thinking_start",
+    "server_timestamp": 1746838893780,
+    "client_timestamp": 1746838893778,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838893778,
+      "server_timestamp": 1746838893780
+    }
+  },
+  {
+    "id": "thinking_stop_55",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838896781,
+    "client_timestamp": 1746838896779,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838896779,
+      "server_timestamp": 1746838896781
+    }
+  },
+  {
+    "id": "thinking_start_56",
+    "type": "thinking_start",
+    "server_timestamp": 1746838899792,
+    "client_timestamp": 1746838899790,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838899790,
+      "server_timestamp": 1746838899792
+    }
+  },
+  {
+    "id": "thinking_stop_56",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838902796,
+    "client_timestamp": 1746838902791,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838902791,
+      "server_timestamp": 1746838902796
+    }
+  },
+  {
+    "id": "thinking_start_57",
+    "type": "thinking_start",
+    "server_timestamp": 1746838905088,
+    "client_timestamp": 1746838905086,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838905086,
+      "server_timestamp": 1746838905088
+    }
+  },
+  {
+    "id": "thinking_stop_57",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838908089,
+    "client_timestamp": 1746838908088,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838908088,
+      "server_timestamp": 1746838908089
+    }
+  },
+  {
+    "id": "thinking_start_58",
+    "type": "thinking_start",
+    "server_timestamp": 1746838911242,
+    "client_timestamp": 1746838911241,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838911241,
+      "server_timestamp": 1746838911242
+    }
+  },
+  {
+    "id": "thinking_stop_58",
+    "type": "thinking_stop",
+    "server_timestamp": 1746838914244,
+    "client_timestamp": 1746838914243,
+    "data": {
+      "task_id": "",
+      "client_timestamp": 1746838914243,
+      "server_timestamp": 1746838914244
+    }
+  }
+]
