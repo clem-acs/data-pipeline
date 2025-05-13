@@ -3,6 +3,9 @@ T2E Events Transform
 
 Extracts and organizes event data from curated H5 files into a structured format
 for easy integration with TileDB and other transforms.
+
+IMPORTANT: In our H5 files, timestamps are stored as [server_timestamp, client_timestamp].
+That is, timestamps[i][0] is the server timestamp and timestamps[i][1] is the client timestamp.
 """
 
 import os
@@ -162,20 +165,20 @@ class EventTransform(BaseTransform):
     
     def _extract_raw_events(self, h5_file):
         """Extract raw events from the H5 file.
-        
+
         Args:
             h5_file: H5 file object
-            
+
         Returns:
             dict: Dictionary of event data by type
         """
         events = {}
-        
+
         # Check if events group exists
         if 'events' not in h5_file:
             self.logger.warning("No events group in H5 file")
             return events
-        
+
         # Extract all event types
         for event_type in h5_file['events']:
             events[event_type] = {
@@ -183,21 +186,28 @@ class EventTransform(BaseTransform):
                 'event_ids': [],
                 'timestamps': []
             }
-            
+
             # Extract event data
             if 'data' in h5_file[f'events/{event_type}']:
                 data = h5_file[f'events/{event_type}/data'][:]
                 events[event_type]['data'] = [json.loads(d) for d in data]
-            
+
             # Extract event IDs
             if 'event_ids' in h5_file[f'events/{event_type}']:
                 event_ids = h5_file[f'events/{event_type}/event_ids'][:]
                 events[event_type]['event_ids'] = [eid.decode('utf-8') if isinstance(eid, bytes) else eid for eid in event_ids]
-            
+
             # Extract timestamps
             if 'timestamps' in h5_file[f'events/{event_type}']:
                 events[event_type]['timestamps'] = h5_file[f'events/{event_type}/timestamps'][:]
-        
+
+                # DEBUG: Print first few timestamps to understand their structure
+                if len(events[event_type]['timestamps']) > 0:
+                    print(f"DEBUG-TS-EXTRACT: Event type {event_type} has timestamps shape {events[event_type]['timestamps'].shape}")
+                    print(f"DEBUG-TS-EXTRACT: First timestamp array: {events[event_type]['timestamps'][0]}")
+                    print(f"DEBUG-TS-EXTRACT: Using index 0 as client timestamp: {events[event_type]['timestamps'][0][0]}")
+                    print(f"DEBUG-TS-EXTRACT: Using index 1 as server timestamp: {events[event_type]['timestamps'][0][1]}")
+
         return events
     
     def _process_segment_type(self, events, start_event_type, end_event_type, segment_type, segments):
@@ -218,7 +228,13 @@ class EventTransform(BaseTransform):
             segment_id = start_id
             start_time = start_event['client_timestamp']
             end_time = end_event['client_timestamp']
-            
+
+            # DEBUG: Print segment timestamps to confirm what's being used
+            print(f"DEBUG-TS-SEGMENT: Creating segment {segment_type}/{segment_id}")
+            print(f"DEBUG-TS-SEGMENT: start_event client timestamp: {start_event['client_timestamp']}")
+            print(f"DEBUG-TS-SEGMENT: start_event server timestamp: {start_event['server_timestamp']}")
+            print(f"DEBUG-TS-SEGMENT: Using as segment start_time: {start_time}")
+
             segments[segment_type].append({
                 'segment_id': segment_id,
                 'segment_type': segment_type,
@@ -257,18 +273,29 @@ class EventTransform(BaseTransform):
                 start_id = start_events['event_ids'][i]
                 end_id = end_events['event_ids'][i]
                 
+                # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                client_ts_start = float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
+                server_ts_start = float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0
+                client_ts_end = float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
+                server_ts_end = float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0
+
+                # DEBUG: Print raw timestamps for this pair
+                print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
+                print(f"DEBUG-TS-PAIR: Start timestamps: client={client_ts_start}, server={server_ts_start}")
+                print(f"DEBUG-TS-PAIR: End timestamps: client={client_ts_end}, server={server_ts_end}")
+
                 start_data = {
                     'data': start_events['data'][i] if i < len(start_events['data']) else {},
                     'event_ids': [start_id],
-                    'client_timestamp': float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0,
-                    'server_timestamp': float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
+                    'client_timestamp': client_ts_start,
+                    'server_timestamp': server_ts_start
                 }
-                
+
                 end_data = {
                     'data': end_events['data'][i] if i < len(end_events['data']) else {},
                     'event_ids': [end_id],
-                    'client_timestamp': float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0,
-                    'server_timestamp': float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
+                    'client_timestamp': client_ts_end,
+                    'server_timestamp': server_ts_end
                 }
                 
                 pairs[start_id] = (start_data, end_data)
@@ -276,16 +303,16 @@ class EventTransform(BaseTransform):
             # More complex matching by timestamps
             self.logger.warning(f"Mismatched counts for {start_type}/{end_type}, using timestamp matching")
             
-            # Sort by timestamp
+            # Sort by timestamp - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
             start_items = sorted(list(zip(
                 start_events['event_ids'],
-                start_events['timestamps'][:, 0] if len(start_events['timestamps']) > 0 else [],
+                start_events['timestamps'][:, 1] if len(start_events['timestamps']) > 0 else [],  # Use client timestamp
                 range(len(start_events['event_ids']))
             )), key=lambda x: x[1])
-            
+
             end_items = sorted(list(zip(
                 end_events['event_ids'],
-                end_events['timestamps'][:, 0] if len(end_events['timestamps']) > 0 else [],
+                end_events['timestamps'][:, 1] if len(end_events['timestamps']) > 0 else [],  # Use client timestamp
                 range(len(end_events['event_ids']))
             )), key=lambda x: x[1])
             
@@ -298,15 +325,15 @@ class EventTransform(BaseTransform):
                         start_data = {
                             'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
                             'event_ids': [start_id],
-                            'client_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0,
-                            'server_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0
+                            'client_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0,
+                            'server_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0
                         }
-                        
+
                         end_data = {
                             'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
                             'event_ids': [end_id],
-                            'client_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0,
-                            'server_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0
+                            'client_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0,
+                            'server_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0
                         }
                         
                         pairs[start_id] = (start_data, end_data)
@@ -401,7 +428,8 @@ class EventTransform(BaseTransform):
                 if i >= len(events['skip_task']['timestamps']):
                     continue
                     
-                skip_time = float(events['skip_task']['timestamps'][i][0])
+                # NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                skip_time = float(events['skip_task']['timestamps'][i][1])  # Use client timestamp
                 
                 # Find active task at skip time
                 active_task_id = None
@@ -443,19 +471,26 @@ class EventTransform(BaseTransform):
             # First check in sent_data, then in element_content
             actual_element_id = sent_data.get('element_id') or element_content.get('element_id', event_id)
 
+            # DEBUG: Print timestamps before element creation
+            print(f"DEBUG-TS-ELEMENT-CREATE: Creating element '{actual_element_id}'")
+            print(f"DEBUG-TS-ELEMENT-CREATE: sent_event client timestamp: {sent_event['client_timestamp']}")
+            print(f"DEBUG-TS-ELEMENT-CREATE: sent_event server timestamp: {sent_event['server_timestamp']}")
+            print(f"DEBUG-TS-ELEMENT-CREATE: replied_event client timestamp: {replied_event['client_timestamp']}")
+            print(f"DEBUG-TS-ELEMENT-CREATE: replied_event server timestamp: {replied_event['server_timestamp']}")
+
             # Create element entry with extracted fields
             elements[actual_element_id] = {
                 'element_id': actual_element_id,
                 'element_type': element_content.get('element_type', ''),
                 'title': element_content.get('title', ''),
                 'is_instruction': element_content.get('is_instruction', False),
-                
+
                 # Task relationship
                 'task_id': task_metadata.get('task_id', ''),
                 'task_type': task_metadata.get('task_type', ''),
                 'sequence_idx': task_metadata.get('current_count', 0),
                 'max_count': task_metadata.get('max_count', 0),
-                
+
                 # Timing
                 'start_time': sent_event['client_timestamp'],
                 'end_time': replied_event['client_timestamp'],
@@ -534,6 +569,14 @@ class EventTransform(BaseTransform):
                 for element_id, element in elements.items():
                     # DEBUG: Print element time bounds being checked
                     print(f"DEBUG-ELEMENT-TIMES: Checking element '{element_id}' with start={element['start_time']}, end={element['end_time']}")
+
+                    # DEBUG: Print actual comparison values to see what's being used
+                    print(f"DEBUG-TS-CONTAIN: Containment check for segment={segment['segment_id']} in element={element_id}")
+                    print(f"DEBUG-TS-CONTAIN: Segment start_time={start_time}")
+                    print(f"DEBUG-TS-CONTAIN: Element start_time={element['start_time']}, end_time={element['end_time']}")
+                    print(f"DEBUG-TS-CONTAIN: Condition 1: element.start <= segment.start = {element['start_time'] <= start_time}")
+                    print(f"DEBUG-TS-CONTAIN: Condition 2: element.end >= segment.start = {element['end_time'] >= start_time}")
+                    print(f"DEBUG-TS-CONTAIN: Combined condition = {(element['start_time'] <= start_time and element['end_time'] >= start_time)}")
 
                     if (element['start_time'] <= start_time and
                         element['end_time'] >= start_time):
