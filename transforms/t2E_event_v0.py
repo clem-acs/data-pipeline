@@ -294,11 +294,11 @@ class EventTransform(BaseTransform):
         # Debug output if IDs are provided
         if segment_id and element_id:
             print(f"DEBUG-TS-CONTAIN: Containment check for segment={segment_id} in element={element_id}")
-            print(f"DEBUG-TS-CONTAIN: Segment start_time={segment_time}")
-            print(f"DEBUG-TS-CONTAIN: Element start_time={element['start_time']}, end_time={element['end_time']}")
-            print(f"DEBUG-TS-CONTAIN: Condition 1: element.start <= segment.start = {element['start_time'] <= segment_time}")
-            print(f"DEBUG-TS-CONTAIN: Condition 2: element.end >= segment.start = {element['end_time'] >= segment_time}")
-            print(f"DEBUG-TS-CONTAIN: Combined condition = {(element['start_time'] <= segment_time and element['end_time'] >= segment_time)}")
+            # print(f"DEBUG-TS-CONTAIN: Segment start_time={segment_time}")
+            # print(f"DEBUG-TS-CONTAIN: Element start_time={element['start_time']}, end_time={element['end_time']}")
+            # print(f"DEBUG-TS-CONTAIN: Condition 1: element.start <= segment.start = {element['start_time'] <= segment_time}")
+            # print(f"DEBUG-TS-CONTAIN: Condition 2: element.end >= segment.start = {element['end_time'] >= segment_time}")
+            # print(f"DEBUG-TS-CONTAIN: Combined condition = {(element['start_time'] <= segment_time and element['end_time'] >= segment_time)}")
 
         # The actual containment check
         return (element['start_time'] <= segment_time and
@@ -373,9 +373,9 @@ class EventTransform(BaseTransform):
                     start_id = start_data['event_ids'][0]
 
                     # DEBUG: Print raw timestamps for this pair
-                    print(f"DEBUG-TS-PAIR: Element pair {start_type}/{end_type} - {start_id}/{end_data['event_ids'][0]} for element_id={element_id}")
-                    print(f"DEBUG-TS-PAIR: Start timestamps: client={start_data['client_timestamp']}, server={start_data['server_timestamp']}")
-                    print(f"DEBUG-TS-PAIR: End timestamps: client={end_data['client_timestamp']}, server={end_data['server_timestamp']}")
+                    # print(f"DEBUG-TS-PAIR: Element pair {start_type}/{end_type} - {start_id}/{end_data['event_ids'][0]} for element_id={element_id}")
+                    # print(f"DEBUG-TS-PAIR: Start timestamps: client={start_data['client_timestamp']}, server={start_data['server_timestamp']}")
+                    # print(f"DEBUG-TS-PAIR: End timestamps: client={end_data['client_timestamp']}, server={end_data['server_timestamp']}")
 
                     # Create the pair with proper timestamps
                     pairs[start_id] = (start_data, end_data)
@@ -394,9 +394,9 @@ class EventTransform(BaseTransform):
                     server_ts_end = self._extract_timestamp(end_events['timestamps'], i, 'server')
 
                     # DEBUG: Print raw timestamps for this pair
-                    print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
-                    print(f"DEBUG-TS-PAIR: Start timestamps: client={client_ts_start}, server={server_ts_start}")
-                    print(f"DEBUG-TS-PAIR: End timestamps: client={client_ts_end}, server={server_ts_end}")
+                    # print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
+                    # print(f"DEBUG-TS-PAIR: Start timestamps: client={client_ts_start}, server={server_ts_start}")
+                    # print(f"DEBUG-TS-PAIR: End timestamps: client={client_ts_end}, server={server_ts_end}")
 
                     start_data = {
                         'data': start_events['data'][i] if i < len(start_events['data']) else {},
@@ -527,7 +527,7 @@ class EventTransform(BaseTransform):
             }
             
             # Get task reference to reduce redundant dictionary lookups
-            print(f"DEBUG-TASK: Adding task_id '{actual_task_id}' to dictionary")
+            # print(f"DEBUG-TASK: Adding task_id '{actual_task_id}' to dictionary")
             task = tasks[actual_task_id]
 
             # Calculate additional metadata
@@ -592,10 +592,10 @@ class EventTransform(BaseTransform):
 
             # DEBUG: Print timestamps before element creation
             print(f"DEBUG-TS-ELEMENT-CREATE: Creating element '{actual_element_id}'")
-            print(f"DEBUG-TS-ELEMENT-CREATE: sent_event client timestamp: {sent_event['client_timestamp']}")
-            print(f"DEBUG-TS-ELEMENT-CREATE: sent_event server timestamp: {sent_event['server_timestamp']}")
-            print(f"DEBUG-TS-ELEMENT-CREATE: replied_event client timestamp: {replied_event['client_timestamp']}")
-            print(f"DEBUG-TS-ELEMENT-CREATE: replied_event server timestamp: {replied_event['server_timestamp']}")
+            # print(f"DEBUG-TS-ELEMENT-CREATE: sent_event client timestamp: {sent_event['client_timestamp']}")
+            # print(f"DEBUG-TS-ELEMENT-CREATE: sent_event server timestamp: {sent_event['server_timestamp']}")
+            # print(f"DEBUG-TS-ELEMENT-CREATE: replied_event client timestamp: {replied_event['client_timestamp']}")
+            # print(f"DEBUG-TS-ELEMENT-CREATE: replied_event server timestamp: {replied_event['server_timestamp']}")
 
             # Create element entry with extracted fields
             elements[actual_element_id] = {
@@ -652,7 +652,7 @@ class EventTransform(BaseTransform):
 
             # Add element to task's element list
             task_id = element['task_id']
-            print(f"DEBUG-ELEMENT: Element {actual_element_id} looking for task_id '{task_id}'")
+            # print(f"DEBUG-ELEMENT: Element {actual_element_id} looking for task_id '{task_id}'")
             if task_id and task_id in tasks:
                 # Get task reference
                 task = tasks[task_id]
@@ -684,13 +684,13 @@ class EventTransform(BaseTransform):
                 end_time = segment['end_time']
 
                 # DEBUG: Print segment information
-                print(f"DEBUG-SEGMENT: Processing {segment_type} segment '{segment['segment_id']}' with start_time={start_time}")
+                # print(f"DEBUG-SEGMENT: Processing {segment_type} segment '{segment['segment_id']}' with start_time={start_time}")
 
                 # Check element containment - only check if start time is within element timespan
                 found_containing_element = False
                 for element_id, element in elements.items():
                     # DEBUG: Print element time bounds being checked
-                    print(f"DEBUG-ELEMENT-TIMES: Checking element '{element_id}' with start={element['start_time']}, end={element['end_time']}")
+                    # print(f"DEBUG-ELEMENT-TIMES: Checking element '{element_id}' with start={element['start_time']}, end={element['end_time']}")
 
                     # Check if segment is contained in this element
                     if self._is_segment_contained_in_element(start_time, element, segment['segment_id'], element_id):
@@ -701,7 +701,7 @@ class EventTransform(BaseTransform):
                         segment['element_relative_start'] = start_time - element['start_time']
 
                         # DEBUG: Print successful containment
-                        print(f"DEBUG-CONTAINMENT: Segment '{segment['segment_id']}' is contained by element '{element_id}'")
+                        # print(f"DEBUG-CONTAINMENT: Segment '{segment['segment_id']}' is contained by element '{element_id}'")
                         found_containing_element = True
                         break
 
