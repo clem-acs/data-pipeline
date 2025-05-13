@@ -8,16 +8,15 @@ for machine learning pipelines.
 
 # Import main components
 from .eeg_preprocessing import preprocess_eeg
-from .fnirs_preprocessing import preprocess_fnirs, get_module_channel_indices
+from .fnirs_preprocessing import preprocess_fnirs
 from .windowing import create_windows
-from .postprocessing import postprocess_windows
 from .window_dataset import WindowDataset
+from .normalize import normalize_window_dataset
 
 __all__ = [
     'preprocess_eeg',
     'preprocess_fnirs',
-    'get_module_channel_indices',
     'create_windows',
-    'postprocess_windows',
-    'WindowDataset'
+    'WindowDataset',
+    'normalize_window_dataset'
 ]

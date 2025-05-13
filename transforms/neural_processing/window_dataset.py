@@ -1,210 +1,130 @@
 """
-WindowDataset class for storing and accessing windowed neural data.
-
-This implements a PyTorch-compatible Dataset for neural data windows,
-with fixed window size matching physiological frame boundaries.
-The dataset handles timestamp alignment and gaps in fNIRS data.
+PyTorch Dataset for synchronized EEG and fNIRS windows derived from pre-aligned NumPy arrays.
 """
 
 import numpy as np
+import torch
+from torch.utils.data import Dataset
 import logging
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, Tuple, Union, Optional
 
-# Try to import torch, but don't fail if it's not available
-try:
-    import torch
-    from torch.utils.data import Dataset
-except ImportError:
-    torch = None
-    # Define a minimal Dataset base class if torch is not available
-    class Dataset:
-        def __len__(self):
-            return 0
-        def __getitem__(self, idx):
-            raise NotImplementedError
-
-# Import the windowing function
-try:
-    # Try relative import first
-    from .windowing import create_windows
-except ImportError:
-    # Fall back to direct import if relative import fails
-    from windowing import create_windows
-
-# Set up logger
 logger = logging.getLogger(__name__)
-
 
 class WindowDataset(Dataset):
     """
-    PyTorch Dataset for windowed neural data.
+    A PyTorch Dataset that provides synchronized windows of EEG and fNIRS data.
 
-    This represents a collection of time-aligned windows containing
-    EEG and fNIRS data that can be used directly with PyTorch DataLoader.
-    Each window maintains its original sampling rate and frame alignment.
-
-    The dataset creates windows that properly align EEG and fNIRS data
-    by timestamp and handles cases where fNIRS frames are skipped.
+    It operates on a pre-defined span where both modalities are considered valid,
+    as determined by 'both_start_idx' and 'both_end_idx'.
     """
-
-    def __init__(self, eeg_data: Optional[np.ndarray] = None, 
-                 fnirs_data: Optional[np.ndarray] = None, 
-                 eeg_timestamps: Optional[np.ndarray] = None, 
-                 fnirs_timestamps: Optional[np.ndarray] = None,
-                 precompute_windows: bool = False):
+    def __init__(self,
+                 eeg_windows_data_arr: np.ndarray,
+                 fnirs_windows_data_arr: np.ndarray,
+                 eeg_validity_mask_arr: np.ndarray,
+                 fnirs_validity_mask_arr: np.ndarray,
+                 real_eeg_timestamps_arr: np.ndarray,
+                 real_fnirs_timestamps_arr: np.ndarray,
+                 main_clock_timestamps_array: np.ndarray,
+                 eeg_start_idx: int, # Index in the master arrays
+                 fnirs_start_idx: int, # Index in the master arrays
+                 eeg_end_idx: int,     # Exclusive end index
+                 fnirs_end_idx: int,   # Exclusive end index
+                 both_start_idx: int,  # Inclusive start index for this dataset's view
+                 both_end_idx: int,    # Exclusive end index for this dataset's view
+                 return_torch_tensors: bool = True):
         """
-        Initialize a WindowDataset with original data.
+        Initializes the WindowDataset.
 
         Args:
-            eeg_data: EEG data array with shape (frames, channels, samples_per_frame)
-            fnirs_data: fNIRS data array with shape (frames, channels, 1)
-            eeg_timestamps: Timestamps for EEG data
-            fnirs_timestamps: Timestamps for fNIRS data
-            precompute_windows: Whether to precompute all windows at initialization
-                               (default: False = lazy loading)
+            eeg_windows_data_arr: (total_windows, num_eeg_channels, 105_samples)
+            fnirs_windows_data_arr: (total_windows, num_fnirs_channels, 1_sample)
+            eeg_validity_mask_arr: (total_windows,) bool
+            fnirs_validity_mask_arr: (total_windows,) bool
+            real_eeg_timestamps_arr: (total_windows,) float, actual EEG start ts
+            real_fnirs_timestamps_arr: (total_windows,) float, actual fNIRS start ts
+            main_clock_timestamps_array: (total_windows,) float, ideal start ts
+            eeg_start_idx: First index in master arrays where valid EEG data might start.
+            fnirs_start_idx: First index in master arrays where valid fNIRS data might start.
+            eeg_end_idx: Index after the last in master arrays where valid EEG data might end.
+            fnirs_end_idx: Index after the last in master arrays where valid fNIRS data might end.
+            both_start_idx: The starting index in the master arrays for this dataset's synchronized view.
+            both_end_idx: The exclusive end index in the master arrays for this dataset's synchronized view.
+            return_torch_tensors: If True, __getitem__ returns torch tensors.
         """
-        # Store the original data
-        self.eeg_data = eeg_data
-        self.fnirs_data = fnirs_data
-        self.eeg_timestamps = eeg_timestamps
-        self.fnirs_timestamps = fnirs_timestamps
 
-        # Fixed parameters for the windowing
-        self.eeg_frames_per_window = 7  # 7 EEG frames per window
-        self.fnirs_frames_per_window = 1  # 1 fNIRS frame per window
-        self.window_size_ms = 210  # Fixed window size (210ms = 1 fNIRS frame)
-        self.eeg_samples_per_frame = 15  # Assuming 15 samples per EEG frame
+        if not (isinstance(both_start_idx, int) and isinstance(both_end_idx, int) and \
+                both_start_idx != -1 and both_end_idx != -1 and both_start_idx < both_end_idx):
+            raise ValueError(
+                f"Invalid 'both_start_idx' ({both_start_idx}) or 'both_end_idx' ({both_end_idx}). "
+                f"No valid span where both EEG and fNIRS data are present. Cannot create dataset."
+            )
 
-        # For lazy loading
-        self._windows = None
-
-        # Precompute windows if requested
-        if precompute_windows:
-            self._precompute_windows()
-            logger.info(f"Precomputed {len(self._windows)} windows")
-        else:
-            # Just calculate the number of windows without creating them
-            self._calculate_n_windows()
-            logger.info(f"Lazy loading enabled, estimated {self.n_windows} windows")
-
-    def _precompute_windows(self):
-        """Precompute all windows using the create_windows function."""
-        self._windows = create_windows(
-            eeg_data=self.eeg_data,
-            fnirs_data=self.fnirs_data,
-            eeg_timestamps=self.eeg_timestamps,
-            fnirs_timestamps=self.fnirs_timestamps,
-            return_torch_tensors=(torch is not None)
-        )
-        self.n_windows = len(self._windows)
-
-    def _calculate_n_windows(self):
-        """Estimate the number of windows without creating them all."""
-        # This is just an approximation since we can't know about gaps without processing
-        has_eeg = self.eeg_data is not None and self.eeg_timestamps is not None and len(self.eeg_timestamps) > 0
-        has_fnirs = self.fnirs_data is not None and self.fnirs_timestamps is not None and len(self.fnirs_timestamps) > 0
+        self.eeg_data = eeg_windows_data_arr
+        self.fnirs_data = fnirs_windows_data_arr
+        self.eeg_validity = eeg_validity_mask_arr
+        self.fnirs_validity = fnirs_validity_mask_arr
+        self.real_eeg_ts = real_eeg_timestamps_arr
+        self.real_fnirs_ts = real_fnirs_timestamps_arr
+        self.main_clock_ts = main_clock_timestamps_array
         
-        if not has_eeg and not has_fnirs:
-            self.n_windows = 0
-            return
+        # These are stored for potential reference but not directly used by len/getitem for this dataset's view
+        self.master_eeg_start_idx = eeg_start_idx
+        self.master_fnirs_start_idx = fnirs_start_idx
+        self.master_eeg_end_idx = eeg_end_idx
+        self.master_fnirs_end_idx = fnirs_end_idx
 
-        # Estimate number of windows based on available data
-        if has_fnirs:
-            n_fnirs_frames = self.fnirs_data.shape[0]
-            # A rough estimate assuming no gaps
-            fnirs_windows = max(0, n_fnirs_frames // self.fnirs_frames_per_window)
-        else:
-            fnirs_windows = 0
-            
-        if has_eeg:
-            n_eeg_frames = self.eeg_data.shape[0]
-            eeg_windows = max(0, n_eeg_frames // self.eeg_frames_per_window)
-        else:
-            eeg_windows = 0
-            
-        # Use the min if both are available, otherwise use the one that's available
-        if fnirs_windows > 0 and eeg_windows > 0:
-            self.n_windows = min(fnirs_windows, eeg_windows)
-        else:
-            self.n_windows = max(fnirs_windows, eeg_windows)
+        self.slice_start = both_start_idx
+        self.slice_end = both_end_idx
+        self.return_torch_tensors = return_torch_tensors
+        
+        self._length = self.slice_end - self.slice_start
+        
+        logger.info(f"WindowDataset initialized. Effective length (both modalities valid): {self._length} windows. "
+                    f"Slicing master arrays from index {self.slice_start} to {self.slice_end-1}.")
 
     def __len__(self) -> int:
-        """Return the number of windows in the dataset."""
-        # If windows are precomputed, use exact count, otherwise use estimate
-        if self._windows is not None:
-            return len(self._windows)
-        return self.n_windows
+        """Returns the number of windows where both EEG and fNIRS are valid."""
+        return self._length
 
-    def __getitem__(self, idx: int) -> Dict[str, Union[np.ndarray, 'torch.Tensor', Dict]]:
+    def __getitem__(self, idx: int) -> Dict[str, Union[np.ndarray, torch.Tensor, bool, float, int]]:
         """
-        Get a specific window by index.
-
-        This either returns a precomputed window or creates it on-demand.
+        Retrieves a synchronized EEG and fNIRS window.
 
         Args:
-            idx: Index of the window to retrieve
+            idx: Index relative to the start of the 'both_valid' span.
 
         Returns:
-            Dictionary with EEG data, fNIRS data, and metadata
+            A dictionary containing 'eeg' data, 'fnirs' data, and 'metadata'.
         """
-        if idx < 0 or idx >= len(self):
-            raise IndexError(f"Index {idx} out of bounds for dataset with {len(self)} windows")
+        if not (0 <= idx < self._length):
+            raise IndexError(f"Index {idx} out of bounds for WindowDataset of length {self._length}.")
 
-        # If windows are precomputed, return the precomputed window
-        if self._windows is not None:
-            return self._windows[idx]
-            
-        # Lazily compute all windows if we're getting the first one
-        # This is more efficient than computing just a single window,
-        # as the create_windows function needs to process the entire dataset anyway
-        if idx == 0:
-            self._precompute_windows()
-            return self._windows[idx]
-            
-        # For other indices, compute all windows - the overhead is similar to computing just one
-        self._precompute_windows()
-        return self._windows[idx]
+        actual_array_idx = self.slice_start + idx
 
-    def get_all_windows(self) -> List[Dict]:
-        """Return all windows in the dataset.
+        eeg_item = self.eeg_data[actual_array_idx]
+        fnirs_item = self.fnirs_data[actual_array_idx]
+
+        metadata = {
+            'eeg_valid': self.eeg_validity[actual_array_idx],
+            'fnirs_valid': self.fnirs_validity[actual_array_idx],
+            'real_eeg_start_ts': self.real_eeg_ts[actual_array_idx],
+            'real_fnirs_start_ts': self.real_fnirs_ts[actual_array_idx],
+            'main_clock_ts': self.main_clock_ts[actual_array_idx],
+            'original_array_idx': actual_array_idx, # Index in the full NumPy arrays
+            'dataset_idx': idx # Index relative to this dataset's start
+        }
         
-        This is useful for batch operations.
-        """
-        if self._windows is None:
-            self._precompute_windows()
-        return self._windows
+        # All data within this dataset's slice should ideally have both eeg_valid and fnirs_valid as True
+        # due to the constructor check on both_start_idx and both_end_idx.
+        # If they were derived from eeg_validity & fnirs_validity, this should hold.
 
-    def to_dict(self) -> Dict:
-        """Convert the dataset to a dictionary format for serialization."""
+        if self.return_torch_tensors:
+            eeg_item = torch.from_numpy(eeg_item.copy()).float()
+            fnirs_item = torch.from_numpy(fnirs_item.copy()).float()
+
         return {
-            'eeg_data': self.eeg_data,
-            'fnirs_data': self.fnirs_data,
-            'eeg_timestamps': self.eeg_timestamps,
-            'fnirs_timestamps': self.fnirs_timestamps,
-            'eeg_frames_per_window': self.eeg_frames_per_window,
-            'fnirs_frames_per_window': self.fnirs_frames_per_window,
-            'window_size_ms': self.window_size_ms,
-            'eeg_samples_per_frame': self.eeg_samples_per_frame
+            'eeg': eeg_item,
+            'fnirs': fnirs_item,
+            'metadata': metadata
         }
 
-    @classmethod
-    def from_dict(cls, data_dict: Dict) -> 'WindowDataset':
-        """Create a WindowDataset from a dictionary."""
-        dataset = cls(
-            eeg_data=data_dict.get('eeg_data'),
-            fnirs_data=data_dict.get('fnirs_data'),
-            eeg_timestamps=data_dict.get('eeg_timestamps'),
-            fnirs_timestamps=data_dict.get('fnirs_timestamps')
-        )
-        
-        # Apply custom parameters if provided
-        if 'eeg_frames_per_window' in data_dict:
-            dataset.eeg_frames_per_window = data_dict['eeg_frames_per_window']
-        if 'fnirs_frames_per_window' in data_dict:
-            dataset.fnirs_frames_per_window = data_dict['fnirs_frames_per_window']
-        if 'window_size_ms' in data_dict:
-            dataset.window_size_ms = data_dict['window_size_ms']
-        if 'eeg_samples_per_frame' in data_dict:
-            dataset.eeg_samples_per_frame = data_dict['eeg_samples_per_frame']
-            
-        return dataset
