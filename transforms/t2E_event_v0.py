@@ -246,7 +246,64 @@ class EventTransform(BaseTransform):
                 'containing_element_id': '',
                 'element_relative_start': 0.0
             })
-    
+
+    def _extract_timestamp(self, timestamps, idx, timestamp_type):
+        """Extract timestamp safely with proper index.
+
+        Args:
+            timestamps: Timestamps array
+            idx: Index into the array
+            timestamp_type: 'client' or 'server' to select correct column
+
+        Returns:
+            float: Extracted timestamp or 0.0 if not available
+        """
+        if idx >= len(timestamps):
+            return 0.0
+
+        col_idx = 1 if timestamp_type == 'client' else 0  # [server_ts, client_ts]
+        return float(timestamps[idx][col_idx])
+
+    def _is_empty_or_none(self, value):
+        """Check if a value is None, empty string, or empty bytes.
+
+        Args:
+            value: Value to check
+
+        Returns:
+            bool: True if value is None or empty, False otherwise
+        """
+        if value is None:
+            return True
+        if isinstance(value, (str, bytes)) and len(value) == 0:
+            return True
+        return False
+
+    def _is_segment_contained_in_element(self, segment_time, element, segment_id=None, element_id=None):
+        """Check if a segment timestamp is contained within an element's timespan.
+
+        Args:
+            segment_time: Segment start time to check
+            element: Element dictionary with start_time and end_time
+            segment_id: Optional segment ID for debug output
+            element_id: Optional element ID for debug output
+
+        Returns:
+            bool: True if segment is contained in element, False otherwise
+        """
+        # Debug output if IDs are provided
+        if segment_id and element_id:
+            print(f"DEBUG-TS-CONTAIN: Containment check for segment={segment_id} in element={element_id}")
+            print(f"DEBUG-TS-CONTAIN: Segment start_time={segment_time}")
+            print(f"DEBUG-TS-CONTAIN: Element start_time={element['start_time']}, end_time={element['end_time']}")
+            print(f"DEBUG-TS-CONTAIN: Condition 1: element.start <= segment.start = {element['start_time'] <= segment_time}")
+            print(f"DEBUG-TS-CONTAIN: Condition 2: element.end >= segment.start = {element['end_time'] >= segment_time}")
+            print(f"DEBUG-TS-CONTAIN: Combined condition = {(element['start_time'] <= segment_time and element['end_time'] >= segment_time)}")
+
+        # The actual containment check
+        return (element['start_time'] <= segment_time and
+                element['end_time'] >= segment_time)
+
     def _pair_events(self, events, start_type, end_type):
         """Pair start/end events.
 
@@ -331,10 +388,10 @@ class EventTransform(BaseTransform):
                     end_id = end_events['event_ids'][i]
 
                     # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
-                    client_ts_start = float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
-                    server_ts_start = float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0
-                    client_ts_end = float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
-                    server_ts_end = float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0
+                    client_ts_start = self._extract_timestamp(start_events['timestamps'], i, 'client')
+                    server_ts_start = self._extract_timestamp(start_events['timestamps'], i, 'server')
+                    client_ts_end = self._extract_timestamp(end_events['timestamps'], i, 'client')
+                    server_ts_end = self._extract_timestamp(end_events['timestamps'], i, 'server')
 
                     # DEBUG: Print raw timestamps for this pair
                     print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
@@ -382,15 +439,15 @@ class EventTransform(BaseTransform):
                             start_data = {
                                 'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
                                 'event_ids': [start_id],
-                                'client_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0,
-                                'server_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0
+                                'client_timestamp': self._extract_timestamp(start_events['timestamps'], start_idx, 'client'),
+                                'server_timestamp': self._extract_timestamp(start_events['timestamps'], start_idx, 'server')
                             }
 
                             end_data = {
                                 'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
                                 'event_ids': [end_id],
-                                'client_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0,
-                                'server_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0
+                                'client_timestamp': self._extract_timestamp(end_events['timestamps'], end_idx, 'client'),
+                                'server_timestamp': self._extract_timestamp(end_events['timestamps'], end_idx, 'server')
                             }
 
                             pairs[start_id] = (start_data, end_data)
@@ -469,14 +526,17 @@ class EventTransform(BaseTransform):
                 # Element count will be calculated, no need to store element IDs
             }
             
-            # Calculate additional metadata
+            # Get task reference to reduce redundant dictionary lookups
             print(f"DEBUG-TASK: Adding task_id '{actual_task_id}' to dictionary")
-            tasks[actual_task_id]['duration'] = tasks[actual_task_id]['end_time'] - tasks[actual_task_id]['start_time']
-            
+            task = tasks[actual_task_id]
+
+            # Calculate additional metadata
+            task['duration'] = task['end_time'] - task['start_time']
+
             # Calculate session fractions
             if session_start_time is not None:
-                tasks[actual_task_id]['session_fraction_start'] = (tasks[actual_task_id]['start_time'] - session_start_time) / (24 * 60 * 60)
-                tasks[actual_task_id]['session_fraction_end'] = (tasks[actual_task_id]['end_time'] - session_start_time) / (24 * 60 * 60)
+                task['session_fraction_start'] = (task['start_time'] - session_start_time) / (24 * 60 * 60)
+                task['session_fraction_end'] = (task['end_time'] - session_start_time) / (24 * 60 * 60)
         
         # 2. Process skip task events if present
         if 'skip_task' in events and len(events['skip_task']['event_ids']) > 0:
@@ -502,15 +562,18 @@ class EventTransform(BaseTransform):
                 
                 # Update task if found
                 if active_task_id and active_task_id in tasks:
-                    tasks[active_task_id]['skipped'] = True
-                    tasks[active_task_id]['skip_event_id'] = skip_id
-                    tasks[active_task_id]['skip_time'] = skip_time
-                    
+                    # Get task reference
+                    task = tasks[active_task_id]
+
+                    task['skipped'] = True
+                    task['skip_event_id'] = skip_id
+                    task['skip_time'] = skip_time
+
                     # Update status based on when the skip occurred
-                    if skip_time <= tasks[active_task_id]['start_time']:
-                        tasks[active_task_id]['completion_status'] = 'skipped_before_start'
+                    if skip_time <= task['start_time']:
+                        task['completion_status'] = 'skipped_before_start'
                     else:
-                        tasks[active_task_id]['completion_status'] = 'partially_completed_then_skipped'
+                        task['completion_status'] = 'partially_completed_then_skipped'
         
         # 3. Process element events
         element_pairs = self._pair_events(events, 'element_sent', 'element_replied')
@@ -567,33 +630,37 @@ class EventTransform(BaseTransform):
                 # No segment placeholders needed
             }
             
+            # Get element reference to reduce redundant dictionary lookups
+            element = elements[actual_element_id]
+
             # Calculate derived fields
-            elements[actual_element_id]['duration'] = (
-                elements[actual_element_id]['end_time'] - elements[actual_element_id]['start_time']
-            )
+            element['duration'] = element['end_time'] - element['start_time']
 
             # Get configured response time limit from element_content or task config
             # First check directly in element_content
             # Then check in task_metadata's config if present
             # Default to -1 if not configured
             response_config = task_metadata.get('config', {})
-            elements[actual_element_id]['response_time_seconds'] = (
+            element['response_time_seconds'] = (
                 element_content.get('response_time_seconds') or
                 response_config.get('response_time_seconds') or
                 -1
             )
 
             if session_start_time is not None:
-                elements[actual_element_id]['session_relative_time'] = elements[actual_element_id]['start_time'] - session_start_time
+                element['session_relative_time'] = element['start_time'] - session_start_time
 
             # Add element to task's element list
-            task_id = elements[actual_element_id]['task_id']
+            task_id = element['task_id']
             print(f"DEBUG-ELEMENT: Element {actual_element_id} looking for task_id '{task_id}'")
             if task_id and task_id in tasks:
+                # Get task reference
+                task = tasks[task_id]
+
                 # Instead of storing element IDs directly, just increment the count
-                if 'element_count' not in tasks[task_id]:
-                    tasks[task_id]['element_count'] = 0
-                tasks[task_id]['element_count'] += 1
+                if 'element_count' not in task:
+                    task['element_count'] = 0
+                task['element_count'] += 1
             else:
                 self.logger.warning(f"Element {element_id} could not be associated with any task (task_id='{task_id}')")
         
@@ -625,16 +692,8 @@ class EventTransform(BaseTransform):
                     # DEBUG: Print element time bounds being checked
                     print(f"DEBUG-ELEMENT-TIMES: Checking element '{element_id}' with start={element['start_time']}, end={element['end_time']}")
 
-                    # DEBUG: Print actual comparison values to see what's being used
-                    print(f"DEBUG-TS-CONTAIN: Containment check for segment={segment['segment_id']} in element={element_id}")
-                    print(f"DEBUG-TS-CONTAIN: Segment start_time={start_time}")
-                    print(f"DEBUG-TS-CONTAIN: Element start_time={element['start_time']}, end_time={element['end_time']}")
-                    print(f"DEBUG-TS-CONTAIN: Condition 1: element.start <= segment.start = {element['start_time'] <= start_time}")
-                    print(f"DEBUG-TS-CONTAIN: Condition 2: element.end >= segment.start = {element['end_time'] >= start_time}")
-                    print(f"DEBUG-TS-CONTAIN: Combined condition = {(element['start_time'] <= start_time and element['end_time'] >= start_time)}")
-
-                    if (element['start_time'] <= start_time and
-                        element['end_time'] >= start_time):
+                    # Check if segment is contained in this element
+                    if self._is_segment_contained_in_element(start_time, element, segment['segment_id'], element_id):
                         # Add reference only to segment - no bidirectional references
                         segment['containing_element_id'] = element_id
 
@@ -932,14 +991,14 @@ class EventTransform(BaseTransform):
 
                     # Handle special field arrays with NULL safety
                     if field in special_fields:
-                        # Always create a valid array, even if item[field] is None
-                        if item[field] is None:
+                        # Always create a valid array, even if item[field] is None or empty
+                        if self._is_empty_or_none(item[field]):
                             array_data[i][field] = np.array([], dtype='S64')
                         elif isinstance(item[field], list):
                             # Filter out None values and convert strings to bytes
                             ids = []
                             for id_val in item[field]:
-                                if id_val is not None:
+                                if not self._is_empty_or_none(id_val):
                                     if isinstance(id_val, str):
                                         ids.append(id_val.encode('utf-8'))
                                     else:
