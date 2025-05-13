@@ -249,95 +249,152 @@ class EventTransform(BaseTransform):
     
     def _pair_events(self, events, start_type, end_type):
         """Pair start/end events.
-        
+
         Args:
             events: Dictionary of events
             start_type: Type of start event
             end_type: Type of end event
-            
+
         Returns:
             dict: Dictionary of paired events by ID
         """
         pairs = {}
-        
+
         # Check if both event types exist
         if start_type not in events or end_type not in events:
             return pairs
-        
+
         start_events = events[start_type]
         end_events = events[end_type]
-        
-        # Simple matching by index if counts match
-        if len(start_events['event_ids']) == len(end_events['event_ids']):
+
+        # Special case for element events - match by element_id
+        if start_type == 'element_sent' and end_type == 'element_replied':
+            # Create dictionaries to map element_id -> event data
+            start_elements_by_id = {}
+            end_elements_by_id = {}
+
+            # Process all sent events, organizing by element_id
             for i in range(len(start_events['event_ids'])):
-                start_id = start_events['event_ids'][i]
-                end_id = end_events['event_ids'][i]
-                
-                # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
-                client_ts_start = float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
-                server_ts_start = float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0
-                client_ts_end = float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
-                server_ts_end = float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0
+                if i < len(start_events['data']) and 'element_id' in start_events['data'][i]:
+                    element_id = start_events['data'][i]['element_id']
+                    start_id = start_events['event_ids'][i]
 
-                # DEBUG: Print raw timestamps for this pair
-                print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
-                print(f"DEBUG-TS-PAIR: Start timestamps: client={client_ts_start}, server={server_ts_start}")
-                print(f"DEBUG-TS-PAIR: End timestamps: client={client_ts_end}, server={server_ts_end}")
+                    # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                    client_ts = float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
+                    server_ts = float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0
 
-                start_data = {
-                    'data': start_events['data'][i] if i < len(start_events['data']) else {},
-                    'event_ids': [start_id],
-                    'client_timestamp': client_ts_start,
-                    'server_timestamp': server_ts_start
-                }
+                    # Store with all necessary data
+                    start_elements_by_id[element_id] = {
+                        'data': start_events['data'][i] if i < len(start_events['data']) else {},
+                        'event_ids': [start_id],
+                        'client_timestamp': client_ts,
+                        'server_timestamp': server_ts
+                    }
 
-                end_data = {
-                    'data': end_events['data'][i] if i < len(end_events['data']) else {},
-                    'event_ids': [end_id],
-                    'client_timestamp': client_ts_end,
-                    'server_timestamp': server_ts_end
-                }
-                
-                pairs[start_id] = (start_data, end_data)
+            # Process all replied events, organizing by element_id
+            for i in range(len(end_events['event_ids'])):
+                if i < len(end_events['data']) and 'element_id' in end_events['data'][i]:
+                    element_id = end_events['data'][i]['element_id']
+                    end_id = end_events['event_ids'][i]
+
+                    # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                    client_ts = float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
+                    server_ts = float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0
+
+                    # Store with all necessary data
+                    end_elements_by_id[element_id] = {
+                        'data': end_events['data'][i] if i < len(end_events['data']) else {},
+                        'event_ids': [end_id],
+                        'client_timestamp': client_ts,
+                        'server_timestamp': server_ts
+                    }
+
+            # Now match elements by element_id (instead of by index)
+            for element_id, start_data in start_elements_by_id.items():
+                if element_id in end_elements_by_id:
+                    end_data = end_elements_by_id[element_id]
+                    start_id = start_data['event_ids'][0]
+
+                    # DEBUG: Print raw timestamps for this pair
+                    print(f"DEBUG-TS-PAIR: Element pair {start_type}/{end_type} - {start_id}/{end_data['event_ids'][0]} for element_id={element_id}")
+                    print(f"DEBUG-TS-PAIR: Start timestamps: client={start_data['client_timestamp']}, server={start_data['server_timestamp']}")
+                    print(f"DEBUG-TS-PAIR: End timestamps: client={end_data['client_timestamp']}, server={end_data['server_timestamp']}")
+
+                    # Create the pair with proper timestamps
+                    pairs[start_id] = (start_data, end_data)
         else:
-            # More complex matching by timestamps
-            self.logger.warning(f"Mismatched counts for {start_type}/{end_type}, using timestamp matching")
-            
-            # Sort by timestamp - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
-            start_items = sorted(list(zip(
-                start_events['event_ids'],
-                start_events['timestamps'][:, 1] if len(start_events['timestamps']) > 0 else [],  # Use client timestamp
-                range(len(start_events['event_ids']))
-            )), key=lambda x: x[1])
+            # Original logic for non-element events
+            # Simple matching by index if counts match
+            if len(start_events['event_ids']) == len(end_events['event_ids']):
+                for i in range(len(start_events['event_ids'])):
+                    start_id = start_events['event_ids'][i]
+                    end_id = end_events['event_ids'][i]
 
-            end_items = sorted(list(zip(
-                end_events['event_ids'],
-                end_events['timestamps'][:, 1] if len(end_events['timestamps']) > 0 else [],  # Use client timestamp
-                range(len(end_events['event_ids']))
-            )), key=lambda x: x[1])
-            
-            # Match each start with the next end
-            for i, (start_id, start_time, start_idx) in enumerate(start_items):
-                if i < len(end_items):
-                    end_id, end_time, end_idx = end_items[i]
-                    
-                    if end_time >= start_time:  # Ensure end is after start
-                        start_data = {
-                            'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
-                            'event_ids': [start_id],
-                            'client_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0,
-                            'server_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0
-                        }
+                    # Extract timestamps - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                    client_ts_start = float(start_events['timestamps'][i][1]) if i < len(start_events['timestamps']) else 0.0
+                    server_ts_start = float(start_events['timestamps'][i][0]) if i < len(start_events['timestamps']) else 0.0
+                    client_ts_end = float(end_events['timestamps'][i][1]) if i < len(end_events['timestamps']) else 0.0
+                    server_ts_end = float(end_events['timestamps'][i][0]) if i < len(end_events['timestamps']) else 0.0
 
-                        end_data = {
-                            'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
-                            'event_ids': [end_id],
-                            'client_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0,
-                            'server_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0
-                        }
-                        
-                        pairs[start_id] = (start_data, end_data)
-        
+                    # DEBUG: Print raw timestamps for this pair
+                    print(f"DEBUG-TS-PAIR: Event pair {start_type}/{end_type} - {start_id}/{end_id}")
+                    print(f"DEBUG-TS-PAIR: Start timestamps: client={client_ts_start}, server={server_ts_start}")
+                    print(f"DEBUG-TS-PAIR: End timestamps: client={client_ts_end}, server={server_ts_end}")
+
+                    start_data = {
+                        'data': start_events['data'][i] if i < len(start_events['data']) else {},
+                        'event_ids': [start_id],
+                        'client_timestamp': client_ts_start,
+                        'server_timestamp': server_ts_start
+                    }
+
+                    end_data = {
+                        'data': end_events['data'][i] if i < len(end_events['data']) else {},
+                        'event_ids': [end_id],
+                        'client_timestamp': client_ts_end,
+                        'server_timestamp': server_ts_end
+                    }
+
+                    pairs[start_id] = (start_data, end_data)
+            else:
+                # More complex matching by timestamps
+                self.logger.warning(f"Mismatched counts for {start_type}/{end_type}, using timestamp matching")
+
+                # Sort by timestamp - NOTE: In H5 files, timestamps are [server_timestamp, client_timestamp]
+                start_items = sorted(list(zip(
+                    start_events['event_ids'],
+                    start_events['timestamps'][:, 1] if len(start_events['timestamps']) > 0 else [],  # Use client timestamp
+                    range(len(start_events['event_ids']))
+                )), key=lambda x: x[1])
+
+                end_items = sorted(list(zip(
+                    end_events['event_ids'],
+                    end_events['timestamps'][:, 1] if len(end_events['timestamps']) > 0 else [],  # Use client timestamp
+                    range(len(end_events['event_ids']))
+                )), key=lambda x: x[1])
+
+                # Match each start with the next end
+                for i, (start_id, start_time, start_idx) in enumerate(start_items):
+                    if i < len(end_items):
+                        end_id, end_time, end_idx = end_items[i]
+
+                        if end_time >= start_time:  # Ensure end is after start
+                            start_data = {
+                                'data': start_events['data'][start_idx] if start_idx < len(start_events['data']) else {},
+                                'event_ids': [start_id],
+                                'client_timestamp': float(start_events['timestamps'][start_idx][1]) if start_idx < len(start_events['timestamps']) else 0.0,
+                                'server_timestamp': float(start_events['timestamps'][start_idx][0]) if start_idx < len(start_events['timestamps']) else 0.0
+                            }
+
+                            end_data = {
+                                'data': end_events['data'][end_idx] if end_idx < len(end_events['data']) else {},
+                                'event_ids': [end_id],
+                                'client_timestamp': float(end_events['timestamps'][end_idx][1]) if end_idx < len(end_events['timestamps']) else 0.0,
+                                'server_timestamp': float(end_events['timestamps'][end_idx][0]) if end_idx < len(end_events['timestamps']) else 0.0
+                            }
+
+                            pairs[start_id] = (start_data, end_data)
+
         return pairs
     
     def _process_event_data(self, events, session_id, h5_file):
