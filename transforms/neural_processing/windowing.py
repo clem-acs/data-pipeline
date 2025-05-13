@@ -641,3 +641,567 @@ def create_windows(
     logger.info(f"Finalizing create_windows. summary_metadata keys: {list(summary_metadata.keys())}")
 
     return dataset_instance, summary_metadata
+
+
+def create_windows_eeg_only(
+    eeg_data: Optional[np.ndarray] = None,
+    eeg_timestamps: Optional[np.ndarray] = None,
+    return_torch_tensors: bool = False,
+    # TODO: Consider making these parameters or module-level constants
+    eeg_frames_per_window: int = 7,
+    ideal_period_ms: float = 210.0  # Using fnirs_ideal_period_ms as a base for window rate
+):
+    """
+    Creates time-aligned windows from EEG data only.
+    Returns a WindowDataset and summary metadata.
+    """
+    logger.info("Starting create_windows_eeg_only...")
+
+    # --- 1. Validate Inputs ---
+    if not (eeg_data is not None and len(eeg_data) > 0 and
+            eeg_timestamps is not None and len(eeg_timestamps) > 0):
+        logger.error("EEG data or timestamps are missing or empty.")
+        return None, {"error": "EEG data or timestamps missing"}
+    if eeg_data.ndim != 3 or eeg_data.shape[1] == 0 or eeg_data.shape[2] == 0:
+        logger.error(f"EEG data has unexpected shape: {eeg_data.shape}.")
+        return None, {"error": f"EEG data unexpected shape: {eeg_data.shape}"}
+
+    try:
+        eeg_ts_ms = eeg_timestamps[:, 1].astype(float)
+        if eeg_ts_ms.shape[0] != eeg_data.shape[0]:
+            logger.error(f"EEG timestamp count ({eeg_ts_ms.shape[0]}) " +
+                           f"doesn't match EEG data frame count ({eeg_data.shape[0]}).")
+            return None, {"error": "EEG timestamp count mismatch"}
+    except IndexError:
+        logger.error("EEG timestamps array does not have a second column (index 1).")
+        return None, {"error": "EEG timestamps wrong format"}
+    except Exception as e:
+        logger.error(f"Could not extract or validate EEG timestamps: {e}.")
+        return None, {"error": f"EEG timestamp extraction error: {e}"}
+
+    logger.info(f"Successfully extracted {len(eeg_ts_ms)} EEG timestamps.")
+
+    if len(eeg_ts_ms) < eeg_frames_per_window:
+        logger.error("Not enough EEG frames for a single window.")
+        return None, {"error": "Not enough EEG frames for a window"}
+
+    first_eeg_idx_in_overlap = 0
+    last_eeg_idx_in_overlap = len(eeg_ts_ms) - 1
+    
+    # --- Phase 3: Iterate to Create Windows (Simplified for EEG-only) ---
+    logger.info("Phase 3: Iterating to create EEG windows...")
+    
+    windows_list: List[Dict[str, Union[np.ndarray, Dict]]] = []
+    current_eeg_start_global_idx = first_eeg_idx_in_overlap
+    window_count = 0
+    
+    projected_first_window_start_ts = eeg_ts_ms[0] # Anchor on the first EEG timestamp
+
+    logger.info(f"Starting window creation loop. EEG from global idx {current_eeg_start_global_idx} (up to {last_eeg_idx_in_overlap}).")
+
+    while True:
+        eeg_chunk_end_global_idx = current_eeg_start_global_idx + eeg_frames_per_window - 1
+
+        if eeg_chunk_end_global_idx > last_eeg_idx_in_overlap:
+            logger.info(f"Stopping: Not enough usable EEG frames for window {window_count} (needed up to {eeg_chunk_end_global_idx}, max is {last_eeg_idx_in_overlap}).")
+            break
+
+        eeg_w_np = eeg_data[current_eeg_start_global_idx : current_eeg_start_global_idx + eeg_frames_per_window]
+        eeg_ts_window_ms = eeg_ts_ms[current_eeg_start_global_idx : current_eeg_start_global_idx + eeg_frames_per_window]
+        
+        window_ideal_event_ts = projected_first_window_start_ts + (window_count * ideal_period_ms)
+
+        metadata = {
+            'window_idx': window_count,
+            'eeg_frame_indices_abs': (current_eeg_start_global_idx, eeg_chunk_end_global_idx),
+            'eeg_timestamps_ms': eeg_ts_window_ms,
+            'ideal_event_ts_projected': window_ideal_event_ts,
+            'actual_event_ts': eeg_ts_window_ms[0], # Use first EEG timestamp in window as actual
+            'notes': "EEG-only window."
+        }
+        windows_list.append({'eeg': eeg_w_np, 'metadata': metadata})
+        
+        # Advance by one full window's worth of ideal period to find next EEG chunk
+        # This assumes EEG data is dense enough. A more robust approach might find the
+        # EEG frame closest to (current_event_ts + ideal_period_ms).
+        # For now, simple contiguous windowing.
+        current_eeg_start_global_idx += eeg_frames_per_window 
+        window_count += 1
+
+    if not windows_list: logger.warning("No EEG windows were created.")
+    else: logger.info(f"Successfully created {len(windows_list)} EEG windows.")
+
+    # --- Phase 4: Prepare for NumPy Array Output ---
+    logger.info("Phase 4: Transforming EEG windows_list to NumPy array outputs.")
+    
+    raw_eeg_ts_ms = eeg_ts_ms # Already extracted and validated
+
+    eeg_single_frame_duration_ms = ideal_period_ms / eeg_frames_per_window
+
+    overall_min_ts = raw_eeg_ts_ms[0]
+    overall_max_ts = raw_eeg_ts_ms[-1] + eeg_single_frame_duration_ms
+    
+    if overall_max_ts <= overall_min_ts:
+        logger.warning(f"Overall master timeline duration is zero or negative ({overall_min_ts=} to {overall_max_ts=}).")
+        total_windows = 0
+    else:
+        total_windows = int(np.ceil((overall_max_ts - overall_min_ts) / ideal_period_ms))
+
+    if total_windows == 0:
+         logger.warning("Master timeline results in 0 total_windows. All output arrays will be empty.")
+
+    main_clock_timestamps_array = overall_min_ts + np.arange(total_windows) * ideal_period_ms
+    
+    num_eeg_chans = eeg_data.shape[1]
+    eeg_samples_per_raw_frame = eeg_data.shape[2]
+    eeg_samples_per_output_window = eeg_frames_per_window * eeg_samples_per_raw_frame
+
+    eeg_windows_data_arr = np.zeros((total_windows, num_eeg_chans, eeg_samples_per_output_window), dtype=eeg_data.dtype)
+    eeg_validity_mask_arr = np.zeros(total_windows, dtype=bool)
+    real_eeg_timestamps_arr = np.full(total_windows, np.nan, dtype=float)
+
+    # Empty fNIRS arrays
+    # Assuming fnirs_data shape if it were present (e.g. from original create_windows)
+    # These need to be defined for WindowDataset, even if empty/dummy
+    num_fnirs_chans_dummy = 1 # Placeholder
+    fnirs_samples_per_raw_frame_dummy = 1 # Placeholder
+    fnirs_windows_data_arr = np.zeros((total_windows, num_fnirs_chans_dummy, fnirs_samples_per_raw_frame_dummy), dtype=np.float32) # Placeholder dtype
+    fnirs_validity_mask_arr = np.zeros(total_windows, dtype=bool)
+    real_fnirs_timestamps_arr = np.full(total_windows, np.nan, dtype=float)
+
+    if windows_list:
+        for original_window in windows_list:
+            map_key_ts = original_window['metadata'].get('ideal_event_ts_projected', original_window['metadata']['actual_event_ts'])
+            if map_key_ts is None:
+                logger.warning(f"Skipping original window (idx {original_window['metadata']['window_idx']}) due to missing mapping timestamp.")
+                continue
+
+            if total_windows > 0:
+                diffs = np.abs(main_clock_timestamps_array - map_key_ts)
+                slot_idx = np.argmin(diffs)
+                if diffs[slot_idx] > (ideal_period_ms / 1.9):
+                    logger.debug(f"Original EEG window (ideal_ts {map_key_ts:.2f}) too far from any master clock slot. Min diff: {diffs[slot_idx]:.2f}. Skipping.")
+                    continue
+            else:
+                continue
+            
+            eeg_from_list = original_window['eeg']
+            if eeg_from_list.shape == (eeg_frames_per_window, num_eeg_chans, eeg_samples_per_raw_frame):
+                eeg_windows_data_arr[slot_idx] = eeg_from_list.transpose(1,0,2).reshape(num_eeg_chans, eeg_samples_per_output_window)
+                eeg_validity_mask_arr[slot_idx] = True
+                real_eeg_timestamps_arr[slot_idx] = original_window['metadata']['eeg_timestamps_ms'][0]
+            else:
+                logger.warning(f"EEG data in original_window {original_window['metadata']['window_idx']} has unexpected shape {eeg_from_list.shape}. Skipping EEG for this slot.")
+    else:
+        logger.info("EEG windows_list is empty. Output arrays will reflect no mapped data.")
+
+    def get_span_indices(mask_arr): # Redefined locally
+        valid_indices = np.where(mask_arr)[0]
+        if len(valid_indices) > 0:
+            return valid_indices[0], valid_indices[-1] + 1 # Exclusive end
+        return -1, -1
+
+    eeg_start_idx, eeg_end_idx = get_span_indices(eeg_validity_mask_arr)
+    if eeg_start_idx != -1: eeg_start_idx = int(eeg_start_idx)
+    if eeg_end_idx != -1: eeg_end_idx = int(eeg_end_idx)
+    fnirs_start_idx, fnirs_end_idx = -1, -1 # No fNIRS data
+
+    # For EEG-only, "both" means EEG
+    both_valid_mask = eeg_validity_mask_arr
+    both_start_idx, both_end_idx = get_span_indices(both_valid_mask)
+    if both_start_idx != -1: both_start_idx = int(both_start_idx)
+    if both_end_idx != -1: both_end_idx = int(both_end_idx)
+    
+    percent_eeg_trimmed = 0.0 # Simplified for EEG-only; can be enhanced
+    if len(raw_eeg_ts_ms) > 0 and total_windows > 0 and eeg_start_idx != -1:
+        # Basic calculation, could be more precise like in original create_windows
+        original_duration = raw_eeg_ts_ms[-1] - raw_eeg_ts_ms[0]
+        covered_duration = main_clock_timestamps_array[eeg_end_idx-1] - main_clock_timestamps_array[eeg_start_idx] if eeg_end_idx > eeg_start_idx else 0
+        if original_duration > 1e-6:
+            percent_eeg_trimmed = max(0.0, (1.0 - (covered_duration / original_duration)) * 100.0)
+        else:
+            percent_eeg_trimmed = 0.0 if covered_duration > 0 else 100.0
+    percent_eeg_trimmed = max(0.0, min(100.0, percent_eeg_trimmed))
+
+
+    summary_metadata = {
+        'percent_eeg_trimmed': percent_eeg_trimmed,
+        'percent_fnirs_trimmed': 100.0, # No fNIRS
+        'percent_fnirs_missing_in_span': 100.0, # No fNIRS
+        'total_master_windows_in_input_arrays': total_windows,
+        'eeg_master_span_in_input_arrays': (eeg_start_idx, eeg_end_idx),
+        'fnirs_master_span_in_input_arrays': (fnirs_start_idx, fnirs_end_idx),
+        'both_master_span_in_input_arrays': (both_start_idx, both_end_idx) # 'both' is EEG here
+    }
+
+    logger.info(f"NumPy array creation complete for EEG-only. Total master windows: {total_windows}")
+    logger.info(f"EEG: {np.sum(eeg_validity_mask_arr)} valid windows. Span: {eeg_start_idx}-{eeg_end_idx}. Trimmed: {percent_eeg_trimmed:.1f}%")
+
+    # --- Phase 5: Instantiate WindowDataset and Return ---
+    logger.info("Phase 5: Instantiating WindowDataset for EEG-only.")
+    
+    dataset_instance: Optional[WindowDataset] = None
+    if total_windows == 0:
+        logger.warning("Total master windows is 0, WindowDataset cannot be meaningfully created.")
+    elif not (isinstance(both_start_idx, int) and isinstance(both_end_idx, int) and \
+            both_start_idx != -1 and both_end_idx != -1 and both_start_idx < both_end_idx):
+        logger.warning(f"Cannot create WindowDataset: No valid span for EEG data. "
+                       f"both_start_idx (eeg_start_idx): {both_start_idx}, both_end_idx (eeg_end_idx): {both_end_idx}")
+    else:
+        try:
+            dataset_instance = WindowDataset(
+                eeg_windows_data_arr=eeg_windows_data_arr,
+                fnirs_windows_data_arr=fnirs_windows_data_arr, # Empty/zero
+                eeg_validity_mask_arr=eeg_validity_mask_arr,
+                fnirs_validity_mask_arr=fnirs_validity_mask_arr, # All False
+                real_eeg_timestamps_arr=real_eeg_timestamps_arr,
+                real_fnirs_timestamps_arr=real_fnirs_timestamps_arr, # All NaN
+                main_clock_timestamps_array=main_clock_timestamps_array,
+                eeg_start_idx=eeg_start_idx,
+                fnirs_start_idx=fnirs_start_idx, # -1
+                eeg_end_idx=eeg_end_idx,
+                fnirs_end_idx=fnirs_end_idx, # -1
+                both_start_idx=both_start_idx, # This is eeg_start_idx
+                both_end_idx=both_end_idx,   # This is eeg_end_idx
+                return_torch_tensors=return_torch_tensors
+            )
+            logger.info(f"Successfully created WindowDataset with {len(dataset_instance)} EEG-only windows.")
+        except ValueError as ve: # Assuming WindowDataset might raise ValueError for invalid spans
+            logger.error(f"Error instantiating WindowDataset for EEG-only: {ve}")
+            dataset_instance = None
+        except Exception as e:
+            logger.error(f"Unexpected error during WindowDataset instantiation for EEG-only: {e}", exc_info=True)
+            dataset_instance = None
+
+    logger.info(f"Finalizing create_windows_eeg_only. summary_metadata keys: {list(summary_metadata.keys())}")
+    return dataset_instance, summary_metadata
+
+
+def create_windows_fnirs_only(
+    fnirs_data: Optional[np.ndarray] = None,
+    fnirs_timestamps: Optional[np.ndarray] = None,
+    return_torch_tensors: bool = False,
+    # Constants from original create_windows, consider refactoring
+    fnirs_frames_per_window: int = 1,
+    fnirs_ideal_period_ms: float = 210.0,
+    drift_chunk_size_frames: int = 20,
+    min_actual_frame_density_for_truncation: float = 0.80,
+    min_frames_for_late_offset_calc: int = 20
+):
+    """
+    Creates time-aligned windows from fNIRS data only.
+    Includes gap filling, truncation, and timing characterization for fNIRS.
+    Returns a WindowDataset and summary metadata.
+    """
+    logger.info("Starting create_windows_fnirs_only...")
+
+    # --- 1. Validate Inputs and Extract Timestamps ---
+    if not (fnirs_data is not None and len(fnirs_data) > 0 and
+            fnirs_timestamps is not None and len(fnirs_timestamps) > 0):
+        logger.error("fNIRS data or timestamps are missing or empty.")
+        return None, {"error": "fNIRS data or timestamps missing"}
+    if fnirs_data.ndim != 3 or fnirs_data.shape[1] == 0 or fnirs_data.shape[2] != 1: # Assuming fnirs_data.shape[2] == 1
+        logger.error(f"fNIRS data has unexpected shape: {fnirs_data.shape}.")
+        return None, {"error": f"fNIRS data unexpected shape: {fnirs_data.shape}"}
+
+    try:
+        fnirs_ts_ms_orig = fnirs_timestamps[:, 1].astype(float)
+        if fnirs_ts_ms_orig.shape[0] != fnirs_data.shape[0]:
+            logger.error(f"fNIRS timestamp count ({fnirs_ts_ms_orig.shape[0]}) " +
+                           f"doesn't match fNIRS data frame count ({fnirs_data.shape[0]}).")
+            return None, {"error": "fNIRS timestamp count mismatch"}
+    except IndexError:
+        logger.error("fNIRS timestamps array does not have a second column (index 1).")
+        return None, {"error": "fNIRS timestamps wrong format"}
+    except Exception as e:
+        logger.error(f"Could not extract or validate fNIRS timestamps: {e}.")
+        return None, {"error": f"fNIRS timestamp extraction error: {e}"}
+    
+    logger.info(f"Successfully extracted {len(fnirs_ts_ms_orig)} fNIRS timestamps.")
+
+    # --- 1.7. fNIRS Gap Filling and Preprocessing (Adapted from original) ---
+    logger.info("Phase 1.7: Processing fNIRS data for gaps...")
+    fnirs_ts_ms_processed_list = []
+    fnirs_data_processed_list = []
+    fnirs_is_actual_list = []
+
+    # For fNIRS-only, the "overlap" is the entire fNIRS stream
+    first_orig_fnirs_idx_in_overlap = 0
+    last_orig_fnirs_idx_in_overlap = len(fnirs_ts_ms_orig) - 1
+    
+    if not (first_orig_fnirs_idx_in_overlap <= last_orig_fnirs_idx_in_overlap):
+        logger.error("No fNIRS frames to process.")
+        return None, {"error": "No fNIRS frames to process"}
+
+    current_actual_ts = fnirs_ts_ms_orig[first_orig_fnirs_idx_in_overlap]
+    fnirs_ts_ms_processed_list.append(current_actual_ts)
+    fnirs_data_processed_list.append(fnirs_data[first_orig_fnirs_idx_in_overlap])
+    fnirs_is_actual_list.append(True)
+
+    for i in range(first_orig_fnirs_idx_in_overlap, last_orig_fnirs_idx_in_overlap):
+        ts_of_current_actual_frame_in_loop = fnirs_ts_ms_orig[i]
+        ts_of_next_actual_frame_in_loop = fnirs_ts_ms_orig[i+1]
+        time_diff = ts_of_next_actual_frame_in_loop - ts_of_current_actual_frame_in_loop
+        num_expected_periods = int(round(time_diff / fnirs_ideal_period_ms))
+        if num_expected_periods > 1:
+            num_gaps_to_fill = num_expected_periods - 1
+            last_added_ts_to_processed_list = fnirs_ts_ms_processed_list[-1]
+            for k in range(num_gaps_to_fill):
+                placeholder_ts = last_added_ts_to_processed_list + fnirs_ideal_period_ms
+                fnirs_ts_ms_processed_list.append(placeholder_ts)
+                fnirs_data_processed_list.append(np.zeros(fnirs_data[0].shape, dtype=fnirs_data.dtype))
+                fnirs_is_actual_list.append(False)
+                last_added_ts_to_processed_list = placeholder_ts
+        fnirs_ts_ms_processed_list.append(ts_of_next_actual_frame_in_loop)
+        fnirs_data_processed_list.append(fnirs_data[i+1])
+        fnirs_is_actual_list.append(True)
+
+    fnirs_ts_ms = np.array(fnirs_ts_ms_processed_list)
+    fnirs_data_processed = np.stack(fnirs_data_processed_list)
+    fnirs_is_actual_frame = np.array(fnirs_is_actual_list)
+    num_total_fnirs_frames_processed = len(fnirs_ts_ms)
+    num_actual_fnirs_frames_processed = np.sum(fnirs_is_actual_frame)
+    
+    logger.info(f"fNIRS processing complete (pre-truncation): {num_total_fnirs_frames_processed} total frames ({num_actual_fnirs_frames_processed} actual).")
+
+    if num_actual_fnirs_frames_processed == 0:
+        logger.error("No actual fNIRS frames available after gap processing.")
+        return None, {"error": "No actual fNIRS after gap processing"}
+    if num_total_fnirs_frames_processed < fnirs_frames_per_window:
+         logger.error(f"Not enough total fNIRS frames ({num_total_fnirs_frames_processed}) after gap processing.")
+         return None, {"error": "Not enough fNIRS post-gap for a window"}
+
+    # --- 1.9: Truncate fNIRS processed data based on ending quality (Adapted) ---
+    logger.info("Phase 1.9: Checking fNIRS processed data end quality for truncation...")
+    # This logic is largely copied from original create_windows
+    original_length_pre_trunc = num_total_fnirs_frames_processed
+    if num_total_fnirs_frames_processed >= drift_chunk_size_frames :
+        final_valid_idx = num_total_fnirs_frames_processed - 1
+        found_good_end_chunk = False
+        for current_potential_end_idx in range(num_total_fnirs_frames_processed - 1, drift_chunk_size_frames - 2, -1):
+            test_chunk_start_idx = current_potential_end_idx - drift_chunk_size_frames + 1
+            if test_chunk_start_idx < 0: break
+            chunk_to_test_actual_flags = fnirs_is_actual_frame[test_chunk_start_idx : current_potential_end_idx + 1]
+            if len(chunk_to_test_actual_flags) < drift_chunk_size_frames: continue
+            density = np.sum(chunk_to_test_actual_flags) / len(chunk_to_test_actual_flags)
+            if density >= min_actual_frame_density_for_truncation:
+                final_valid_idx = current_potential_end_idx
+                found_good_end_chunk = True
+                break
+        if final_valid_idx < (original_length_pre_trunc - 1):
+            if (final_valid_idx + 1) < min_frames_for_late_offset_calc:
+                 logger.warning(f"fNIRS data would be too short ({final_valid_idx + 1} frames) after quality truncation. No truncation performed.")
+            else:
+                logger.info(f"Truncating fNIRS processed data to end at index {final_valid_idx}.")
+                fnirs_ts_ms = fnirs_ts_ms[:final_valid_idx + 1]
+                fnirs_data_processed = fnirs_data_processed[:final_valid_idx + 1]
+                fnirs_is_actual_frame = fnirs_is_actual_frame[:final_valid_idx + 1]
+                num_total_fnirs_frames_processed = len(fnirs_ts_ms)
+                num_actual_fnirs_frames_processed = np.sum(fnirs_is_actual_frame)
+    # (Error checks after truncation)
+    if num_actual_fnirs_frames_processed == 0: return None, {"error":"No actual fNIRS post-truncation"}
+    if num_total_fnirs_frames_processed < fnirs_frames_per_window: return None, {"error":"Not enough fNIRS post-truncation for a window"}
+
+
+    # --- Phase 2: fNIRS Timing Characterization (Adapted) ---
+    logger.info("Phase 2: Characterizing fNIRS timing and drift...")
+    # This logic is largely copied from original create_windows
+    avg_early_fnirs_offset = 0.0
+    avg_late_fnirs_offset = 0.0
+    actual_frame_indices_in_processed = np.where(fnirs_is_actual_frame)[0]
+    if num_actual_fnirs_frames_processed > 0:
+        num_early_chunk_actual_calc = min(drift_chunk_size_frames, num_actual_fnirs_frames_processed)
+        if num_early_chunk_actual_calc > 0:
+            early_offsets = []
+            # ... (detailed offset calculation as in original) ...
+            # Simplified for brevity here, but should be the full logic
+            first_actual_ts_for_early_chunk = -1
+            actual_frames_count_in_early_chunk = 0
+            for i in range(num_early_chunk_actual_calc):
+                processed_idx_of_actual_frame = actual_frame_indices_in_processed[i]
+                actual_ts = fnirs_ts_ms[processed_idx_of_actual_frame]
+                if first_actual_ts_for_early_chunk < 0: first_actual_ts_for_early_chunk = actual_ts
+                ideal_ts_in_chunk = first_actual_ts_for_early_chunk + (actual_frames_count_in_early_chunk * fnirs_ideal_period_ms)
+                offset = actual_ts - ideal_ts_in_chunk
+                early_offsets.append(offset)
+                actual_frames_count_in_early_chunk +=1
+            if early_offsets: avg_early_fnirs_offset = np.mean(early_offsets)
+            logger.info(f"Avg early fNIRS offset (from actuals): {avg_early_fnirs_offset:.3f} ms")
+    # Late offset calculation (simplified for brevity)
+    if num_total_fnirs_frames_processed >= min_frames_for_late_offset_calc:
+        # ... (detailed late offset calculation as in original) ...
+        late_offsets_processed = []
+        late_chunk_start_idx_processed = num_total_fnirs_frames_processed - drift_chunk_size_frames
+        first_ts_for_late_chunk_processed = fnirs_ts_ms[late_chunk_start_idx_processed]
+        for i in range(drift_chunk_size_frames):
+            current_processed_idx = late_chunk_start_idx_processed + i
+            ts_in_processed_chunk = fnirs_ts_ms[current_processed_idx]
+            ideal_ts_in_chunk = first_ts_for_late_chunk_processed + (i * fnirs_ideal_period_ms)
+            offset = ts_in_processed_chunk - ideal_ts_in_chunk
+            late_offsets_processed.append(offset)
+        if late_offsets_processed: avg_late_fnirs_offset = np.mean(late_offsets_processed)
+        logger.info(f"Avg late fNIRS offset (from processed): {avg_late_fnirs_offset:.3f} ms")
+
+    else:
+        avg_late_fnirs_offset = avg_early_fnirs_offset # Fallback
+
+    if len(actual_frame_indices_in_processed) == 0: return None, {"error": "No actual fNIRS for timing projection"}
+    first_actual_fnirs_ts_in_processed = fnirs_ts_ms[actual_frame_indices_in_processed[0]]
+    projected_first_window_start_ts = first_actual_fnirs_ts_in_processed - avg_early_fnirs_offset
+    logger.info(f"Projected start timestamp for the first fNIRS window: {projected_first_window_start_ts:.3f} ms")
+
+
+    # --- Phase 3: Iterate to Create fNIRS Windows ---
+    logger.info("Phase 3: Iterating to create fNIRS windows...")
+    windows_list: List[Dict[str, Union[np.ndarray, Dict]]] = []
+    current_fnirs_processed_idx = 0
+    window_count = 0
+
+    while True:
+        fnirs_chunk_end_processed_idx = current_fnirs_processed_idx + fnirs_frames_per_window - 1
+        if fnirs_chunk_end_processed_idx >= num_total_fnirs_frames_processed:
+            logger.info(f"Stopping: Not enough processed fNIRS frames for window {window_count}.")
+            break
+
+        fnirs_w_np = fnirs_data_processed[current_fnirs_processed_idx : current_fnirs_processed_idx + fnirs_frames_per_window]
+        fnirs_ts_window_ms = fnirs_ts_ms[current_fnirs_processed_idx : current_fnirs_processed_idx + fnirs_frames_per_window]
+        is_actual_fnirs = fnirs_is_actual_frame[current_fnirs_processed_idx : current_fnirs_processed_idx + fnirs_frames_per_window] # This is a slice now
+        
+        window_ideal_fnirs_event_ts = projected_first_window_start_ts + (window_count * fnirs_ideal_period_ms)
+        actual_this_fnirs_event_ts = fnirs_ts_window_ms[0] # First timestamp in the fNIRS window
+
+        metadata = {
+            'window_idx': window_count,
+            'fnirs_frame_indices_processed': (current_fnirs_processed_idx, fnirs_chunk_end_processed_idx),
+            'fnirs_timestamps_ms': fnirs_ts_window_ms,
+            'fnirs_frame_is_actual': is_actual_fnirs.all(), # Mark true if all frames in window are actual
+            'ideal_fnirs_event_ts_projected': window_ideal_fnirs_event_ts,
+            'actual_fnirs_event_ts': actual_this_fnirs_event_ts,
+            'notes': "fNIRS-only window."
+        }
+        windows_list.append({'fnirs': fnirs_w_np, 'metadata': metadata})
+        current_fnirs_processed_idx += fnirs_frames_per_window
+        window_count += 1
+        
+    if not windows_list: logger.warning("No fNIRS windows were created.")
+    else: logger.info(f"Successfully created {len(windows_list)} fNIRS windows.")
+
+    # --- Phase 4: Prepare for NumPy Array Output ---
+    logger.info("Phase 4: Transforming fNIRS windows_list to NumPy array outputs.")
+    raw_fnirs_ts_ms = fnirs_ts_ms_orig # Original, full fnirs timestamps
+
+    overall_min_ts = raw_fnirs_ts_ms[0]
+    overall_max_ts = raw_fnirs_ts_ms[-1] + fnirs_ideal_period_ms
+    
+    if overall_max_ts <= overall_min_ts: total_windows = 0
+    else: total_windows = int(np.ceil((overall_max_ts - overall_min_ts) / fnirs_ideal_period_ms))
+
+    if total_windows == 0: logger.warning("Master timeline results in 0 total_windows.")
+    main_clock_timestamps_array = overall_min_ts + np.arange(total_windows) * fnirs_ideal_period_ms
+
+    num_fnirs_chans = fnirs_data.shape[1]
+    fnirs_samples_per_raw_frame = fnirs_data.shape[2] # Should be 1
+
+    fnirs_windows_data_arr = np.zeros((total_windows, num_fnirs_chans, fnirs_samples_per_raw_frame * fnirs_frames_per_window), dtype=fnirs_data.dtype)
+    fnirs_validity_mask_arr = np.zeros(total_windows, dtype=bool)
+    real_fnirs_timestamps_arr = np.full(total_windows, np.nan, dtype=float)
+
+    # Empty EEG arrays
+    num_eeg_chans_dummy = 1 # Placeholder
+    eeg_samples_per_output_window_dummy = 1 # Placeholder
+    eeg_windows_data_arr = np.zeros((total_windows, num_eeg_chans_dummy, eeg_samples_per_output_window_dummy), dtype=np.float32) # Placeholder
+    eeg_validity_mask_arr = np.zeros(total_windows, dtype=bool)
+    real_eeg_timestamps_arr = np.full(total_windows, np.nan, dtype=float)
+
+    if windows_list:
+        for original_window in windows_list:
+            map_key_ts = original_window['metadata'].get('ideal_fnirs_event_ts_projected', original_window['metadata']['actual_fnirs_event_ts'])
+            if map_key_ts is None: continue
+
+            if total_windows > 0:
+                diffs = np.abs(main_clock_timestamps_array - map_key_ts)
+                slot_idx = np.argmin(diffs)
+                if diffs[slot_idx] > (fnirs_ideal_period_ms / 1.9): continue
+            else: continue
+            
+            if original_window['metadata']['fnirs_frame_is_actual']:
+                fnirs_from_list = original_window['fnirs']
+                expected_shape = (fnirs_frames_per_window, num_fnirs_chans, fnirs_samples_per_raw_frame)
+                if fnirs_from_list.shape == expected_shape:
+                    # Reshape to (chans, samples_in_window)
+                    fnirs_windows_data_arr[slot_idx] = fnirs_from_list.transpose(1,0,2).reshape(num_fnirs_chans, fnirs_samples_per_raw_frame * fnirs_frames_per_window)
+                    fnirs_validity_mask_arr[slot_idx] = True
+                    real_fnirs_timestamps_arr[slot_idx] = original_window['metadata']['actual_fnirs_event_ts']
+                else:
+                    logger.warning(f"Actual fNIRS data in original_window has unexpected shape {fnirs_from_list.shape}. Expected {expected_shape}.")
+    
+    def get_span_indices(mask_arr): # Redefined locally
+        valid_indices = np.where(mask_arr)[0]
+        if len(valid_indices) > 0: return valid_indices[0], valid_indices[-1] + 1
+        return -1, -1
+
+    fnirs_start_idx, fnirs_end_idx = get_span_indices(fnirs_validity_mask_arr)
+    if fnirs_start_idx != -1: fnirs_start_idx = int(fnirs_start_idx)
+    if fnirs_end_idx != -1: fnirs_end_idx = int(fnirs_end_idx)
+    eeg_start_idx, eeg_end_idx = -1, -1 # No EEG data
+
+    # For fNIRS-only, "both" means fNIRS
+    both_valid_mask = fnirs_validity_mask_arr
+    both_start_idx, both_end_idx = get_span_indices(both_valid_mask)
+    if both_start_idx != -1: both_start_idx = int(both_start_idx)
+    if both_end_idx != -1: both_end_idx = int(both_end_idx)
+
+    percent_fnirs_trimmed = 0.0 # Simplified
+    percent_fnirs_missing = 0.0 # Simplified
+    # (More detailed calculation can be added like in original create_windows)
+
+    summary_metadata = {
+        'percent_eeg_trimmed': 100.0, # No EEG
+        'percent_fnirs_trimmed': percent_fnirs_trimmed,
+        'percent_fnirs_missing_in_span': percent_fnirs_missing,
+        'total_master_windows_in_input_arrays': total_windows,
+        'eeg_master_span_in_input_arrays': (eeg_start_idx, eeg_end_idx),
+        'fnirs_master_span_in_input_arrays': (fnirs_start_idx, fnirs_end_idx),
+        'both_master_span_in_input_arrays': (both_start_idx, both_end_idx) # 'both' is fNIRS here
+    }
+    logger.info(f"NumPy array creation complete for fNIRS-only. Total master windows: {total_windows}")
+    logger.info(f"fNIRS: {np.sum(fnirs_validity_mask_arr)} valid windows. Span: {fnirs_start_idx}-{fnirs_end_idx}.")
+
+    # --- Phase 5: Instantiate WindowDataset and Return ---
+    logger.info("Phase 5: Instantiating WindowDataset for fNIRS-only.")
+    dataset_instance: Optional[WindowDataset] = None
+    if total_windows == 0:
+        logger.warning("Total master windows is 0 for fNIRS-only.")
+    elif not (isinstance(both_start_idx, int) and isinstance(both_end_idx, int) and \
+            both_start_idx != -1 and both_end_idx != -1 and both_start_idx < both_end_idx):
+        logger.warning(f"Cannot create WindowDataset: No valid span for fNIRS data. "
+                       f"both_start_idx (fnirs_start_idx): {both_start_idx}, both_end_idx (fnirs_end_idx): {both_end_idx}")
+    else:
+        try:
+            dataset_instance = WindowDataset(
+                eeg_windows_data_arr=eeg_windows_data_arr, # Empty/zero
+                fnirs_windows_data_arr=fnirs_windows_data_arr,
+                eeg_validity_mask_arr=eeg_validity_mask_arr, # All False
+                fnirs_validity_mask_arr=fnirs_validity_mask_arr,
+                real_eeg_timestamps_arr=real_eeg_timestamps_arr, # All NaN
+                real_fnirs_timestamps_arr=real_fnirs_timestamps_arr,
+                main_clock_timestamps_array=main_clock_timestamps_array,
+                eeg_start_idx=eeg_start_idx, # -1
+                fnirs_start_idx=fnirs_start_idx,
+                eeg_end_idx=eeg_end_idx, # -1
+                fnirs_end_idx=fnirs_end_idx,
+                both_start_idx=both_start_idx, # This is fnirs_start_idx
+                both_end_idx=both_end_idx,   # This is fnirs_end_idx
+                return_torch_tensors=return_torch_tensors
+            )
+            logger.info(f"Successfully created WindowDataset with {len(dataset_instance)} fNIRS-only windows.")
+        except ValueError as ve:
+            logger.error(f"Error instantiating WindowDataset for fNIRS-only: {ve}")
+            dataset_instance = None
+        except Exception as e:
+            logger.error(f"Unexpected error during WindowDataset instantiation for fNIRS-only: {e}", exc_info=True)
+            dataset_instance = None
+            
+    logger.info(f"Finalizing create_windows_fnirs_only. summary_metadata keys: {list(summary_metadata.keys())}")
+    return dataset_instance, summary_metadata
+

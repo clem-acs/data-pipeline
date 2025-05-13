@@ -34,9 +34,8 @@ NEURAL_PROCESSING_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # This assumes 'data-pipeline' is the top-level package in PYTHONPATH
 from neural_processing.eeg_preprocessing import preprocess_eeg
 from neural_processing.fnirs_preprocessing import preprocess_fnirs
-from neural_processing.windowing import create_windows
-# from data_pipeline.transforms.neural_processing.postprocessing import postprocess_windows # Removed as unused
-
+from neural_processing.windowing import create_windows, create_windows_eeg_only, create_windows_fnirs_only
+from neural_processing.normalize import normalize_window_dataset
 
 
 class WindowTransform(BaseTransform):
@@ -148,19 +147,89 @@ class WindowTransform(BaseTransform):
 
             # 4. Create explicit windows
             # 4. Create explicit windows
-            # create_windows now returns: (dataset_instance, summary_metadata, all_numpy_arrays_dict)
-            self.logger.info("Calling create_windows...")
-            dataset_instance, summary_meta = create_windows(
-                eeg_data=processed_eeg,
-                fnirs_data=processed_fnirs,
-                eeg_timestamps=eeg_timestamps,
-                fnirs_timestamps=fnirs_timestamps,
-                return_torch_tensors=False # We want NumPy arrays for HDF5 saving
-            )
-            self.logger.info(f"create_windows returned: dataset_instance is {type(dataset_instance)}, "
-                f"summary_meta keys: {list(summary_meta.keys()) if summary_meta else 'None'}, ")
+            # Determine data presence after preprocessing for windowing
+            current_has_eeg = processed_eeg is not None and len(processed_eeg) > 0 and \
+                              eeg_timestamps is not None and len(eeg_timestamps) > 0
+            current_has_fnirs = processed_fnirs is not None and len(processed_fnirs) > 0 and \
+                                fnirs_timestamps is not None and len(fnirs_timestamps) > 0
 
-            # 5. Normalise (TODO) - Placeholder for now
+            self.logger.info(f"Data presence for windowing: EEG={current_has_eeg}, fNIRS={current_has_fnirs}")
+
+            dataset_instance = None
+            summary_meta = {} # Initialize to empty dict
+
+            if current_has_eeg and current_has_fnirs:
+                self.logger.info("Calling create_windows (EEG and fNIRS)...")
+                dataset_instance, summary_meta = create_windows(
+                    eeg_data=processed_eeg,
+                    fnirs_data=processed_fnirs,
+                    eeg_timestamps=eeg_timestamps,
+                    fnirs_timestamps=fnirs_timestamps,
+                    return_torch_tensors=False # We want NumPy arrays for HDF5 saving
+                )
+            elif current_has_eeg:
+                self.logger.info("Calling create_windows_eeg_only...")
+                dataset_instance, summary_meta = create_windows_eeg_only(
+                    eeg_data=processed_eeg,
+                    eeg_timestamps=eeg_timestamps,
+                    return_torch_tensors=False
+                )
+            elif current_has_fnirs:
+                self.logger.info("Calling create_windows_fnirs_only...")
+                dataset_instance, summary_meta = create_windows_fnirs_only(
+                    fnirs_data=processed_fnirs,
+                    fnirs_timestamps=fnirs_timestamps,
+                    return_torch_tensors=False
+                )
+            else:
+                self.logger.warning("No EEG or fNIRS data available after preprocessing for windowing. Skipping window creation.")
+                summary_meta = {
+                    "status": "skipped_no_data_for_windowing",
+                    "error_details": "No EEG or fNIRS data available after preprocessing for windowing.",
+                    "percent_eeg_trimmed": 100.0,
+                    "percent_fnirs_trimmed": 100.0,
+                    "total_master_windows_in_input_arrays": 0
+                }
+
+            self.logger.info(f"Windowing function returned: dataset_instance is {type(dataset_instance)}, "
+                             f"summary_meta keys: {list(summary_meta.keys()) if summary_meta and isinstance(summary_meta, dict) else 'None'}")
+
+            # Ensure summary_meta is a dict for downstream processing
+            if not isinstance(summary_meta, dict):
+                self.logger.warning(f"summary_meta was not a dict ({type(summary_meta)}), re-initializing to empty dict.")
+                summary_meta = {}
+
+            # Check if windowing reported a critical error that should halt processing for this session
+            # Exclude "skipped_no_data_for_windowing" as that's a valid path to 0 windows.
+            if summary_meta.get("error") and summary_meta.get("status") != "skipped_no_data_for_windowing":
+                 self.logger.error(f"Windowing function reported a critical error: {summary_meta.get('error')}")
+                 # Using original metadata dict from earlier in the function
+                 error_return_metadata = {**metadata, **summary_meta} # Merge session metadata with error summary
+                 return {
+                     "status": "failed",
+                     "error_details": f"Windowing error: {summary_meta.get('error', 'Unknown windowing failure')}",
+                     "metadata": error_return_metadata,
+                     "files_to_copy": [],
+                     "files_to_upload": []
+                 }
+
+            # 5. Normalize data using the normalize_window_dataset function
+            retained_fnirs_indices = None
+            normalization_success = False
+            
+            if isinstance(summary_meta, dict) and 'retained_fnirs_indices' in summary_meta:
+                retained_fnirs_indices = summary_meta.get('retained_fnirs_indices')
+                self.logger.info(f"Found retained_fnirs_indices in summary_meta with {len(retained_fnirs_indices) if retained_fnirs_indices else 0} indices")
+            
+            if dataset_instance is not None:
+                self.logger.info("Normalizing window dataset...")
+                # No exception handling - let errors propagate up to fail the transform
+                normalized_dataset = normalize_window_dataset(dataset_instance, retained_fnirs_indices)
+                self.logger.info("Window dataset normalized successfully")
+                dataset_instance = normalized_dataset
+                normalization_success = True
+            else:
+                self.logger.info("Skipping normalization as dataset_instance is None")
 
             num_dataset_windows = len(dataset_instance) if dataset_instance is not None else 0
 
@@ -174,6 +243,7 @@ class WindowTransform(BaseTransform):
                 f.attrs['processing_script_version'] = self.script_version
                 f.attrs['original_window_size_ms'] = metadata.get("window_size_ms", 210)
                 f.attrs['num_dataset_windows'] = num_dataset_windows
+                f.attrs['normalization_applied'] = normalization_success
                 f.attrs['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
                 if summary_meta:
@@ -183,8 +253,8 @@ class WindowTransform(BaseTransform):
                             except TypeError:
                                 try: f.attrs[key] = value.item() if hasattr(value, 'item') else str(value)
                                 except Exception as te_conv: self.logger.error(f"Failed to save summary_meta attr '{key}' (type {type(value)}) after conversion: {te_conv}")
-                            except Exception as h5_attr_ex: self.logger.error(f"Failed to save summary_meta attr '{key}' to HDF5: {h5_attr_ex}")
-                        elif isinstance(value, tuple) and all(isinstance(x, (int, float, str, bool, type(None))) for x in value):
+                            except Exception as h5_attr_ex: self.logger.error(f"Failed to save summary_meta attr \'{key}\' to HDF5: {h5_attr_ex}")
+                        elif isinstance(value, tuple): # Simpler check for tuples
                             try: f.attrs[key] = str(value)
                             except Exception as h5_attr_ex: self.logger.error(f"Failed to save summary_meta tuple attr '{key}' to HDF5: {h5_attr_ex}")
                         else: self.logger.warning(f"Skipping HDF5 attr for summary_meta key '{key}', unhandled type: {type(value)}")
@@ -194,10 +264,31 @@ class WindowTransform(BaseTransform):
                 "session_id": session_id,
                 "original_window_size_ms": metadata.get("window_size_ms", 210),
                 "num_dataset_windows": num_dataset_windows,
-                "has_eeg_initial": metadata.get("has_eeg", False),
-                "has_fnirs_initial": metadata.get("has_fnirs", False),
-                "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "has_eeg_initial": metadata.get("has_eeg", False), # Based on raw data from H5
+                "has_fnirs_initial": metadata.get("has_fnirs", False), # Based on raw data from H5
+                "has_eeg_processed": current_has_eeg, # Reflects data presence post-preprocessing
+                "has_fnirs_processed": current_has_fnirs, # Reflects data presence post-preprocessing
+                "normalization_applied": normalization_success,
+                "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()), # Use gmtime for UTC
             }
+            # Add relevant details from summary_meta if it exists and is a dict
+            if isinstance(summary_meta, dict):
+                keys_from_summary = [
+                    'percent_eeg_trimmed', 'percent_fnirs_trimmed',
+                    'percent_fnirs_missing_in_span',
+                    'total_master_windows_in_input_arrays',
+                    'status', # e.g., "skipped_no_data_for_windowing"
+                    'error_details' # if any error was reported by windowing and wasn't critical
+                ]
+                for key in keys_from_summary:
+                    if key in summary_meta:
+                        # Prefix to avoid clashes and indicate source
+                        dynamo_key = f"windowing_{key.lower().replace(' ', '_')}"
+                        value_to_store = summary_meta[key]
+                        # Ensure value is DynamoDB compatible (string, number, bool, null, list, map)
+                        if not isinstance(value_to_store, (str, int, float, bool, type(None))):
+                            value_to_store = str(value_to_store) # Convert complex types to string
+                        result_metadata[dynamo_key] = value_to_store
 
             dest_key = f"{self.destination_prefix}{output_filename}"
             return {
