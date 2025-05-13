@@ -440,7 +440,6 @@ class EventTransform(BaseTransform):
                 # Core identifiers
                 'task_id': actual_task_id,  # Use the actual task ID from data
                 'task_type': task_data.get('task_type', ''),
-                'sequence_number': int(task_data.get('sequence', 0)),  # Extract sequence number
                 'start_time': start_event['client_timestamp'],
                 'end_time': end_event['client_timestamp'],
                 'completion_status': 'completed',
@@ -555,7 +554,6 @@ class EventTransform(BaseTransform):
                 
                 # Presentation
                 'audio_mode': element_content.get('audio_mode') or DEFAULT_AUDIO_MODE,
-                'has_audio': element_content.get('has_audio', False),
                 'with_interruptions': element_content.get('with_interruptions', False),
                 
                 # Response
@@ -811,7 +809,6 @@ class EventTransform(BaseTransform):
 
             # 4. Presentation Configuration
             ('audio_mode', h5py.special_dtype(vlen=str)),
-            ('has_audio', np.bool_),
             ('with_interruptions', np.bool_),
 
             # 5. Response Characteristics
@@ -836,7 +833,6 @@ class EventTransform(BaseTransform):
             # 1. Identifiers & Type
             ('task_id', h5py.special_dtype(vlen=str)),
             ('task_type', h5py.special_dtype(vlen=str)),
-            ('sequence_number', np.int32),
 
             # 2. Timing
             ('start_time', np.float64),

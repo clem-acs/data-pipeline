@@ -1,0 +1,2387 @@
+Analyzing file: C:\Users\riopo\data-pipeline\omar royce herrera_20250503_201253_events.h5
+
+================================================================================
+FILE INFO
+================================================================================
+File path: C:\Users\riopo\data-pipeline\omar royce herrera_20250503_201253_events.h5
+File size: 0.28 MB
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+Group: elements/
+  Dataset: table (Shape: (288,), Type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')])
+Group: indices/
+  Group: element_by_task/
+    Dataset: argument_1 (Shape: (5,), Type: |S64)
+    Dataset: breath_1 (Shape: (8,), Type: |S64)
+    Dataset: breath_2 (Shape: (8,), Type: |S64)
+    Dataset: chat_1 (Shape: (8,), Type: |S64)
+    Dataset: completion_1 (Shape: (5,), Type: |S64)
+    Dataset: completion_2 (Shape: (15,), Type: |S64)
+    Dataset: completion_3 (Shape: (7,), Type: |S64)
+    Dataset: completion_4 (Shape: (22,), Type: |S64)
+    Dataset: completion_5 (Shape: (12,), Type: |S64)
+    Dataset: completion_6 (Shape: (8,), Type: |S64)
+    Dataset: eye_1 (Shape: (7,), Type: |S64)
+    Dataset: eye_2 (Shape: (7,), Type: |S64)
+    Dataset: eye_3 (Shape: (7,), Type: |S64)
+    Dataset: feedback_1 (Shape: (4,), Type: |S64)
+    Dataset: finish_1 (Shape: (1,), Type: |S64)
+    Dataset: language_1 (Shape: (6,), Type: |S64)
+    Dataset: language_2 (Shape: (6,), Type: |S64)
+    Dataset: learn_1 (Shape: (6,), Type: |S64)
+    Dataset: listen_1 (Shape: (7,), Type: |S64)
+    Dataset: listen_2 (Shape: (7,), Type: |S64)
+    Dataset: paraphrase_1 (Shape: (2,), Type: |S64)
+    Dataset: paraphrase_2 (Shape: (3,), Type: |S64)
+    Dataset: sentence_1 (Shape: (4,), Type: |S64)
+    Dataset: sentence_2 (Shape: (4,), Type: |S64)
+    Dataset: sentence_3 (Shape: (21,), Type: |S64)
+    Dataset: sentence_4 (Shape: (7,), Type: |S64)
+    Dataset: situation_1 (Shape: (9,), Type: |S64)
+    Dataset: wait_1 (Shape: (1,), Type: |S64)
+    Dataset: word_1 (Shape: (3,), Type: |S64)
+    Dataset: word_2 (Shape: (18,), Type: |S64)
+    Dataset: word_3 (Shape: (14,), Type: |S64)
+    Dataset: wordassociation_1 (Shape: (23,), Type: |S64)
+    Dataset: wordassociation_2 (Shape: (23,), Type: |S64)
+  Group: segments_by_element/
+    Dataset: completion_2_completion_150 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_197 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_212 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_222 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_228 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_293 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_312 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_375 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_396 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_419 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_43 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_471 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_499 (Shape: (1,), Type: |S64)
+    Dataset: completion_2_completion_85 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_105 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_156 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_194 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_229 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_249 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_270 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_3 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_303 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_316 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_361 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_389 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_400 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_44 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_458 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_463 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_476 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_489 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_6 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_67 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_70 (Shape: (1,), Type: |S64)
+    Dataset: completion_4_completion_82 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_12 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_140 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_160 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_162 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_211 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_249 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_466 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_486 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_5 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_53 (Shape: (1,), Type: |S64)
+    Dataset: completion_5_completion_56 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1204 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1567 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1705 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1816 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_1860 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_206 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2132 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_223 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2277 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2317 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2341 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2399 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2573 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_2915 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_351 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_43 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_455 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_466 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_596 (Shape: (1,), Type: |S64)
+    Dataset: sentence_3_sent_743 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_1 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_11 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_24 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_30 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_36 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_50 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_52 (Shape: (1,), Type: |S64)
+    Dataset: situation_1_situation_54 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_1 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_10 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_11 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_12 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_13 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_14 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_15 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_16 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_17 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_18 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_19 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_2 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_20 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_21 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_22 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_3 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_4 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_5 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_6 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_7 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_8 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_1_word_9 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_1 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_10 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_11 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_12 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_13 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_14 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_15 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_16 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_17 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_18 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_19 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_2 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_20 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_21 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_22 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_3 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_4 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_5 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_6 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_7 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_8 (Shape: (1,), Type: |S64)
+    Dataset: wordassociation_2_word_9 (Shape: (1,), Type: |S64)
+Group: metadata/
+  Group: stats/
+Group: segments/
+  Dataset: recording (Shape: (74,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+  Dataset: thinking (Shape: (44,), Type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')])
+Group: tasks/
+  Dataset: table (Shape: (33,), Type: [('task_id', 'O'), ('task_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')])
+
+================================================================================
+METADATA INSPECTION
+================================================================================
+Metadata attributes:
+  session_id: omar royce herrera_20250503_201253
+  transform: event
+  version: 0.1
+
+Metadata subgroup: stats
+  Attribute num_elements: 288
+  Attribute num_pause_segments: 0
+  Attribute num_recording_segments: 74
+  Attribute num_tasks: 33
+  Attribute num_thinking_segments: 44
+
+================================================================================
+STATS INSPECTION
+================================================================================
+Found stats in: metadata/stats
+
+Stats attributes:
+  num_elements: 288
+  num_pause_segments: 0
+  num_recording_segments: 74
+  num_tasks: 33
+  num_thinking_segments: 44
+
+================================================================================
+TASKS INSPECTION
+================================================================================
+Tasks table shape: (33,)
+Tasks table dtype: [('task_id', 'O'), ('task_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+
+Approach 1: Direct read of first task
+  task_id: wait_1
+  task_type: wait
+  start_time: 1746328379486.0
+  end_time: 1746328504852.0
+  duration: 125366.0
+  session_fraction_start: 0.06412037
+  session_fraction_end: 1.5151157
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Approach 2: Field-by-field read
+  task_id: wait_1
+  task_type: wait
+  start_time: 1746328379486.0
+  end_time: 1746328504852.0
+  duration: 125366.0
+  session_fraction_start: 0.06412037
+  session_fraction_end: 1.5151157
+  count: 1
+  allow_repeats: False
+  with_interruptions: False
+  audio_mode: text_only
+  input_modality: text
+  completion_status: completed
+  skipped: False
+  skip_time: 0.0
+  skip_event_id: 
+  task_started_id: task_started_1
+  task_completed_id: task_completed_1
+  element_count: 1
+
+Null check: Scanning for null/empty task_ids
+  No null/empty task_ids found
+
+Element IDs check: Examine element_ids arrays
+  No 'element_ids' field found in tasks table
+
+Sampling every 5th task across the dataset:
+
+  Task 0:
+    task_id: wait_1
+    task_type: wait
+    start_time: 1746328379486.0
+    end_time: 1746328504852.0
+    duration: 125366.0
+    session_fraction_start: 0.06412037
+    session_fraction_end: 1.5151157
+    count: 1
+    allow_repeats: False
+    with_interruptions: False
+    audio_mode: text_only
+    input_modality: text
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_1
+    task_completed_id: task_completed_1
+    element_count: 1
+
+  Task 5:
+    task_id: wordassociation_1
+    task_type: wordassociation
+    start_time: 1746328952888.0
+    end_time: 1746329133119.0
+    duration: 180231.0
+    session_fraction_start: 6.7007174
+    session_fraction_end: 8.786724
+    count: 500
+    allow_repeats: False
+    with_interruptions: False
+    audio_mode: text_only
+    input_modality: text
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_6
+    task_completed_id: task_completed_6
+    element_count: 23
+
+  Task 10:
+    task_id: paraphrase_1
+    task_type: paraphrase
+    start_time: 1746329938626.0
+    end_time: 1746330445692.0
+    duration: 507066.0
+    session_fraction_start: 18.109722
+    session_fraction_end: 23.978542
+    count: 500
+    allow_repeats: False
+    with_interruptions: False
+    audio_mode: text_only
+    input_modality: text
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_11
+    task_completed_id: task_completed_11
+    element_count: 2
+
+  Task 15:
+    task_id: situation_1
+    task_type: situation
+    start_time: 1746331845398.0
+    end_time: 1746332274860.0
+    duration: 429462.0
+    session_fraction_start: 40.178844
+    session_fraction_end: 45.149467
+    count: 500
+    allow_repeats: False
+    with_interruptions: False
+    audio_mode: audio_only
+    input_modality: speech
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_16
+    task_completed_id: task_completed_16
+    element_count: 9
+
+  Task 20:
+    task_id: sentence_3
+    task_type: sentence
+    start_time: 1746332737724.0
+    end_time: 1746332979462.0
+    duration: 241738.0
+    session_fraction_start: 50.50669
+    session_fraction_end: 53.304585
+    count: 500
+    allow_repeats: False
+    with_interruptions: False
+    audio_mode: aligned
+    input_modality: speech
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_21
+    task_completed_id: task_completed_21
+    element_count: 21
+
+  Task 25:
+    task_id: word_3
+    task_type: word
+    start_time: 1746334351404.0
+    end_time: 1746334504885.0
+    duration: 153481.0
+    session_fraction_start: 69.18354
+    session_fraction_end: 70.959946
+    count: 500
+    allow_repeats: True
+    with_interruptions: False
+    audio_mode: text_only
+    input_modality: text
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_26
+    task_completed_id: task_completed_26
+    element_count: 14
+
+  Task 30:
+    task_id: eye_3
+    task_type: eye
+    start_time: 1746335842880.0
+    end_time: 1746335953638.0
+    duration: 110758.0
+    session_fraction_start: 86.446
+    session_fraction_end: 87.72791
+    count: 7
+    allow_repeats: True
+    with_interruptions: False
+    audio_mode: audio_only
+    input_modality: text
+    completion_status: completed
+    skipped: False
+    skip_time: 0.0
+    skip_event_id: 
+    task_started_id: task_started_31
+    task_completed_id: task_completed_31
+    element_count: 7
+
+  All task_ids are unique
+
+================================================================================
+ELEMENTS INSPECTION
+================================================================================
+Elements table shape: (288,)
+Elements table dtype: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')]
+
+Approach 1: Direct read of first element
+  element_id: wait_1_intro
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746328381706.0
+  end_time: 1746328504816.0
+  duration: 123110.0
+  session_fraction: 0.0
+  session_relative_time: 7760.0
+  audio_mode: text_only
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: -1.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+  event_id: element_sent_1
+
+Approach 2: Field-by-field read
+  element_id: wait_1_intro
+  element_type: text
+  title: Wait Task
+  is_instruction: True
+  task_id: wait_1
+  task_type: wait
+  sequence_idx: 0
+  max_count: 1
+  start_time: 1746328381706.0
+  end_time: 1746328504816.0
+  duration: 123110.0
+  session_fraction: 0.0
+  session_relative_time: 7760.0
+  audio_mode: text_only
+  with_interruptions: False
+  input_modality: text
+  response_time_seconds: -1.0
+  element_sent_id: element_sent_1
+  element_replied_id: element_replied_1
+  event_id: element_sent_1
+
+Approach 3: Numpy array conversion
+  Converted to array with shape: (1,)
+
+Null check: Scanning for critical fields with None/empty values
+  No null/empty values found in sampled elements (first 10)
+
+Sampling every 5th element across the dataset:
+
+  Element 0:
+    element_id: wait_1_intro
+    element_type: text
+    title: Wait Task
+    is_instruction: True
+    task_id: wait_1
+    task_type: wait
+    sequence_idx: 0
+    max_count: 1
+    start_time: 1746328381706.0
+    end_time: 1746328504816.0
+    duration: 123110.0
+    session_fraction: 0.0
+    session_relative_time: 7760.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_1
+    element_replied_id: element_replied_1
+    event_id: element_sent_1
+
+  Element 5:
+    element_id: eye_1_open_4
+    element_type: text
+    title: Eye Exercise
+    is_instruction: True
+    task_id: eye_1
+    task_type: eye
+    sequence_idx: 4
+    max_count: 7
+    start_time: 1746328565145.0
+    end_time: 1746328580162.0
+    duration: 15017.0
+    session_fraction: 0.0
+    session_relative_time: 191199.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_6
+    element_replied_id: element_replied_6
+    event_id: element_sent_6
+
+  Element 10:
+    element_id: breath_1_hold_2
+    element_type: text
+    title: Breathing Exercise
+    is_instruction: True
+    task_id: breath_1
+    task_type: breath
+    sequence_idx: 2
+    max_count: 8
+    start_time: 1746328630454.0
+    end_time: 1746328648470.0
+    duration: 18016.0
+    session_fraction: 0.0
+    session_relative_time: 256508.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_11
+    element_replied_id: element_replied_11
+    event_id: element_sent_11
+
+  Element 15:
+    element_id: breath_1_normal_7
+    element_type: text
+    title: Breathing Exercise
+    is_instruction: True
+    task_id: breath_1
+    task_type: breath
+    sequence_idx: 7
+    max_count: 8
+    start_time: 1746328704758.0
+    end_time: 1746328714782.0
+    duration: 10024.0
+    session_fraction: 0.0
+    session_relative_time: 330812.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_16
+    element_replied_id: element_replied_16
+    event_id: element_sent_16
+
+  Element 20:
+    element_id: listen_1_quiet_4
+    element_type: text
+    title: Listen Exercise
+    is_instruction: True
+    task_id: listen_1
+    task_type: listen
+    sequence_idx: 4
+    max_count: 7
+    start_time: 1746328770096.0
+    end_time: 1746328780115.0
+    duration: 10019.0
+    session_fraction: 0.0
+    session_relative_time: 396150.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_21
+    element_replied_id: element_replied_21
+    event_id: element_sent_21
+
+  Element 25:
+    element_id: word_1_word_3862
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_1
+    task_type: word
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746328910279.0
+    end_time: 1746328952830.0
+    duration: 42551.0
+    session_fraction: 0.0
+    session_relative_time: 536333.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_26
+    element_replied_id: element_replied_26
+    event_id: element_sent_26
+
+  Element 30:
+    element_id: wordassociation_1_word_4
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_1
+    task_type: wordassociation
+    sequence_idx: 4
+    max_count: 500
+    start_time: 1746329002652.0
+    end_time: 1746329009474.0
+    duration: 6822.0
+    session_fraction: 0.0
+    session_relative_time: 628706.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_31
+    element_replied_id: element_replied_31
+    event_id: element_sent_31
+
+  Element 35:
+    element_id: wordassociation_1_word_9
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_1
+    task_type: wordassociation
+    sequence_idx: 9
+    max_count: 500
+    start_time: 1746329037018.0
+    end_time: 1746329043836.0
+    duration: 6818.0
+    session_fraction: 0.0
+    session_relative_time: 663072.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_36
+    element_replied_id: element_replied_36
+    event_id: element_sent_36
+
+  Element 40:
+    element_id: wordassociation_1_word_14
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_1
+    task_type: wordassociation
+    sequence_idx: 14
+    max_count: 500
+    start_time: 1746329071359.0
+    end_time: 1746329078165.0
+    duration: 6806.0
+    session_fraction: 0.0
+    session_relative_time: 697413.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_41
+    element_replied_id: element_replied_41
+    event_id: element_sent_41
+
+  Element 45:
+    element_id: wordassociation_1_word_19
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_1
+    task_type: wordassociation
+    sequence_idx: 19
+    max_count: 500
+    start_time: 1746329105655.0
+    end_time: 1746329112472.0
+    duration: 6817.0
+    session_fraction: 0.0
+    session_relative_time: 731709.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_46
+    element_replied_id: element_replied_46
+    event_id: element_sent_46
+
+  Element 50:
+    element_id: sentence_1_sent_1442
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_1
+    task_type: sentence
+    sequence_idx: 1
+    max_count: 500
+    start_time: 1746329141383.0
+    end_time: 1746329216697.0
+    duration: 75314.0
+    session_fraction: 0.0
+    session_relative_time: 767437.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_51
+    element_replied_id: element_replied_51
+    event_id: element_sent_51
+
+  Element 55:
+    element_id: sentence_2_sent_2248
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_2
+    task_type: sentence
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746329397619.0
+    end_time: 1746329464603.0
+    duration: 66984.0
+    session_fraction: 0.0
+    session_relative_time: 1023673.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_56
+    element_replied_id: element_replied_56
+    event_id: element_sent_56
+
+  Element 60:
+    element_id: completion_1_completion_401
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_1
+    task_type: completion
+    sequence_idx: 3
+    max_count: 500
+    start_time: 1746329713243.0
+    end_time: 1746329747881.0
+    duration: 34638.0
+    session_fraction: 0.0
+    session_relative_time: 1339297.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_61
+    element_replied_id: element_replied_61
+    event_id: element_sent_61
+
+  Element 65:
+    element_id: completion_2_completion_293
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_2
+    task_type: completion
+    sequence_idx: 3
+    max_count: 500
+    start_time: 1746329812963.0
+    end_time: 1746329822132.0
+    duration: 9169.0
+    session_fraction: 0.0
+    session_relative_time: 1439017.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_66
+    element_replied_id: element_replied_66
+    event_id: element_sent_66
+
+  Element 70:
+    element_id: completion_2_completion_471
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_2
+    task_type: completion
+    sequence_idx: 8
+    max_count: 500
+    start_time: 1746329866994.0
+    end_time: 1746329876777.0
+    duration: 9783.0
+    session_fraction: 0.0
+    session_relative_time: 1493048.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_71
+    element_replied_id: element_replied_71
+    event_id: element_sent_71
+
+  Element 75:
+    element_id: completion_2_completion_396
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_2
+    task_type: completion
+    sequence_idx: 13
+    max_count: 500
+    start_time: 1746329919285.0
+    end_time: 1746329928334.0
+    duration: 9049.0
+    session_fraction: 0.0
+    session_relative_time: 1545339.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_76
+    element_replied_id: element_replied_76
+    event_id: element_sent_76
+
+  Element 80:
+    element_id: chat_1_question_1
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: chat_1
+    task_type: chat
+    sequence_idx: 1
+    max_count: 0
+    start_time: 1746330452168.0
+    end_time: 1746330514613.0
+    duration: 62445.0
+    session_fraction: 0.0
+    session_relative_time: 2078222.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_81
+    element_replied_id: element_replied_81
+    event_id: element_sent_81
+
+  Element 85:
+    element_id: chat_1_question_2
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: chat_1
+    task_type: chat
+    sequence_idx: 6
+    max_count: 0
+    start_time: 1746330801822.0
+    end_time: 1746331047385.0
+    duration: 245563.0
+    session_fraction: 0.0
+    session_relative_time: 2427876.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_86
+    element_replied_id: element_replied_86
+    event_id: element_sent_86
+
+  Element 90:
+    element_id: word_2_word_784
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_2
+    task_type: word
+    sequence_idx: 3
+    max_count: 500
+    start_time: 1746331279679.0
+    end_time: 1746331291676.0
+    duration: 11997.0
+    session_fraction: 0.0
+    session_relative_time: 2905733.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_91
+    element_replied_id: element_replied_91
+    event_id: element_sent_91
+
+  Element 95:
+    element_id: word_2_word_163
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_2
+    task_type: word
+    sequence_idx: 8
+    max_count: 500
+    start_time: 1746331329742.0
+    end_time: 1746331340771.0
+    duration: 11029.0
+    session_fraction: 0.0
+    session_relative_time: 2955796.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_96
+    element_replied_id: element_replied_96
+    event_id: element_sent_96
+
+  Element 100:
+    element_id: word_2_word_404
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_2
+    task_type: word
+    sequence_idx: 13
+    max_count: 500
+    start_time: 1746331371352.0
+    end_time: 1746331386881.0
+    duration: 15529.0
+    session_fraction: 0.0
+    session_relative_time: 2997406.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_101
+    element_replied_id: element_replied_101
+    event_id: element_sent_101
+
+  Element 105:
+    element_id: completion_3_intro
+    element_type: text
+    title: Sentence Completion
+    is_instruction: True
+    task_id: completion_3
+    task_type: completion
+    sequence_idx: 0
+    max_count: 500
+    start_time: 1746331423706.0
+    end_time: 1746331434326.0
+    duration: 10620.0
+    session_fraction: 0.0
+    session_relative_time: 3049760.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_106
+    element_replied_id: element_replied_106
+    event_id: element_sent_106
+
+  Element 110:
+    element_id: completion_3_completion_194
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_3
+    task_type: completion
+    sequence_idx: 5
+    max_count: 500
+    start_time: 1746331606669.0
+    end_time: 1746331674882.0
+    duration: 68213.0
+    session_fraction: 0.0
+    session_relative_time: 3232723.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_111
+    element_replied_id: element_replied_111
+    event_id: element_sent_111
+
+  Element 115:
+    element_id: language_1_en_3
+    element_type: text
+    title: Listen (EN)
+    is_instruction: False
+    task_id: language_1
+    task_type: language
+    sequence_idx: 3
+    max_count: 7
+    start_time: 1746331791175.0
+    end_time: 1746331809194.0
+    duration: 18019.0
+    session_fraction: 0.0
+    session_relative_time: 3417229.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_116
+    element_replied_id: element_replied_116
+    event_id: element_sent_116
+
+  Element 120:
+    element_id: situation_1_situation_52
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: situation_1
+    task_type: situation
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746331901133.0
+    end_time: 1746331949689.0
+    duration: 48556.0
+    session_fraction: 0.0
+    session_relative_time: 3527187.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_121
+    element_replied_id: element_replied_121
+    event_id: element_sent_121
+
+  Element 125:
+    element_id: situation_1_situation_11
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: situation_1
+    task_type: situation
+    sequence_idx: 7
+    max_count: 500
+    start_time: 1746332148772.0
+    end_time: 1746332201500.0
+    duration: 52728.0
+    session_fraction: 0.0
+    session_relative_time: 3774826.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_126
+    element_replied_id: element_replied_126
+    event_id: element_sent_126
+
+  Element 130:
+    element_id: eye_2_close_4
+    element_type: text
+    title: Eye Exercise
+    is_instruction: True
+    task_id: eye_2
+    task_type: eye
+    sequence_idx: 3
+    max_count: 7
+    start_time: 1746332318155.0
+    end_time: 1746332338179.0
+    duration: 20024.0
+    session_fraction: 0.0
+    session_relative_time: 3944209.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_131
+    element_replied_id: element_replied_131
+    event_id: element_sent_131
+
+  Element 135:
+    element_id: breath_2_normal_1
+    element_type: text
+    title: Breathing Exercise
+    is_instruction: True
+    task_id: breath_2
+    task_type: breath
+    sequence_idx: 1
+    max_count: 8
+    start_time: 1746332393602.0
+    end_time: 1746332403619.0
+    duration: 10017.0
+    session_fraction: 0.0
+    session_relative_time: 4019656.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_136
+    element_replied_id: element_replied_136
+    event_id: element_sent_136
+
+  Element 140:
+    element_id: breath_2_hold_6
+    element_type: text
+    title: Breathing Exercise
+    is_instruction: True
+    task_id: breath_2
+    task_type: breath
+    sequence_idx: 6
+    max_count: 8
+    start_time: 1746332459994.0
+    end_time: 1746332478010.0
+    duration: 18016.0
+    session_fraction: 0.0
+    session_relative_time: 4086048.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_141
+    element_replied_id: element_replied_141
+    event_id: element_sent_141
+
+  Element 145:
+    element_id: listen_2_sound_4
+    element_type: text
+    title: Listen Exercise
+    is_instruction: True
+    task_id: listen_2
+    task_type: listen
+    sequence_idx: 3
+    max_count: 7
+    start_time: 1746332513429.0
+    end_time: 1746332523457.0
+    duration: 10028.0
+    session_fraction: 0.0
+    session_relative_time: 4139483.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_146
+    element_replied_id: element_replied_146
+    event_id: element_sent_146
+
+  Element 150:
+    element_id: wordassociation_2_word_1
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_2
+    task_type: wordassociation
+    sequence_idx: 1
+    max_count: 500
+    start_time: 1746332584475.0
+    end_time: 1746332591290.0
+    duration: 6815.0
+    session_fraction: 0.0
+    session_relative_time: 4210529.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_151
+    element_replied_id: element_replied_151
+    event_id: element_sent_151
+
+  Element 155:
+    element_id: wordassociation_2_word_6
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_2
+    task_type: wordassociation
+    sequence_idx: 6
+    max_count: 500
+    start_time: 1746332619396.0
+    end_time: 1746332626221.0
+    duration: 6825.0
+    session_fraction: 0.0
+    session_relative_time: 4245450.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_156
+    element_replied_id: element_replied_156
+    event_id: element_sent_156
+
+  Element 160:
+    element_id: wordassociation_2_word_11
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_2
+    task_type: wordassociation
+    sequence_idx: 11
+    max_count: 500
+    start_time: 1746332654230.0
+    end_time: 1746332661035.0
+    duration: 6805.0
+    session_fraction: 0.0
+    session_relative_time: 4280284.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_161
+    element_replied_id: element_replied_161
+    event_id: element_sent_161
+
+  Element 165:
+    element_id: wordassociation_2_word_16
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_2
+    task_type: wordassociation
+    sequence_idx: 16
+    max_count: 500
+    start_time: 1746332688848.0
+    end_time: 1746332695666.0
+    duration: 6818.0
+    session_fraction: 0.0
+    session_relative_time: 4314902.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_166
+    element_replied_id: element_replied_166
+    event_id: element_sent_166
+
+  Element 170:
+    element_id: wordassociation_2_word_21
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: wordassociation_2
+    task_type: wordassociation
+    sequence_idx: 21
+    max_count: 500
+    start_time: 1746332723428.0
+    end_time: 1746332730246.0
+    duration: 6818.0
+    session_fraction: 0.0
+    session_relative_time: 4349482.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: 3.0
+    element_sent_id: element_sent_171
+    element_replied_id: element_replied_171
+    event_id: element_sent_171
+
+  Element 175:
+    element_id: sentence_3_sent_1567
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_3
+    task_type: sentence
+    sequence_idx: 3
+    max_count: 500
+    start_time: 1746332769144.0
+    end_time: 1746332780001.0
+    duration: 10857.0
+    session_fraction: 0.0
+    session_relative_time: 4395198.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_176
+    element_replied_id: element_replied_176
+    event_id: element_sent_176
+
+  Element 180:
+    element_id: sentence_3_sent_596
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_3
+    task_type: sentence
+    sequence_idx: 8
+    max_count: 500
+    start_time: 1746332823268.0
+    end_time: 1746332833762.0
+    duration: 10494.0
+    session_fraction: 0.0
+    session_relative_time: 4449322.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_181
+    element_replied_id: element_replied_181
+    event_id: element_sent_181
+
+  Element 185:
+    element_id: sentence_3_sent_1860
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_3
+    task_type: sentence
+    sequence_idx: 13
+    max_count: 500
+    start_time: 1746332888016.0
+    end_time: 1746332908838.0
+    duration: 20822.0
+    session_fraction: 0.0
+    session_relative_time: 4514070.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_186
+    element_replied_id: element_replied_186
+    event_id: element_sent_186
+
+  Element 190:
+    element_id: sentence_3_sent_455
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_3
+    task_type: sentence
+    sequence_idx: 18
+    max_count: 500
+    start_time: 1746332951608.0
+    end_time: 1746332959614.0
+    duration: 8006.0
+    session_fraction: 0.0
+    session_relative_time: 4577662.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_191
+    element_replied_id: element_replied_191
+    event_id: element_sent_191
+
+  Element 195:
+    element_id: paraphrase_2_para_49
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: paraphrase_2
+    task_type: paraphrase
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746333195186.0
+    end_time: 1746333425115.0
+    duration: 229929.0
+    session_fraction: 0.0
+    session_relative_time: 4821240.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_196
+    element_replied_id: element_replied_196
+    event_id: element_sent_196
+
+  Element 200:
+    element_id: argument_1_input_4
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: argument_1
+    task_type: argument
+    sequence_idx: 4
+    max_count: 0
+    start_time: 1746333888305.0
+    end_time: 1746334004373.0
+    duration: 116068.0
+    session_fraction: 0.0
+    session_relative_time: 5514359.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_201
+    element_replied_id: element_replied_201
+    event_id: element_sent_201
+
+  Element 205:
+    element_id: completion_4_completion_44
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_4
+    task_type: completion
+    sequence_idx: 4
+    max_count: 500
+    start_time: 1746334054761.0
+    end_time: 1746334067016.0
+    duration: 12255.0
+    session_fraction: 0.0
+    session_relative_time: 5680815.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_206
+    element_replied_id: element_replied_206
+    event_id: element_sent_206
+
+  Element 210:
+    element_id: completion_4_completion_249
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_4
+    task_type: completion
+    sequence_idx: 9
+    max_count: 500
+    start_time: 1746334106098.0
+    end_time: 1746334117326.0
+    duration: 11228.0
+    session_fraction: 0.0
+    session_relative_time: 5732152.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_211
+    element_replied_id: element_replied_211
+    event_id: element_sent_211
+
+  Element 215:
+    element_id: completion_4_completion_303
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_4
+    task_type: completion
+    sequence_idx: 14
+    max_count: 500
+    start_time: 1746334158360.0
+    end_time: 1746334172573.0
+    duration: 14213.0
+    session_fraction: 0.0
+    session_relative_time: 5784414.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_216
+    element_replied_id: element_replied_216
+    event_id: element_sent_216
+
+  Element 220:
+    element_id: completion_4_completion_156
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_4
+    task_type: completion
+    sequence_idx: 19
+    max_count: 500
+    start_time: 1746334220769.0
+    end_time: 1746334230894.0
+    duration: 10125.0
+    session_fraction: 0.0
+    session_relative_time: 5846823.0
+    audio_mode: aligned
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_221
+    element_replied_id: element_replied_221
+    event_id: element_sent_221
+
+  Element 225:
+    element_id: language_2_fi_2
+    element_type: text
+    title: Listen (FI)
+    is_instruction: False
+    task_id: language_2
+    task_type: language
+    sequence_idx: 2
+    max_count: 7
+    start_time: 1746334279034.0
+    end_time: 1746334297050.0
+    duration: 18016.0
+    session_fraction: 0.0
+    session_relative_time: 5905088.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_226
+    element_replied_id: element_replied_226
+    event_id: element_sent_226
+
+  Element 230:
+    element_id: word_3_word_1870
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_3
+    task_type: word
+    sequence_idx: 1
+    max_count: 500
+    start_time: 1746334356702.0
+    end_time: 1746334374341.0
+    duration: 17639.0
+    session_fraction: 0.0
+    session_relative_time: 5982756.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_231
+    element_replied_id: element_replied_231
+    event_id: element_sent_231
+
+  Element 235:
+    element_id: word_3_word_18
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_3
+    task_type: word
+    sequence_idx: 6
+    max_count: 500
+    start_time: 1746334407542.0
+    end_time: 1746334415770.0
+    duration: 8228.0
+    session_fraction: 0.0
+    session_relative_time: 6033596.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_236
+    element_replied_id: element_replied_236
+    event_id: element_sent_236
+
+  Element 240:
+    element_id: word_3_word_1051
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: word_3
+    task_type: word
+    sequence_idx: 11
+    max_count: 500
+    start_time: 1746334469921.0
+    end_time: 1746334489795.0
+    duration: 19874.0
+    session_fraction: 0.0
+    session_relative_time: 6095975.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_241
+    element_replied_id: element_replied_241
+    event_id: element_sent_241
+
+  Element 245:
+    element_id: sentence_4_sent_2151
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: sentence_4
+    task_type: sentence
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746334553261.0
+    end_time: 1746334590491.0
+    duration: 37230.0
+    session_fraction: 0.0
+    session_relative_time: 6179315.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_246
+    element_replied_id: element_replied_246
+    event_id: element_sent_246
+
+  Element 250:
+    element_id: learn_1_intro
+    element_type: text
+    title: Tutorial Task
+    is_instruction: True
+    task_id: learn_1
+    task_type: learn
+    sequence_idx: 0
+    max_count: 0
+    start_time: 1746334810529.0
+    end_time: 1746334819511.0
+    duration: 8982.0
+    session_fraction: 0.0
+    session_relative_time: 6436583.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_251
+    element_replied_id: element_replied_251
+    event_id: element_sent_251
+
+  Element 255:
+    element_id: learn_1_input_5
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: learn_1
+    task_type: learn
+    sequence_idx: 5
+    max_count: 0
+    start_time: 1746335253915.0
+    end_time: 1746335395398.0
+    duration: 141483.0
+    session_fraction: 0.0
+    session_relative_time: 6879969.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_256
+    element_replied_id: element_replied_256
+    event_id: element_sent_256
+
+  Element 260:
+    element_id: completion_5_completion_140
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_5
+    task_type: completion
+    sequence_idx: 4
+    max_count: 500
+    start_time: 1746335451647.0
+    end_time: 1746335463410.0
+    duration: 11763.0
+    session_fraction: 0.0
+    session_relative_time: 7077701.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_261
+    element_replied_id: element_replied_261
+    event_id: element_sent_261
+
+  Element 265:
+    element_id: completion_5_completion_12
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_5
+    task_type: completion
+    sequence_idx: 9
+    max_count: 500
+    start_time: 1746335509288.0
+    end_time: 1746335522992.0
+    duration: 13704.0
+    session_fraction: 0.0
+    session_relative_time: 7135342.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: speech
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_266
+    element_replied_id: element_replied_266
+    event_id: element_sent_266
+
+  Element 270:
+    element_id: completion_6_completion_240
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_6
+    task_type: completion
+    sequence_idx: 2
+    max_count: 500
+    start_time: 1746335597281.0
+    end_time: 1746335622651.0
+    duration: 25370.0
+    session_fraction: 0.0
+    session_relative_time: 7223335.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_271
+    element_replied_id: element_replied_271
+    event_id: element_sent_271
+
+  Element 275:
+    element_id: completion_6_completion_165
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: completion_6
+    task_type: completion
+    sequence_idx: 7
+    max_count: 500
+    start_time: 1746335798542.0
+    end_time: 1746335842762.0
+    duration: 44220.0
+    session_fraction: 0.0
+    session_relative_time: 7424596.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_276
+    element_replied_id: element_replied_276
+    event_id: element_sent_276
+
+  Element 280:
+    element_id: eye_3_open_4
+    element_type: text
+    title: Eye Exercise
+    is_instruction: True
+    task_id: eye_3
+    task_type: eye
+    sequence_idx: 4
+    max_count: 7
+    start_time: 1746335903318.0
+    end_time: 1746335918335.0
+    duration: 15017.0
+    session_fraction: 0.0
+    session_relative_time: 7529372.0
+    audio_mode: audio_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_281
+    element_replied_id: element_replied_281
+    event_id: element_sent_281
+
+  Element 285:
+    element_id: feedback_1_input_2
+    element_type: input
+    title: 
+    is_instruction: False
+    task_id: feedback_1
+    task_type: feedback
+    sequence_idx: 2
+    max_count: 4
+    start_time: 1746336185412.0
+    end_time: 1746336210282.0
+    duration: 24870.0
+    session_fraction: 0.0
+    session_relative_time: 7811466.0
+    audio_mode: text_only
+    with_interruptions: False
+    input_modality: text
+    response_time_seconds: -1.0
+    element_sent_id: element_sent_286
+    element_replied_id: element_replied_286
+    event_id: element_sent_286
+
+  Elements without a task_id: 0 out of 288 (0.00%)
+
+================================================================================
+SEGMENTS INSPECTION
+================================================================================
+
+Checking recording segments:
+  Shape: (74,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 74 out of 74
+  Segments with task container: 0 out of 74
+  Segments with no container: 0
+
+  Sampling segments:
+
+  Every 5th segment:
+
+    Segment 0:
+      segment_id: recording_start_1
+      segment_type: recording
+      start_time: 1746329783741.0
+      end_time: 1746329796616.0
+      duration: 12875.0
+      containing_element_id: completion_2_completion_499
+      element_relative_start: 1493.0
+      start_event_id: recording_start_1
+      end_event_id: recording_stop_1
+
+    Segment 5:
+      segment_id: recording_start_6
+      segment_type: recording
+      start_time: 1746329849409.0
+      end_time: 1746329857367.0
+      duration: 7958.0
+      containing_element_id: completion_2_completion_212
+      element_relative_start: 2573.0
+      start_event_id: recording_start_6
+      end_event_id: recording_stop_6
+
+    Segment 10:
+      segment_id: recording_start_11
+      segment_type: recording
+      start_time: 1746329901843.0
+      end_time: 1746329908128.0
+      duration: 6285.0
+      containing_element_id: completion_2_completion_228
+      element_relative_start: 2551.0
+      start_event_id: recording_start_11
+      end_event_id: recording_stop_11
+
+    Segment 15:
+      segment_id: recording_start_16
+      segment_type: recording
+      start_time: 1746331913948.0
+      end_time: 1746331949689.0
+      duration: 35741.0
+      containing_element_id: situation_1_situation_52
+      element_relative_start: 12815.0
+      start_event_id: recording_start_16
+      end_event_id: recording_stop_16
+
+    Segment 20:
+      segment_id: recording_start_21
+      segment_type: recording
+      start_time: 1746332162405.0
+      end_time: 1746332201500.0
+      duration: 39095.0
+      containing_element_id: situation_1_situation_11
+      element_relative_start: 13633.0
+      start_event_id: recording_start_21
+      end_event_id: recording_stop_21
+
+    Segment 25:
+      segment_id: recording_start_26
+      segment_type: recording
+      start_time: 1746332783722.0
+      end_time: 1746332789692.0
+      duration: 5970.0
+      containing_element_id: sentence_3_sent_1705
+      element_relative_start: 3598.0
+      start_event_id: recording_start_26
+      end_event_id: recording_stop_26
+
+    Segment 30:
+      segment_id: recording_start_31
+      segment_type: recording
+      start_time: 1746332837624.0
+      end_time: 1746332854928.0
+      duration: 17304.0
+      containing_element_id: sentence_3_sent_743
+      element_relative_start: 3753.0
+      start_event_id: recording_start_31
+      end_event_id: recording_stop_31
+
+    Segment 35:
+      segment_id: recording_start_36
+      segment_type: recording
+      start_time: 1746332913444.0
+      end_time: 1746332921184.0
+      duration: 7740.0
+      containing_element_id: sentence_3_sent_2132
+      element_relative_start: 4477.0
+      start_event_id: recording_start_36
+      end_event_id: recording_stop_36
+
+    Segment 40:
+      segment_id: recording_start_41
+      segment_type: recording
+      start_time: 1746332963213.0
+      end_time: 1746332968014.0
+      duration: 4801.0
+      containing_element_id: sentence_3_sent_351
+      element_relative_start: 3476.0
+      start_event_id: recording_start_41
+      end_event_id: recording_stop_41
+
+    Segment 45:
+      segment_id: recording_start_46
+      segment_type: recording
+      start_time: 1746334057750.0
+      end_time: 1746334067016.0
+      duration: 9266.0
+      containing_element_id: completion_4_completion_44
+      element_relative_start: 2989.0
+      start_event_id: recording_start_46
+      end_event_id: recording_stop_46
+
+    Segment 50:
+      segment_id: recording_start_51
+      segment_type: recording
+      start_time: 1746334108795.0
+      end_time: 1746334117326.0
+      duration: 8531.0
+      containing_element_id: completion_4_completion_249
+      element_relative_start: 2697.0
+      start_event_id: recording_start_51
+      end_event_id: recording_stop_51
+
+    Segment 55:
+      segment_id: recording_start_56
+      segment_type: recording
+      start_time: 1746334161551.0
+      end_time: 1746334172573.0
+      duration: 11022.0
+      containing_element_id: completion_4_completion_303
+      element_relative_start: 3191.0
+      start_event_id: recording_start_56
+      end_event_id: recording_stop_56
+
+    Segment 60:
+      segment_id: recording_start_61
+      segment_type: recording
+      start_time: 1746334223233.0
+      end_time: 1746334230893.0
+      duration: 7660.0
+      containing_element_id: completion_4_completion_156
+      element_relative_start: 2464.0
+      start_event_id: recording_start_61
+      end_event_id: recording_stop_61
+
+    Segment 65:
+      segment_id: recording_start_66
+      segment_type: recording
+      start_time: 1746335444674.0
+      end_time: 1746335451515.0
+      duration: 6841.0
+      containing_element_id: completion_5_completion_211
+      element_relative_start: 2743.0
+      start_event_id: recording_start_66
+      end_event_id: recording_stop_66
+
+    Segment 70:
+      segment_id: recording_start_71
+      segment_type: recording
+      start_time: 1746335500135.0
+      end_time: 1746335509146.0
+      duration: 9011.0
+      containing_element_id: completion_5_completion_53
+      element_relative_start: 3831.0
+      start_event_id: recording_start_71
+      end_event_id: recording_stop_71
+
+  All segments have valid timestamps (end >= start)
+
+Checking thinking segments:
+  Shape: (44,)
+  Dtype: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Segments with element container: 44 out of 44
+  Segments with task container: 0 out of 44
+  Segments with no container: 0
+
+  Sampling segments:
+
+  Every 5th segment:
+
+    Segment 0:
+      segment_id: thinking_start_1
+      segment_type: thinking
+      start_time: 1746328982792.0
+      end_time: 1746328985794.0
+      duration: 3002.0
+      containing_element_id: wordassociation_1_word_1
+      element_relative_start: 761.0
+      start_event_id: thinking_start_1
+      end_event_id: thinking_stop_1
+
+    Segment 5:
+      segment_id: thinking_start_6
+      segment_type: thinking
+      start_time: 1746329017142.0
+      end_time: 1746329020143.0
+      duration: 3001.0
+      containing_element_id: wordassociation_1_word_6
+      element_relative_start: 759.0
+      start_event_id: thinking_start_6
+      end_event_id: thinking_stop_6
+
+    Segment 10:
+      segment_id: thinking_start_11
+      segment_type: thinking
+      start_time: 1746329051505.0
+      end_time: 1746329054505.0
+      duration: 3000.0
+      containing_element_id: wordassociation_1_word_11
+      element_relative_start: 759.0
+      start_event_id: thinking_start_11
+      end_event_id: thinking_stop_11
+
+    Segment 15:
+      segment_id: thinking_start_16
+      segment_type: thinking
+      start_time: 1746329085842.0
+      end_time: 1746329088843.0
+      duration: 3001.0
+      containing_element_id: wordassociation_1_word_16
+      element_relative_start: 760.0
+      start_event_id: thinking_start_16
+      end_event_id: thinking_stop_16
+
+    Segment 20:
+      segment_id: thinking_start_21
+      segment_type: thinking
+      start_time: 1746329120131.0
+      end_time: 1746329123133.0
+      duration: 3002.0
+      containing_element_id: wordassociation_1_word_21
+      element_relative_start: 766.0
+      start_event_id: thinking_start_21
+      end_event_id: thinking_stop_21
+
+    Segment 25:
+      segment_id: thinking_start_26
+      segment_type: thinking
+      start_time: 1746332606119.0
+      end_time: 1746332609121.0
+      duration: 3002.0
+      containing_element_id: wordassociation_2_word_4
+      element_relative_start: 761.0
+      start_event_id: thinking_start_26
+      end_event_id: thinking_stop_26
+
+    Segment 30:
+      segment_id: thinking_start_31
+      segment_type: thinking
+      start_time: 1746332641193.0
+      end_time: 1746332644194.0
+      duration: 3001.0
+      containing_element_id: wordassociation_2_word_9
+      element_relative_start: 758.0
+      start_event_id: thinking_start_31
+      end_event_id: thinking_stop_31
+
+    Segment 35:
+      segment_id: thinking_start_36
+      segment_type: thinking
+      start_time: 1746332675799.0
+      end_time: 1746332678801.0
+      duration: 3002.0
+      containing_element_id: wordassociation_2_word_14
+      element_relative_start: 758.0
+      start_event_id: thinking_start_36
+      end_event_id: thinking_stop_36
+
+    Segment 40:
+      segment_id: thinking_start_41
+      segment_type: thinking
+      start_time: 1746332710433.0
+      end_time: 1746332713434.0
+      duration: 3001.0
+      containing_element_id: wordassociation_2_word_19
+      element_relative_start: 757.0
+      start_event_id: thinking_start_41
+      end_event_id: thinking_stop_41
+
+  All segments have valid timestamps (end >= start)
+
+Checking pause segments:
+  No pause dataset found
+
+================================================================================
+INDEX INSPECTION
+================================================================================
+Found indices group with:
+
+Index type: element_by_task
+  Contains 33 entries:
+  All task keys: ['argument_1', 'breath_1', 'breath_2', 'chat_1', 'completion_1', 'completion_2', 'completion_3', 'completion_4', 'completion_5', 'completion_6', 'eye_1', 'eye_2', 'eye_3', 'feedback_1', 'finish_1', 'language_1', 'language_2', 'learn_1', 'listen_1', 'listen_2', 'paraphrase_1', 'paraphrase_2', 'sentence_1', 'sentence_2', 'sentence_3', 'sentence_4', 'situation_1', 'wait_1', 'word_1', 'word_2', 'word_3', 'wordassociation_1', 'wordassociation_2']
+
+  Elements for task 'argument_1':
+    Total elements: 5
+    Elements: ['argument_1_intro', 'argument_1_topic_selection', 'argument_1_input_2', 'argument_1_input_3', 'argument_1_input_4']
+
+  Elements for task 'breath_1':
+    Total elements: 8
+    Elements: ['breath_1_intro', 'breath_1_normal_1', 'breath_1_hold_2', 'breath_1_normal_3', 'breath_1_hold_4', 'breath_1_normal_5', 'breath_1_hold_6', 'breath_1_normal_7']
+
+  Elements for task 'breath_2':
+    Total elements: 8
+    Elements: ['breath_2_intro', 'breath_2_normal_1', 'breath_2_hold_2', 'breath_2_normal_3', 'breath_2_hold_4', 'breath_2_normal_5', 'breath_2_hold_6', 'breath_2_normal_7']
+
+  Elements for task 'chat_1':
+    Total elements: 8
+    Elements: ['chat_1_intro', 'chat_1_question_1', 'chat_1_input_1_1', 'chat_1_input_1_2', 'chat_1_input_1_3', 'chat_1_input_1_4', 'chat_1_question_2', 'chat_1_input_2_1']
+
+  Elements for task 'completion_1':
+    Total elements: 5
+    Elements: ['completion_1_intro', 'completion_1_completion_362', 'completion_1_completion_62', 'completion_1_completion_401', 'completion_1_completion_440']
+
+  Elements for task 'completion_2':
+    Total elements: 15
+    Elements: ['completion_2_intro', 'completion_2_completion_499', 'completion_2_completion_375', 'completion_2_completion_293', 'completion_2_completion_43', 'completion_2_completion_197', 'completion_2_completion_212', 'completion_2_completion_85', 'completion_2_completion_471', 'completion_2_completion_222', 'completion_2_completion_312', 'completion_2_completion_228', 'completion_2_completion_419', 'completion_2_completion_396', 'completion_2_completion_150']
+
+  Elements for task 'completion_3':
+    Total elements: 7
+    Elements: ['completion_3_intro', 'completion_3_completion_77', 'completion_3_completion_30', 'completion_3_completion_344', 'completion_3_completion_398', 'completion_3_completion_194', 'completion_3_completion_191']
+
+  Elements for task 'completion_4':
+    Total elements: 22
+    Elements: ['completion_4_intro', 'completion_4_completion_82', 'completion_4_completion_361', 'completion_4_completion_70', 'completion_4_completion_44', 'completion_4_completion_229', 'completion_4_completion_270', 'completion_4_completion_476', 'completion_4_completion_67', 'completion_4_completion_249', 'completion_4_completion_3', 'completion_4_completion_6', 'completion_4_completion_105', 'completion_4_completion_458', 'completion_4_completion_303', 'completion_4_completion_400', 'completion_4_completion_316', 'completion_4_completion_389', 'completion_4_completion_194', 'completion_4_completion_156', 'completion_4_completion_463', 'completion_4_completion_489']
+
+  Elements for task 'completion_5':
+    Total elements: 12
+    Elements: ['completion_5_intro', 'completion_5_completion_486', 'completion_5_completion_160', 'completion_5_completion_211', 'completion_5_completion_140', 'completion_5_completion_56', 'completion_5_completion_5', 'completion_5_completion_162', 'completion_5_completion_53', 'completion_5_completion_12', 'completion_5_completion_466', 'completion_5_completion_249']
+
+  Elements for task 'completion_6':
+    Total elements: 8
+    Elements: ['completion_6_intro', 'completion_6_completion_129', 'completion_6_completion_240', 'completion_6_completion_471', 'completion_6_completion_87', 'completion_6_completion_319', 'completion_6_completion_431', 'completion_6_completion_165']
+
+  Elements for task 'eye_1':
+    Total elements: 7
+    Elements: ['eye_1_intro', 'eye_1_close_2', 'eye_1_open_2', 'eye_1_close_4', 'eye_1_open_4', 'eye_1_close_6', 'eye_1_open_6']
+
+  Elements for task 'eye_2':
+    Total elements: 7
+    Elements: ['eye_2_intro', 'eye_2_close_2', 'eye_2_open_2', 'eye_2_close_4', 'eye_2_open_4', 'eye_2_close_6', 'eye_2_open_6']
+
+  Elements for task 'eye_3':
+    Total elements: 7
+    Elements: ['eye_3_intro', 'eye_3_close_2', 'eye_3_open_2', 'eye_3_close_4', 'eye_3_open_4', 'eye_3_close_6', 'eye_3_open_6']
+
+  Elements for task 'feedback_1':
+    Total elements: 4
+    Elements: ['feedback_1_intro', 'feedback_1_main_feedback', 'feedback_1_input_2', 'feedback_1_input_3']
+
+  Elements for task 'finish_1':
+    Total elements: 1
+    Elements: ['finish_1_intro']
+
+  Elements for task 'language_1':
+    Total elements: 6
+    Elements: ['language_1_intro', 'language_1_en_1', 'language_1_fi_2', 'language_1_en_3', 'language_1_fi_4', 'language_1_en_5']
+
+  Elements for task 'language_2':
+    Total elements: 6
+    Elements: ['language_2_intro', 'language_2_en_1', 'language_2_fi_2', 'language_2_en_3', 'language_2_fi_4', 'language_2_en_5']
+
+  Elements for task 'learn_1':
+    Total elements: 6
+    Elements: ['learn_1_intro', 'learn_1_topic_selection', 'learn_1_input_2', 'learn_1_input_3', 'learn_1_input_4', 'learn_1_input_5']
+
+  Elements for task 'listen_1':
+    Total elements: 7
+    Elements: ['listen_1_intro', 'listen_1_sound_2', 'listen_1_quiet_2', 'listen_1_sound_4', 'listen_1_quiet_4', 'listen_1_sound_6', 'listen_1_quiet_6']
+
+  Elements for task 'listen_2':
+    Total elements: 7
+    Elements: ['listen_2_intro', 'listen_2_sound_2', 'listen_2_quiet_2', 'listen_2_sound_4', 'listen_2_quiet_4', 'listen_2_sound_6', 'listen_2_quiet_6']
+
+  Elements for task 'paraphrase_1':
+    Total elements: 2
+    Elements: ['paraphrase_1_intro', 'paraphrase_1_para_109']
+
+  Elements for task 'paraphrase_2':
+    Total elements: 3
+    Elements: ['paraphrase_2_intro', 'paraphrase_2_para_33', 'paraphrase_2_para_49']
+
+  Elements for task 'sentence_1':
+    Total elements: 4
+    Elements: ['sentence_1_intro', 'sentence_1_sent_1442', 'sentence_1_sent_84', 'sentence_1_sent_1780']
+
+  Elements for task 'sentence_2':
+    Total elements: 4
+    Elements: ['sentence_2_intro', 'sentence_2_sent_2351', 'sentence_2_sent_2248', 'sentence_2_sent_2352']
+
+  Elements for task 'sentence_3':
+    Total elements: 21
+    Elements: ['sentence_3_intro', 'sentence_3_sent_206', 'sentence_3_sent_2573', 'sentence_3_sent_1567', 'sentence_3_sent_1705', 'sentence_3_sent_2341', 'sentence_3_sent_466', 'sentence_3_sent_2317', 'sentence_3_sent_596', 'sentence_3_sent_743', 'sentence_3_sent_2915', 'sentence_3_sent_223', 'sentence_3_sent_2399', 'sentence_3_sent_1860', 'sentence_3_sent_2132', 'sentence_3_sent_1816', 'sentence_3_sent_1204', 'sentence_3_sent_2277', 'sentence_3_sent_455', 'sentence_3_sent_351', 'sentence_3_sent_43']
+
+  Elements for task 'sentence_4':
+    Total elements: 7
+    Elements: ['sentence_4_intro', 'sentence_4_sent_664', 'sentence_4_sent_2151', 'sentence_4_sent_469', 'sentence_4_sent_461', 'sentence_4_sent_1555', 'sentence_4_sent_2588']
+
+  Elements for task 'situation_1':
+    Total elements: 9
+    Elements: ['situation_1_intro', 'situation_1_situation_50', 'situation_1_situation_52', 'situation_1_situation_24', 'situation_1_situation_1', 'situation_1_situation_36', 'situation_1_situation_30', 'situation_1_situation_11', 'situation_1_situation_54']
+
+  Elements for task 'wait_1':
+    Total elements: 1
+    Elements: ['wait_1_intro']
+
+  Elements for task 'word_1':
+    Total elements: 3
+    Elements: ['word_1_intro', 'word_1_word_54', 'word_1_word_3862']
+
+  Elements for task 'word_2':
+    Total elements: 18
+    Elements: ['word_2_intro', 'word_2_word_691', 'word_2_word_250', 'word_2_word_784', 'word_2_word_788', 'word_2_word_137', 'word_2_word_138', 'word_2_word_591', 'word_2_word_163', 'word_2_word_218', 'word_2_word_987', 'word_2_word_765', 'word_2_word_345', 'word_2_word_404', 'word_2_word_642', 'word_2_word_2016', 'word_2_word_528', 'word_2_word_287']
+
+  Elements for task 'word_3':
+    Total elements: 14
+    Elements: ['word_3_intro', 'word_3_word_1870', 'word_3_word_315', 'word_3_word_528', 'word_3_word_602', 'word_3_word_772', 'word_3_word_18', 'word_3_word_192', 'word_3_word_435', 'word_3_word_135', 'word_3_word_892', 'word_3_word_1051', 'word_3_word_2664', 'word_3_word_670']
+
+  Elements for task 'wordassociation_1':
+    Total elements: 23
+    Elements: ['wordassociation_1_intro', 'wordassociation_1_word_1', 'wordassociation_1_word_2', 'wordassociation_1_word_3', 'wordassociation_1_word_4', 'wordassociation_1_word_5', 'wordassociation_1_word_6', 'wordassociation_1_word_7', 'wordassociation_1_word_8', 'wordassociation_1_word_9', 'wordassociation_1_word_10', 'wordassociation_1_word_11', 'wordassociation_1_word_12', 'wordassociation_1_word_13', 'wordassociation_1_word_14', 'wordassociation_1_word_15', 'wordassociation_1_word_16', 'wordassociation_1_word_17', 'wordassociation_1_word_18', 'wordassociation_1_word_19', 'wordassociation_1_word_20', 'wordassociation_1_word_21', 'wordassociation_1_word_22']
+
+  Elements for task 'wordassociation_2':
+    Total elements: 23
+    Elements: ['wordassociation_2_intro', 'wordassociation_2_word_1', 'wordassociation_2_word_2', 'wordassociation_2_word_3', 'wordassociation_2_word_4', 'wordassociation_2_word_5', 'wordassociation_2_word_6', 'wordassociation_2_word_7', 'wordassociation_2_word_8', 'wordassociation_2_word_9', 'wordassociation_2_word_10', 'wordassociation_2_word_11', 'wordassociation_2_word_12', 'wordassociation_2_word_13', 'wordassociation_2_word_14', 'wordassociation_2_word_15', 'wordassociation_2_word_16', 'wordassociation_2_word_17', 'wordassociation_2_word_18', 'wordassociation_2_word_19', 'wordassociation_2_word_20', 'wordassociation_2_word_21', 'wordassociation_2_word_22']
+
+Index type: segments_by_element
+  Contains 118 entries:
+  Sample keys: ['completion_2_completion_150', 'completion_2_completion_197', 'completion_2_completion_212', 'completion_2_completion_222', 'completion_2_completion_228']...
+  Sample data for 'completion_2_completion_150':
+    Shape: (1,)
+    Type: |S64
+    First value: recording_start_14
+
+Checking if all elements are contained by a task:
+  Elements with task_id: 288 out of 288 (100.00%)
+  Elements without task_id: 0 out of 288 (0.00%)
+  Total elements in element_by_task index: 288
+  Consistency check: 288 elements with task_id vs 288 indexed by task
+
+================================================================================
+RELATIONSHIP VERIFICATION
+================================================================================
+
+Verifying task-element links:
+  Found 33 tasks and 288 elements
+  Tasks with element indexes: 33
+  Tasks with element_ids array: 0
+  Consistency check: 0 tasks with elements vs 33 indexed
+
+Verifying segment-container links:
+  Elements with segment indexes: 118
+  No segments_by_task index found
+
+================================================================================
+NULL POINTER ANALYSIS
+================================================================================
+
+VLEN field inspection:
+  Elements table: Found VLEN fields: ['element_id', 'element_type', 'title', 'task_id', 'task_type', 'audio_mode', 'input_modality', 'element_sent_id', 'element_replied_id', 'event_id']
+    Testing direct field access for 'element_id':
+      Read all data: 288 items
+    Testing direct field access for 'element_type':
+      Read all data: 288 items
+    Testing direct field access for 'title':
+      Read all data: 288 items
+    Testing direct field access for 'task_id':
+      Read all data: 288 items
+    Testing direct field access for 'task_type':
+      Read all data: 288 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 288 items
+    Testing direct field access for 'input_modality':
+      Read all data: 288 items
+    Testing direct field access for 'element_sent_id':
+      Read all data: 288 items
+    Testing direct field access for 'element_replied_id':
+      Read all data: 288 items
+    Testing direct field access for 'event_id':
+      Read all data: 288 items
+  Tasks table: Found VLEN fields: ['task_id', 'task_type', 'audio_mode', 'input_modality', 'completion_status', 'skip_event_id', 'task_started_id', 'task_completed_id']
+    Testing direct field access for 'task_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_type':
+      Read all data: 33 items
+    Testing direct field access for 'audio_mode':
+      Read all data: 33 items
+    Testing direct field access for 'input_modality':
+      Read all data: 33 items
+    Testing direct field access for 'completion_status':
+      Read all data: 33 items
+    Testing direct field access for 'skip_event_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_started_id':
+      Read all data: 33 items
+    Testing direct field access for 'task_completed_id':
+      Read all data: 33 items
+  recording segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 74 items
+    Testing direct field access for 'segment_type':
+      Read all data: 74 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 74 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 74 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 74 items
+  thinking segments: Found VLEN fields: ['segment_id', 'segment_type', 'containing_element_id', 'start_event_id', 'end_event_id']
+    Testing direct field access for 'segment_id':
+      Read all data: 44 items
+    Testing direct field access for 'segment_type':
+      Read all data: 44 items
+    Testing direct field access for 'containing_element_id':
+      Read all data: 44 items
+    Testing direct field access for 'start_event_id':
+      Read all data: 44 items
+    Testing direct field access for 'end_event_id':
+      Read all data: 44 items
+
+================================================================================
+DIRECT READ ATTEMPTS
+================================================================================
+
+Attempting to read: elements/table
+  Dataset shape: (288,)
+  Dataset type: [('element_id', 'O'), ('element_type', 'O'), ('title', 'O'), ('is_instruction', '?'), ('task_id', 'O'), ('task_type', 'O'), ('sequence_idx', '<i4'), ('max_count', '<i4'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction', '<f4'), ('session_relative_time', '<f8'), ('audio_mode', 'O'), ('with_interruptions', '?'), ('input_modality', 'O'), ('response_time_seconds', '<f8'), ('element_sent_id', 'O'), ('element_replied_id', 'O'), ('event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (288,)
+  Method 2: Field-by-field read
+    Field 'element_id' first value: wait_1_intro
+    Field 'element_type' first value: text
+    Field 'title' first value: Wait Task
+    Field 'is_instruction' first value: True
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'sequence_idx' first value: 0
+    Field 'max_count' first value: 1
+    Field 'start_time' first value: 1746328381706.0
+    Field 'end_time' first value: 1746328504816.0
+    Field 'duration' first value: 123110.0
+    Field 'session_fraction' first value: 0.0
+    Field 'session_relative_time' first value: 7760.0
+    Field 'audio_mode' first value: text_only
+    Field 'with_interruptions' first value: False
+    Field 'input_modality' first value: text
+    Field 'response_time_seconds' first value: -1.0
+    Field 'element_sent_id' first value: element_sent_1
+    Field 'element_replied_id' first value: element_replied_1
+    Field 'event_id' first value: element_sent_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: tasks/table
+  Dataset shape: (33,)
+  Dataset type: [('task_id', 'O'), ('task_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('session_fraction_start', '<f4'), ('session_fraction_end', '<f4'), ('count', '<i4'), ('allow_repeats', '?'), ('with_interruptions', '?'), ('audio_mode', 'O'), ('input_modality', 'O'), ('completion_status', 'O'), ('skipped', '?'), ('skip_time', '<f8'), ('skip_event_id', 'O'), ('task_started_id', 'O'), ('task_completed_id', 'O'), ('element_count', '<i4')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (33,)
+  Method 2: Field-by-field read
+    Field 'task_id' first value: wait_1
+    Field 'task_type' first value: wait
+    Field 'start_time' first value: 1746328379486.0
+    Field 'end_time' first value: 1746328504852.0
+    Field 'duration' first value: 125366.0
+    Field 'session_fraction_start' first value: 0.06412037
+    Field 'session_fraction_end' first value: 1.5151157
+    Field 'count' first value: 1
+    Field 'allow_repeats' first value: False
+    Field 'with_interruptions' first value: False
+    Field 'audio_mode' first value: text_only
+    Field 'input_modality' first value: text
+    Field 'completion_status' first value: completed
+    Field 'skipped' first value: False
+    Field 'skip_time' first value: 0.0
+    Field 'skip_event_id' first value: 
+    Field 'task_started_id' first value: task_started_1
+    Field 'task_completed_id' first value: task_completed_1
+    Field 'element_count' first value: 1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/recording
+  Dataset shape: (74,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (74,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: recording_start_1
+    Field 'segment_type' first value: recording
+    Field 'start_time' first value: 1746329783741.0
+    Field 'end_time' first value: 1746329796616.0
+    Field 'duration' first value: 12875.0
+    Field 'containing_element_id' first value: completion_2_completion_499
+    Field 'element_relative_start' first value: 1493.0
+    Field 'start_event_id' first value: recording_start_1
+    Field 'end_event_id' first value: recording_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
+
+Attempting to read: segments/thinking
+  Dataset shape: (44,)
+  Dataset type: [('segment_id', 'O'), ('segment_type', 'O'), ('start_time', '<f8'), ('end_time', '<f8'), ('duration', '<f8'), ('containing_element_id', 'O'), ('element_relative_start', '<f8'), ('start_event_id', 'O'), ('end_event_id', 'O')]
+  Method 1: Direct read with [:]
+    Success, got array of shape (44,)
+  Method 2: Field-by-field read
+    Field 'segment_id' first value: thinking_start_1
+    Field 'segment_type' first value: thinking
+    Field 'start_time' first value: 1746328982792.0
+    Field 'end_time' first value: 1746328985794.0
+    Field 'duration' first value: 3002.0
+    Field 'containing_element_id' first value: wordassociation_1_word_1
+    Field 'element_relative_start' first value: 761.0
+    Field 'start_event_id' first value: thinking_start_1
+    Field 'end_event_id' first value: thinking_stop_1
+  Method 3: Item-by-item read
+    Item 0: <class 'numpy.void'>
+    Item 1: <class 'numpy.void'>
+    Item 2: <class 'numpy.void'>
+    Item 3: <class 'numpy.void'>
+    Item 4: <class 'numpy.void'>
