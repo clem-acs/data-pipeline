@@ -285,7 +285,7 @@ def main():
     for name, transform_class in TRANSFORMS.items():
         transform_parser = subparsers.add_parser(
             name, 
-            help=transform_class.__doc__.split('\n')[0]
+            help=transform_class.__doc__.split(chr(10))[0]
         )
         transform_class.add_arguments(transform_parser)
         transform_class.add_subclass_arguments(transform_parser)
@@ -308,7 +308,7 @@ def main():
     if args.list_transforms:
         print("Available transforms:")
         for name, transform_class in TRANSFORMS.items():
-            print(f"  {name}: {transform_class.__doc__.split('\n')[0]}")
+            print(f"  {name}: {transform_class.__doc__.split(chr(10))[0]}")
         return 0
     
     # If no transform is specified, print help and exit

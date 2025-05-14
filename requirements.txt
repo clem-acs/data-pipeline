@@ -7,3 +7,4 @@ mne==1.4.0
 python-dotenv==1.0.0
 autocorrect>=2.6.0
 transformers
+h5py
