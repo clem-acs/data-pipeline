@@ -1,0 +1,41 @@
+Current script content differs from recorded version (MD5 mismatch)
+Successfully imported LangTransform
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO - Script uploaded to s3://conduit-data-dev/scripts/4A_tiledb_event_v0.py
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO - Transform initialized with:
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Source prefix: processed/event/
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Destination prefix: processed/tiledb/
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Transform ID: t4A_tiledb_v0
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO - TileDB event transform initialized with:
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Compression: zstd (level 7)
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Consolidate fragments: False
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Tile capacity: 10000
+2025-05-15 06:25:48 - pipeline.t4A_tiledb_v0 - INFO -   Using master array: True
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO - Using existing script at s3://conduit-data-dev/scripts/4A_tiledb_event_v0.py
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO - Transform initialized with:
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Source prefix: processed/event/
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Destination prefix: processed/tiledb/
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Transform ID: t4A_tiledb_v0
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO - TileDB event transform initialized with:
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Compression: zstd (level 7)
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Consolidate fragments: False
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Tile capacity: 10000
+2025-05-15 06:25:51 - pipeline.t4A_tiledb_v0 - INFO -   Using master array: True
+Found 0 sessions successfully processed or skipped by t4A_tiledb_v0
+Looking for sessions in s3://conduit-data-dev/processed/event/
+Available sessions matching criteria:
+Session Name                        Type         Start Time           End Time/Info        Duration        Files {'Status':<10}
+--------------------------------------------------------------------------------------------------------------------------
+Mashaba-Rashid_B4_20250512_093252_events Raw[File]    N/A                  (estimated)          0m 4s           1     NEW       
+khuslen_B1_20250505_152841_events   Raw[File]    N/A                  (estimated)          0m 4s           1     NEW       
+Arjun_B3_20250505_130041_events     Raw[File]    N/A                  (estimated)          0m 4s           1     NEW       
+Dean_B3_20250509_165843_events      Raw[File]    N/A                  (estimated)          0m 4s           1     NEW       
+Tamuz_B3_20250506_175629_events     Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+Ryan-McKernan_B3_20250509_111336_events Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+test-garrett_B3_20250512_104310_events Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+Alex-Bauer_B1_20250509_163115_events Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+Kiara-Gutierrez_B1_20250504_091558_events Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+hanxi_B2_20250510_113004_events     Raw[File]    N/A                  (estimated)          0m 3s           1     NEW       
+omar royce herrera_20250503_201253_events Raw[File]    N/A                  (estimated)          0m 2s           1     NEW       
+nia_B1_20250508_130645_events       Raw[File]    N/A                  (estimated)          0m 2s           1     NEW       
+kemea-smith_B2_20250507_133850_events Raw[File]    N/A                  (estimated)          0m 1s           1     NEW       
+jack_B2_20250505_121624_events      Raw[File]    N/A                  (estimated)          0m 1s 

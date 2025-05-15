@@ -1,0 +1,343 @@
+Successfully imported LangTransform
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO - Using existing script at s3://conduit-data-dev/scripts/2C_event_v0.py
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO - Transform initialized with:
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO -   Source prefix: curated-h5/
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO -   Destination prefix: processed/event/
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO -   Transform ID: t2C_event_v0
+2025-05-15 18:59:01 - pipeline.t2C_event_v0 - INFO - Event extraction transform initialized
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO - Using existing script at s3://conduit-data-dev/scripts/2C_event_v0.py
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO - Transform initialized with:
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO -   Source prefix: curated-h5/
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO -   Destination prefix: processed/event/
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO -   Transform ID: t2C_event_v0
+2025-05-15 18:59:03 - pipeline.t2C_event_v0 - INFO - Event extraction transform initialized
+Found 3 sessions successfully processed or skipped by t2C_event_v0
+Looking for sessions in s3://conduit-data-dev/curated-h5/
+Available sessions matching criteria:
+Session Name                        Type         Start Time           End Time/Info        Duration        Files {'Status':<10}
+--------------------------------------------------------------------------------------------------------------------------
+daniel-poskanzer_B1_20250513_150018 Curated[File] N/A                  (estimated)          3h 31m 24s      1     NEW       
+daniel-poskanzer_B3_20250510_152120 Curated[File] N/A                  (estimated)          3h 29m 30s      1     NEW       
+Arjun_B3_20250505_130041            Curated[File] N/A                  (estimated)          3h 18m 34s      1     NEW       
+daniel-poskanzer_B3_20250508_151612 Curated[File] N/A                  (estimated)          3h 17m 21s      1     NEW       
+kemea-smith_B2_20250507_133850      Curated[File] N/A                  (estimated)          3h 15m 36s      1     NEW       
+adam_20250501_084032_1746121208529  Curated[File] N/A                  (estimated)          3h 10m 20s      1     NEW       
+adam_20250501_084032                Curated[File] N/A                  (estimated)          3h 10m 20s      1     NEW       
+Dean_B3_20250509_165843             Curated[File] N/A                  (estimated)          3h 9m 9s        1     NEW       
+Christopher-Summers_B1_20250514_115835 Curated[File] N/A                  (estimated)          3h 2m 32s       1     NEW       
+omar royce herrera_20250503_201253  Curated[File] N/A                  (estimated)          2h 59m 33s      1     NEW       
+Sonia-khan_B2_20250507_160108       Curated[File] N/A                  (estimated)          2h 52m 21s      1     NEW       
+christopher-timm_B4_20250512_164742 Curated[File] N/A                  (estimated)          2h 49m 36s      1     NEW       
+michael-duong_B1_20250509_112636    Curated[File] N/A                  (estimated)          2h 49m 9s       1     NEW       
+test-garrett_B3_20250512_104310     Curated[File] N/A                  (estimated)          2h 48m 49s      1     NEW       
+Arjun_B1_20250513_110818            Curated[File] N/A                  (estimated)          2h 47m 35s      1     NEW       
+Ryan-McKernan_B3_20250509_111336    Curated[File] N/A                  (estimated)          2h 46m 9s       1     NEW       
+khuslen_20250503_174929             Curated[File] N/A                  (estimated)          2h 42m 13s      1     NEW       
+guilllermo-surraco_B3_20250508_113604 Curated[File] N/A                  (estimated)          2h 40m 31s      1     NEW       
+jack_B2_20250505_121624             Curated[File] N/A                  (estimated)          2h 38m 49s      1     NEW       
+sonia-khan_B3_20250513_162902       Curated[File] N/A                  (estimated)          2h 38m 4s       1     NEW       
+Kiara-Gutierrez_B1_20250504_091558  Curated[File] N/A                  (estimated)          2h 35m 43s      1     NEW       
+victor-agbe_B4_20250512_120920      Curated[File] N/A                  (estimated)          2h 34m 46s      1     NEW       
+Kiara-Gutierrez_B3_20250507_190325  Curated[File] N/A                  (estimated)          2h 32m 19s      1     NEW       
+nia_B1_20250508_130645              Curated[File] N/A                  (estimated)          2h 31m 9s       1     NEW       
+daniel_B4_20250509_151603           Curated[File] N/A                  (estimated)          2h 30m 42s      1     NEW       
+Angel-Rodriguez_B3_20250513_133001  Curated[File] N/A                  (estimated)          2h 30m 37s      1     NEW       
+Imran-Khan_B1_20250505_120913       Curated[File] N/A                  (estimated)          2h 30m 8s       1     NEW       
+mohit_B1_20250512_101408            Curated[File] N/A                  (estimated)          2h 29m 58s      1     NEW       
+khuslen_B1_20250504_144727          Curated[File] N/A                  (estimated)          2h 25m 19s      1     NEW       
+Mashaba-Rashid_B4_20250512_093252   Curated[File] N/A                  (estimated)          2h 22m 9s       1     NEW       
+steve-h_B3_20250512_081450          Curated[File] N/A                  (estimated)          2h 18m 2s       1     NEW       
+khuslen_B1_20250504_172814          Curated[File] N/A                  (estimated)          2h 16m 47s      1     NEW       
+sonia-khan_B3_20250504_141935       Curated[File] N/A                  (estimated)          2h 10m 50s      1     NEW       
+victor-agbe_B3_20250514_121247      Curated[File] N/A                  (estimated)          2h 9m 11s       1     NEW       
+sonia-khan_B1_20250509_191315       Curated[File] N/A                  (estimated)          2h 8m 45s       1     NEW       
+Angel-Rodriguez_B2_20250514_141414  Curated[File] N/A                  (estimated)          2h 5m 31s       1     NEW       
+Cora_20250430_154235                Curated[File] N/A                  (estimated)          2h 4m 34s       1     NEW       
+Kiana-Lee_B3_20250514_062805        Curated[File] N/A                  (estimated)          2h 3m 26s       1     NEW       
+alex_20250430_134401                Curated[File] N/A                  (estimated)          2h 3m 6s        1     NEW       
+daniel_20250503_154037              Curated[File] N/A                  (estimated)          2h 1m 50s       1     NEW       
+hanxi_B2_20250510_113004            Curated[File] N/A                  (estimated)          2h 0m 36s       1     NEW       
+samuel_20250425_141746              Curated[File] N/A                  (estimated)          2h 0m 7s        1     NEW       
+Angel-Rodriguez_B3_20250511_143350  Curated[File] N/A                  (estimated)          2h 0m 5s        1     NEW       
+daniel_20250503_162508              Curated[File] N/A                  (estimated)          1h 59m 15s      1     NEW       
+Gordon-Cooke_B3_20250507_135916     Curated[File] N/A                  (estimated)          1h 57m 59s      1     NEW       
+Arjun_B4_20250508_161324            Curated[File] N/A                  (estimated)          1h 54m 52s      1     NEW       
+alex_20250501_123523                Curated[File] N/A                  (estimated)          1h 53m 42s      1     NEW       
+Kiara-Gutierrez_B2_20250508_194523  Curated[File] N/A                  (estimated)          1h 52m 59s      1     NEW       
+Ephraim-Riday_B4_20250514_152210    Curated[File] N/A                  (estimated)          1h 49m 35s      1     NEW       
+Xyra Sinclair_20250425_103359       Curated[File] N/A                  (estimated)          1h 44m 36s      1     NEW       
+Hillary_20250429_163245             Curated[File] N/A                  (estimated)          1h 42m 23s      1     NEW       
+alex_B2_20250508_150931             Curated[File] N/A                  (estimated)          1h 41m 39s      1     NEW       
+parker-gilkeson_B4_20250514_182255  Curated[File] N/A                  (estimated)          1h 41m 23s      1     NEW       
+steve-humer_B1_20250506_122652      Curated[File] N/A                  (estimated)          1h 39m 38s      1     NEW       
+sonia-khan_B2_20250505_163103       Curated[File] N/A                  (estimated)          1h 38m 45s      1     NEW       
+kemea smith_20250430_182901         Curated[File] N/A                  (estimated)          1h 34m 39s      1     NEW       
+Luke-Wagner_B3_20250504_075455      Curated[File] N/A                  (estimated)          1h 32m 14s      1     NEW       
+steven_B3_20250514_085820           Curated[File] N/A                  (estimated)          1h 31m 41s      1     NEW       
+Mashaba-Rashid_B2_20250513_093839   Curated[File] N/A                  (estimated)          1h 30m 37s      1     NEW       
+jaime-hernandez_B2_20250512_085318  Curated[File] N/A                  (estimated)          1h 30m 22s      1     NEW       
+sam_B3_20250504_093933              Curated[File] N/A                  (estimated)          1h 29m 34s      1     NEW       
+khuslen _20250501_153733            Curated[File] N/A                  (estimated)          1h 28m 40s      1     NEW       
+joseph_B1_20250507_125627           Curated[File] N/A                  (estimated)          1h 27m 21s      1     NEW       
+Samuel-Ogbe_B2_20250513_194226      Curated[File] N/A                  (estimated)          1h 26m 50s      1     NEW       
+Tigran Karakhanyan_20250430_100358  Curated[File] N/A                  (estimated)          1h 23m 54s      1     NEW       
+Dony Christie_20250423_182813       Curated[File] N/A                  (estimated)          1h 20m 21s      1     NEW       
+Marcia_20250424_165301              Curated[File] N/A                  (estimated)          1h 19m 41s      1     NEW       
+alton_B2_20250509_165722            Curated[File] N/A                  (estimated)          1h 17m 28s      1     NEW       
+tk_B3_20250505_155358               Curated[File] N/A                  (estimated)          1h 16m 47s      1     NEW       
+Paul_B2_20250505_143211             Curated[File] N/A                  (estimated)          1h 16m 25s      1     NEW       
+sam_B3_20250504_085920              Curated[File] N/A                  (estimated)          1h 15m 13s      1     NEW       
+Holmes_20250501_140641              Curated[File] N/A                  (estimated)          1h 14m 55s      1     NEW       
+Sarah_20250426_111157               Curated[File] N/A                  (estimated)          1h 12m 56s      1     NEW       
+juan_B2_20250509_132035             Curated[File] N/A                  (estimated)          1h 11m 47s      1     NEW       
+niki_dupuis_20250503_152625         Curated[File] N/A                  (estimated)          1h 9m 52s       1     NEW       
+alejandro_2_20250503_135744         Curated[File] N/A                  (estimated)          1h 8m 56s       1     NEW       
+vandy_B2_20250504_092212            Curated[File] N/A                  (estimated)          1h 6m 24s       1     NEW       
+Juan-C-Hernandez-again_B1_20250508_190041 Curated[File] N/A                  (estimated)          1h 6m 3s        1     NEW       
+Jenny Peterson_20250430_175505      Curated[File] N/A                  (estimated)          1h 5m 45s       1     NEW       
+Maria Gabriela_20250426_121453      Curated[File] N/A                  (estimated)          1h 4m 33s       1     NEW       
+Michael-Suswal_B3_20250511_104110   Curated[File] N/A                  (estimated)          1h 2m 5s        1     NEW       
+crstian valencia_20250502_104036    Curated[File] N/A                  (estimated)          59m 29s         1     NEW       
+vanessa-cardillo_B2_20250514_113315 Curated[File] N/A                  (estimated)          58m 13s         1     NEW       
+lorna probasco_20250430_101945      Curated[File] N/A                  (estimated)          56m 11s         1     NEW       
+Marcia_20250424_152441              Curated[File] N/A                  (estimated)          55m 2s          1     NEW       
+tk_B3_20250505_170027               Curated[File] N/A                  (estimated)          52m 31s         1     NEW       
+Paulina_20250426_201604             Curated[File] N/A                  (estimated)          52m 28s         1     NEW       
+Samuel-Ogbe_B1_20250513_185028      Curated[File] N/A                  (estimated)          48m 1s          1     NEW       
+Lydia Nottingham_20250430_171352    Curated[File] N/A                  (estimated)          46m 34s         1     NEW       
+mahnani Clay 2_20250430_200358      Curated[File] N/A                  (estimated)          44m 4s          1     NEW       
+ke deng_20250430_004022_1745974478339 Curated[File] N/A                  (estimated)          41m 30s         1     NEW       
+ke deng_20250430_004022_1745974204387 Curated[File] N/A                  (estimated)          41m 30s         1     NEW       
+ke deng_20250430_004022             Curated[File] N/A                  (estimated)          41m 30s         1     NEW       
+shane_B3_20250511_203109            Curated[File] N/A                  (estimated)          39m 58s         1     NEW       
+Sarah-Kodama_B2_20250504_105734     Curated[File] N/A                  (estimated)          39m 17s         1     NEW       
+alex-yee_B2_20250511_122718         Curated[File] N/A                  (estimated)          38m 14s         1     NEW       
+dustyn_B1_20250505_144005           Curated[File] N/A                  (estimated)          36m 39s         1     NEW       
+joseph-flores_B3_20250512_134242    Curated[File] N/A                  (estimated)          32m 15s         1     NEW       
+guilllermo-surraco_B3_20250508_110923 Curated[File] N/A                  (estimated)          32m 2s          1     NEW       
+Hunter-Glenn_B2_20250513_172129     Curated[File] N/A                  (estimated)          30m 7s          1     NEW       
+Mahnani Clay_20250430_192507        Curated[File] N/A                  (estimated)          29m 1s          1     NEW       
+dhanasekar_20250425_201455          Curated[File] N/A                  (estimated)          28m 22s         1     NEW       
+Kenneth_B2_20250506_152031          Curated[File] N/A                  (estimated)          25m 51s         1     NEW       
+Juan-C-Hernandez_B1_20250508_181837 Curated[File] N/A                  (estimated)          25m 49s         1     NEW       
+Pranav_B1_20250506_135703           Curated[File] N/A                  (estimated)          25m 49s         1     NEW       
+cristian_20250502_111631            Curated[File] N/A                  (estimated)          25m 8s          1     NEW       
+lydia_test_3_20250428_032351_1745809344707 Curated[File] N/A                  (estimated)          25m 2s          1     NEW       
+lydia_test_3_20250428_032351        Curated[File] N/A                  (estimated)          25m 2s          1     NEW       
+Kathleen-Fumo_B1_20250507_111322    Curated[File] N/A                  (estimated)          24m 37s         1     NEW       
+Kenneth_B3_20250506_134819          Curated[File] N/A                  (estimated)          24m 30s         1     NEW       
+Nina Ahuja_20250427_201510          Curated[File] N/A                  (estimated)          21m 45s         1     NEW       
+test_headset_stand_20250502_212916  Curated[File] N/A                  (estimated)          19m 2s          1     NEW       
+dagsen_20250501_155052              Curated[File] N/A                  (estimated)          18m 33s         1     NEW       
+lydia_test_2_20250428_023444        Curated[File] N/A                  (estimated)          18m 29s         1     NEW       
+Jenny Peterson 2_20250430_190618    Curated[File] N/A                  (estimated)          15m 0s          1     NEW       
+lydia_10m_20250423_161755           Curated[File] N/A                  (estimated)          11m 33s         1     NEW       
+clem_20250426_112519                Curated[File] N/A                  (estimated)          9m 29s          1     NEW       
+victor-agbe_B2_20250513_140439      Curated[File] N/A                  (estimated)          9m 15s          1     NEW       
+devesh_20250426_043948              Curated[File] N/A                  (estimated)          8m 56s          1     NEW       
+spencer_20250502_150612             Curated[File] N/A                  (estimated)          8m 19s          1     NEW       
+sheldon flick_20250430_011418       Curated[File] N/A                  (estimated)          7m 57s          1     NEW       
+lorna probasco_20250430_101207      Curated[File] N/A                  (estimated)          4m 41s          1     NEW       
+lydia_questions_test_20250428_022634 Curated[File] N/A                  (estimated)          3m 50s          1     NEW       
+obaid_20250428_185415               Curated[File] N/A                  (estimated)          3m 24s          1     NEW       
+audiof_B1_20250512_195124           Curated[File] N/A                  (estimated)          0m 46s          1     NEW       
+adam_20250501_084032_1746114034229  Curated[File] N/A                  (estimated)          0m 0s           1     NEW       
+
+Total sessions: 126
+
+
+
+Multiple sessions found. Options:
+  1: daniel-poskanzer_B1_20250513_150018 (3h 31m 24s)
+  2: daniel-poskanzer_B3_20250510_152120 (3h 29m 30s)
+  3: Arjun_B3_20250505_130041 (3h 18m 34s)
+  4: daniel-poskanzer_B3_20250508_151612 (3h 17m 21s)
+  5: kemea-smith_B2_20250507_133850 (3h 15m 36s)
+  6: adam_20250501_084032_1746121208529 (3h 10m 20s)
+  7: adam_20250501_084032 (3h 10m 20s)
+  8: Dean_B3_20250509_165843 (3h 9m 9s)
+  9: Christopher-Summers_B1_20250514_115835 (3h 2m 32s)
+  10: omar royce herrera_20250503_201253 (2h 59m 33s)
+  11: Sonia-khan_B2_20250507_160108 (2h 52m 21s)
+  12: christopher-timm_B4_20250512_164742 (2h 49m 36s)
+  13: michael-duong_B1_20250509_112636 (2h 49m 9s)
+  14: test-garrett_B3_20250512_104310 (2h 48m 49s)
+  15: Arjun_B1_20250513_110818 (2h 47m 35s)
+  16: Ryan-McKernan_B3_20250509_111336 (2h 46m 9s)
+  17: khuslen_20250503_174929 (2h 42m 13s)
+  18: guilllermo-surraco_B3_20250508_113604 (2h 40m 31s)
+  19: jack_B2_20250505_121624 (2h 38m 49s)
+  20: sonia-khan_B3_20250513_162902 (2h 38m 4s)
+  21: Kiara-Gutierrez_B1_20250504_091558 (2h 35m 43s)
+  22: victor-agbe_B4_20250512_120920 (2h 34m 46s)
+  23: Kiara-Gutierrez_B3_20250507_190325 (2h 32m 19s)
+  24: nia_B1_20250508_130645 (2h 31m 9s)
+  25: daniel_B4_20250509_151603 (2h 30m 42s)
+  26: Angel-Rodriguez_B3_20250513_133001 (2h 30m 37s)
+  27: Imran-Khan_B1_20250505_120913 (2h 30m 8s)
+  28: mohit_B1_20250512_101408 (2h 29m 58s)
+  29: khuslen_B1_20250504_144727 (2h 25m 19s)
+  30: Mashaba-Rashid_B4_20250512_093252 (2h 22m 9s)
+  31: steve-h_B3_20250512_081450 (2h 18m 2s)
+  32: khuslen_B1_20250504_172814 (2h 16m 47s)
+  33: sonia-khan_B3_20250504_141935 (2h 10m 50s)
+  34: victor-agbe_B3_20250514_121247 (2h 9m 11s)
+  35: sonia-khan_B1_20250509_191315 (2h 8m 45s)
+  36: Angel-Rodriguez_B2_20250514_141414 (2h 5m 31s)
+  37: Cora_20250430_154235 (2h 4m 34s)
+  38: Kiana-Lee_B3_20250514_062805 (2h 3m 26s)
+  39: alex_20250430_134401 (2h 3m 6s)
+  40: daniel_20250503_154037 (2h 1m 50s)
+  41: hanxi_B2_20250510_113004 (2h 0m 36s)
+  42: samuel_20250425_141746 (2h 0m 7s)
+  43: Angel-Rodriguez_B3_20250511_143350 (2h 0m 5s)
+  44: daniel_20250503_162508 (1h 59m 15s)
+  45: Gordon-Cooke_B3_20250507_135916 (1h 57m 59s)
+  46: Arjun_B4_20250508_161324 (1h 54m 52s)
+  47: alex_20250501_123523 (1h 53m 42s)
+  48: Kiara-Gutierrez_B2_20250508_194523 (1h 52m 59s)
+  49: Ephraim-Riday_B4_20250514_152210 (1h 49m 35s)
+  50: Xyra Sinclair_20250425_103359 (1h 44m 36s)
+  51: Hillary_20250429_163245 (1h 42m 23s)
+  52: alex_B2_20250508_150931 (1h 41m 39s)
+  53: parker-gilkeson_B4_20250514_182255 (1h 41m 23s)
+  54: steve-humer_B1_20250506_122652 (1h 39m 38s)
+  55: sonia-khan_B2_20250505_163103 (1h 38m 45s)
+  56: kemea smith_20250430_182901 (1h 34m 39s)
+  57: Luke-Wagner_B3_20250504_075455 (1h 32m 14s)
+  58: steven_B3_20250514_085820 (1h 31m 41s)
+  59: Mashaba-Rashid_B2_20250513_093839 (1h 30m 37s)
+  60: jaime-hernandez_B2_20250512_085318 (1h 30m 22s)
+  61: sam_B3_20250504_093933 (1h 29m 34s)
+  62: khuslen _20250501_153733 (1h 28m 40s)
+  63: joseph_B1_20250507_125627 (1h 27m 21s)
+  64: Samuel-Ogbe_B2_20250513_194226 (1h 26m 50s)
+  65: Tigran Karakhanyan_20250430_100358 (1h 23m 54s)
+  66: Dony Christie_20250423_182813 (1h 20m 21s)
+  67: Marcia_20250424_165301 (1h 19m 41s)
+  68: alton_B2_20250509_165722 (1h 17m 28s)
+  69: tk_B3_20250505_155358 (1h 16m 47s)
+  70: Paul_B2_20250505_143211 (1h 16m 25s)
+  71: sam_B3_20250504_085920 (1h 15m 13s)
+  72: Holmes_20250501_140641 (1h 14m 55s)
+  73: Sarah_20250426_111157 (1h 12m 56s)
+  74: juan_B2_20250509_132035 (1h 11m 47s)
+  75: niki_dupuis_20250503_152625 (1h 9m 52s)
+  76: alejandro_2_20250503_135744 (1h 8m 56s)
+  77: vandy_B2_20250504_092212 (1h 6m 24s)
+  78: Juan-C-Hernandez-again_B1_20250508_190041 (1h 6m 3s)
+  79: Jenny Peterson_20250430_175505 (1h 5m 45s)
+  80: Maria Gabriela_20250426_121453 (1h 4m 33s)
+  81: Michael-Suswal_B3_20250511_104110 (1h 2m 5s)
+  82: crstian valencia_20250502_104036 (59m 29s)
+  83: vanessa-cardillo_B2_20250514_113315 (58m 13s)
+  84: lorna probasco_20250430_101945 (56m 11s)
+  85: Marcia_20250424_152441 (55m 2s)
+  86: tk_B3_20250505_170027 (52m 31s)
+  87: Paulina_20250426_201604 (52m 28s)
+  88: Samuel-Ogbe_B1_20250513_185028 (48m 1s)
+  89: Lydia Nottingham_20250430_171352 (46m 34s)
+  90: mahnani Clay 2_20250430_200358 (44m 4s)
+  91: ke deng_20250430_004022_1745974478339 (41m 30s)
+  92: ke deng_20250430_004022_1745974204387 (41m 30s)
+  93: ke deng_20250430_004022 (41m 30s)
+  94: shane_B3_20250511_203109 (39m 58s)
+  95: Sarah-Kodama_B2_20250504_105734 (39m 17s)
+  96: alex-yee_B2_20250511_122718 (38m 14s)
+  97: dustyn_B1_20250505_144005 (36m 39s)
+  98: joseph-flores_B3_20250512_134242 (32m 15s)
+  99: guilllermo-surraco_B3_20250508_110923 (32m 2s)
+  100: Hunter-Glenn_B2_20250513_172129 (30m 7s)
+  101: Mahnani Clay_20250430_192507 (29m 1s)
+  102: dhanasekar_20250425_201455 (28m 22s)
+  103: Kenneth_B2_20250506_152031 (25m 51s)
+  104: Juan-C-Hernandez_B1_20250508_181837 (25m 49s)
+  105: Pranav_B1_20250506_135703 (25m 49s)
+  106: cristian_20250502_111631 (25m 8s)
+  107: lydia_test_3_20250428_032351_1745809344707 (25m 2s)
+  108: lydia_test_3_20250428_032351 (25m 2s)
+  109: Kathleen-Fumo_B1_20250507_111322 (24m 37s)
+  110: Kenneth_B3_20250506_134819 (24m 30s)
+  111: Nina Ahuja_20250427_201510 (21m 45s)
+  112: test_headset_stand_20250502_212916 (19m 2s)
+  113: dagsen_20250501_155052 (18m 33s)
+  114: lydia_test_2_20250428_023444 (18m 29s)
+  115: Jenny Peterson 2_20250430_190618 (15m 0s)
+  116: lydia_10m_20250423_161755 (11m 33s)
+  117: clem_20250426_112519 (9m 29s)
+  118: victor-agbe_B2_20250513_140439 (9m 15s)
+  119: devesh_20250426_043948 (8m 56s)
+  120: spencer_20250502_150612 (8m 19s)
+  121: sheldon flick_20250430_011418 (7m 57s)
+  122: lorna probasco_20250430_101207 (4m 41s)
+  123: lydia_questions_test_20250428_022634 (3m 50s)
+  124: obaid_20250428_185415 (3m 24s)
+  125: audiof_B1_20250512_195124 (0m 46s)
+  126: adam_20250501_084032_1746114034229 (0m 0s)
+  all: Process all sessions in the list
+  quit: Exit without processing
+
+Enter choice (number, 'all', or 'quit'): 
+Selected session: lydia_10m_20250423_161755
+Processing 1 session IDs: ['lydia_10m_20250423_161755']
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - Processing all 1 items including previously processed ones
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - Processing all 1 items at once
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - Processing batch of 1 items (indices 0-0)
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - Processing item 1/1: lydia_10m_20250423_161755
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - BaseTransform.process_item: keep_local before processing = False
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - BaseTransform.process_item: dry_run before processing = False
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - About to call process_session with keep_local = False
+2025-05-15 19:03:45 - pipeline.t2C_event_v0 - INFO - Processing events for session lydia_10m_20250423_161755
+2025-05-15 19:03:49 - pipeline.t2C_event_v0 - INFO - Found H5 file: curated-h5/lydia_10m_20250423_161755.h5
+2025-05-15 19:04:03 - pipeline.t2C_event_v0 - INFO - Extracting events for lydia_10m_20250423_161755
+DEBUG-TS-EXTRACT: Event type display has timestamps shape (194, 2)
+DEBUG-TS-EXTRACT: First timestamp array: [1.74545029e+12 1.74545029e+12]
+DEBUG-TS-EXTRACT: Using index 0 as client timestamp: 1745450287224.0
+DEBUG-TS-EXTRACT: Using index 1 as server timestamp: 1745450287202.0
+DEBUG-TS-EXTRACT: Event type element_replied has timestamps shape (25, 2)
+DEBUG-TS-EXTRACT: First timestamp array: [1.74545061e+12 1.74545060e+12]
+DEBUG-TS-EXTRACT: Using index 0 as client timestamp: 1745450606288.0
+DEBUG-TS-EXTRACT: Using index 1 as server timestamp: 1745450597812.0
+DEBUG-TS-EXTRACT: Event type element_sent has timestamps shape (24, 2)
+DEBUG-TS-EXTRACT: First timestamp array: [1.74545028e+12 1.74545028e+12]
+DEBUG-TS-EXTRACT: Using index 0 as client timestamp: 1745450283539.0
+DEBUG-TS-EXTRACT: Using index 1 as server timestamp: 1745450283522.0
+DEBUG-TS-EXTRACT: Event type task_completed has timestamps shape (5, 2)
+DEBUG-TS-EXTRACT: First timestamp array: [1.74545061e+12 1.74545061e+12]
+DEBUG-TS-EXTRACT: Using index 0 as client timestamp: 1745450606297.0
+DEBUG-TS-EXTRACT: Using index 1 as server timestamp: 1745450606297.0
+DEBUG-TS-EXTRACT: Event type task_started has timestamps shape (5, 2)
+DEBUG-TS-EXTRACT: First timestamp array: [1.74545028e+12 1.74545028e+12]
+DEBUG-TS-EXTRACT: Using index 0 as client timestamp: 1745450281361.0
+DEBUG-TS-EXTRACT: Using index 1 as server timestamp: 1745450281361.0
+DEBUG-TS-ELEMENT-CREATE: Creating element 'wait_1_intro'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_intro'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_close_2'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_open_2'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_close_4'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_open_4'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_close_6'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'eye_1_open_6'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_intro'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_normal_1'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_hold_2'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_normal_3'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_hold_4'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_normal_5'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_hold_6'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'breath_1_normal_7'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_intro'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_sound_2'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_quiet_2'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_sound_4'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_quiet_4'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_sound_6'
+DEBUG-TS-ELEMENT-CREATE: Creating element 'listen_1_quiet_6'
+DEBUG-SUMMARY: All task_ids in dictionary: ['wait_1', 'eye_1', 'breath_1', 'listen_1', 'word_1']
+DEBUG-SUMMARY: Total tasks: 5, Total elements: 23
+2025-05-15 19:04:03 - pipeline.t2C_event_v0 - INFO - Successfully processed events for lydia_10m_20250423_161755
+2025-05-15 19:04:03 - pipeline.t2C_event_v0 - INFO - After process_session call, keep_local = False
+2025-05-15 19:04:03 - pipeline.t2C_event_v0 - INFO - Uploading file C:\Users\riopo\data-pipeline\transform_workdir\t2C_event_v0_20250515_190345_lydia_10m_20250423_161755\lydia_10m_20250423_161755_events.h5 to s3://conduit-data-dev/processed/event/lydia_10m_20250423_161755_events.h5
+2025-05-15 19:04:05 - pipeline.t2C_event_v0 - INFO - keep_local before cleanup decision: False
+2025-05-15 19:04:05 - pipeline.t2C_event_v0 - INFO - Cleaning up temp files since keep_local = False
+2025-05-15 19:04:05 - pipeline.t2C_event_v0 - INFO - Batch statistics: {'processed': 1, 'success': 1, 'failed': 0, 'skipped': 0}

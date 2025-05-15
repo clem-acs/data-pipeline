@@ -49,8 +49,4 @@ Your task
 
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
-I want a script like t2e
-that time
-
-
-
+Note that t2C is not properly set as a transform in cli.py and maybe elsewhere? look in cli.py, t2C, and the other transforms + base transform class. what is t2C doing incorrectly that will stop it from working? how can i fix it? comb through and report back, but don't make any changes yet. think hard ultrathink

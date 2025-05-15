@@ -14,6 +14,7 @@ try:
     # When running as an installed package
     from .transforms.t0A_curate_v0 import CurateTransform
     from .transforms.t2A_window_v0 import WindowTransform
+    from .transforms.t2C_event_v0 import EventTransform
     from .transforms.t2D_validate_v0 import ValidateTransform
     from .transforms.t2E_analysis_v0 import AnalysisTransform
     from .utils.session_utils import (
@@ -25,6 +26,7 @@ except ImportError:
     # When running as a script
     from transforms.t0A_curate_v0 import CurateTransform
     from transforms.t2A_window_v0 import WindowTransform
+    from transforms.t2C_event_v0 import EventTransform
     from transforms.t2D_validate_v0 import ValidateTransform
     from transforms.t2E_analysis_v0 import AnalysisTransform
     from transforms.t2F_audio_v0 import AudioExtractTransform
@@ -55,6 +57,7 @@ TRANSFORMS = {
     'validate': ValidateTransform,
     'analyze': AnalysisTransform,
     'audio': AudioExtractTransform,
+    'event': EventTransform,
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
     # 'extract': FeatureExtractionTransform,
