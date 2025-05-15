@@ -18,6 +18,7 @@ import json
 import time
 import h5py
 import numpy as np
+import xarray as xr
 from typing import Dict, Any, List, Optional
 
 # Import base transform
@@ -216,11 +217,11 @@ class WindowTransform(BaseTransform):
             # 5. Normalize data using the normalize_window_dataset function
             retained_fnirs_indices = None
             normalization_success = False
-            
+
             if isinstance(summary_meta, dict) and 'retained_fnirs_indices' in summary_meta:
                 retained_fnirs_indices = summary_meta.get('retained_fnirs_indices')
                 self.logger.info(f"Found retained_fnirs_indices in summary_meta with {len(retained_fnirs_indices) if retained_fnirs_indices else 0} indices")
-            
+
             if dataset_instance is not None:
                 self.logger.info("Normalizing window dataset...")
                 # No exception handling - let errors propagate up to fail the transform
@@ -233,31 +234,101 @@ class WindowTransform(BaseTransform):
 
             num_dataset_windows = len(dataset_instance) if dataset_instance is not None else 0
 
-            # 6. Create output file
-            output_filename = f"{session_id}_windowed.h5"
-            local_output_path = session.create_upload_file(output_filename)
+            # 6. & 7. Create and save xarray dataset directly to S3
+            zarr_key = f"{self.destination_prefix}{session_id}_windowed.zarr"
+            
+            if dataset_instance is not None:
+                self.logger.info(f"Creating xarray dataset and saving directly to S3")
+                
+                # Create data arrays
+                n_windows = len(dataset_instance)
+                timestamps = np.zeros(n_windows, dtype=np.float64)
+                eeg_valid = np.zeros(n_windows, dtype=bool)
+                fnirs_valid = np.zeros(n_windows, dtype=bool)
+                real_eeg_ts = np.zeros(n_windows, dtype=np.float64)
+                real_fnirs_ts = np.zeros(n_windows, dtype=np.float64)
+                original_array_idx = np.zeros(n_windows, dtype=np.int32)
+                dataset_idx = np.zeros(n_windows, dtype=np.int32)
+                
+                # Get shapes
+                first_window = dataset_instance[0]
+                eeg_shape = first_window['eeg'].shape
+                fnirs_shape = first_window['fnirs'].shape
+                
+                # Initialize data arrays
+                eeg_data = np.zeros((n_windows, *eeg_shape), dtype=np.float32)
+                fnirs_data = np.zeros((n_windows, *fnirs_shape), dtype=np.float32)
+                
+                # Fill arrays
+                for i in range(n_windows):
+                    window = dataset_instance[i]
+                    metadata = window['metadata']
+                    
+                    timestamps[i] = metadata['main_clock_ts']
+                    eeg_data[i] = window['eeg']
+                    fnirs_data[i] = window['fnirs']
+                    
+                    eeg_valid[i] = metadata['eeg_valid']
+                    fnirs_valid[i] = metadata['fnirs_valid']
+                    real_eeg_ts[i] = metadata['real_eeg_start_ts']
+                    real_fnirs_ts[i] = metadata['real_fnirs_start_ts']
+                    original_array_idx[i] = metadata['original_array_idx']
+                    dataset_idx[i] = metadata['dataset_idx']
+                
+                # Extract master indices
+                master_eeg_start = getattr(dataset_instance, 'master_eeg_start_idx', -1)
+                master_fnirs_start = getattr(dataset_instance, 'master_fnirs_start_idx', -1)
+                master_eeg_end = getattr(dataset_instance, 'master_eeg_end_idx', -1)
+                master_fnirs_end = getattr(dataset_instance, 'master_fnirs_end_idx', -1)
+                slice_start = getattr(dataset_instance, 'slice_start', -1)
+                slice_end = getattr(dataset_instance, 'slice_end', -1)
 
-            # 7. Save windows to output file
-            with h5py.File(local_output_path, 'w') as f:
-                f.attrs['source_file'] = h5_key
-                f.attrs['processing_script_version'] = self.script_version
-                f.attrs['original_window_size_ms'] = metadata.get("window_size_ms", 210)
-                f.attrs['num_dataset_windows'] = num_dataset_windows
-                f.attrs['normalization_applied'] = normalization_success
-                f.attrs['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                # Squeeze the singleton dimension from fnirs_data if present
+                fnirs_data = np.squeeze(fnirs_data, axis=-1)
 
-                if summary_meta:
-                    for key, value in summary_meta.items():
-                        if isinstance(value, (int, float, str, bool)) or value is None:
-                            try: f.attrs[key] = value if value is not None else "None"
-                            except TypeError:
-                                try: f.attrs[key] = value.item() if hasattr(value, 'item') else str(value)
-                                except Exception as te_conv: self.logger.error(f"Failed to save summary_meta attr '{key}' (type {type(value)}) after conversion: {te_conv}")
-                            except Exception as h5_attr_ex: self.logger.error(f"Failed to save summary_meta attr \'{key}\' to HDF5: {h5_attr_ex}")
-                        elif isinstance(value, tuple): # Simpler check for tuples
-                            try: f.attrs[key] = str(value)
-                            except Exception as h5_attr_ex: self.logger.error(f"Failed to save summary_meta tuple attr '{key}' to HDF5: {h5_attr_ex}")
-                        else: self.logger.warning(f"Skipping HDF5 attr for summary_meta key '{key}', unhandled type: {type(value)}")
+                # Create xarray Dataset with proper dimensions
+                eeg_dims = ['time', 'eeg_channel', 'eeg_sample']
+                fnirs_dims = ['time', 'fnirs_channel']
+                
+                ds = xr.Dataset(
+                    data_vars={
+                        'eeg': (eeg_dims, eeg_data),
+                        'fnirs': (fnirs_dims, fnirs_data),
+                        'eeg_valid': (['time'], eeg_valid),
+                        'fnirs_valid': (['time'], fnirs_valid),
+                        'real_eeg_ts': (['time'], real_eeg_ts),
+                        'real_fnirs_ts': (['time'], real_fnirs_ts),
+                        'original_array_idx': (['time'], original_array_idx),
+                        'dataset_idx': (['time'], dataset_idx),
+                    },
+                    coords={
+                        'time': timestamps,
+                    },
+                    attrs={
+                        'master_eeg_start_idx': master_eeg_start,
+                        'master_fnirs_start_idx': master_fnirs_start,
+                        'master_eeg_end_idx': master_eeg_end,
+                        'master_fnirs_end_idx': master_fnirs_end,
+                        'slice_start': slice_start,
+                        'slice_end': slice_end
+                    }
+                )
+                
+                # Set chunking (100 windows per chunk)
+                chunks = {'time': min(100, n_windows)}
+                
+                # Apply chunking (will be used by save_dataset_to_s3_zarr)
+                ds = ds.chunk(chunks)
+
+                # Save directly to S3
+                self.save_dataset_to_s3_zarr(ds, zarr_key)
+                self.logger.info(f"Successfully saved dataset directly to S3")
+                
+                # Add zarr store to results for proper handling
+                zarr_stores = [zarr_key]
+            else:
+                self.logger.warning("No dataset to save to Zarr")
+                zarr_stores = []
 
             # 8. Create result metadata for DynamoDB
             result_metadata = {
@@ -269,6 +340,7 @@ class WindowTransform(BaseTransform):
                 "has_eeg_processed": current_has_eeg, # Reflects data presence post-preprocessing
                 "has_fnirs_processed": current_has_fnirs, # Reflects data presence post-preprocessing
                 "normalization_applied": normalization_success,
+                "storage_format": "zarr_xarray",
                 "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()), # Use gmtime for UTC
             }
             # Add relevant details from summary_meta if it exists and is a dict
@@ -290,12 +362,12 @@ class WindowTransform(BaseTransform):
                             value_to_store = str(value_to_store) # Convert complex types to string
                         result_metadata[dynamo_key] = value_to_store
 
-            dest_key = f"{self.destination_prefix}{output_filename}"
             return {
                 "status": "success",
                 "metadata": result_metadata,
                 "files_to_copy": [],
-                "files_to_upload": [(local_output_path, dest_key)]
+                "files_to_upload": [],
+                "zarr_stores": zarr_stores
             }
 
         except Exception as e:
@@ -308,7 +380,8 @@ class WindowTransform(BaseTransform):
                 "error_details": str(e),
                 "metadata": error_metadata,
                 "files_to_copy": [],
-                "files_to_upload": []
+                "files_to_upload": [],
+                "zarr_stores": []
             }
 
     def extract_data_from_h5(self, h5_file):
