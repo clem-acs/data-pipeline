@@ -225,13 +225,37 @@ class AnalysisTransform(BaseTransform):
                     rearranged = np.transpose(frames_data, (1, 0, 2))
                     eeg_data = rearranged.reshape(n_channels, -1)
                     
-                    # Limit analysis to first 20 channels
-                    channels_to_analyze = min(20, n_channels)
+                    # Get the configured channel count from channels_json attribute if available
+                    n_configured_channels = None
+                    try:
+                        if 'channels_json' in f['devices/eeg'].attrs:
+                            channels_json = f['devices/eeg'].attrs['channels_json']
+                            if isinstance(channels_json, str):
+                                # Parse the JSON string to get the list of channel names
+                                import json
+                                channel_names = json.loads(channels_json)
+                                n_configured_channels = len(channel_names)
+                                self.logger.info(f"Found {n_configured_channels} configured EEG channels from channels_json")
+                    except Exception as e:
+                        self.logger.error(f"ERROR READING CHANNELS_JSON ATTRIBUTE: {e}")
+                        self.logger.error(f"This could affect analysis accuracy")
+                    
+                    # Use configured channel count if available, otherwise default to 21 channels
+                    if n_configured_channels is not None:
+                        channels_to_analyze = min(n_configured_channels, n_channels)
+                        self.logger.info(f"Analyzing first {channels_to_analyze} configured EEG channels")
+                    else:
+                        # Default to 21 channels if configuration is not available
+                        channels_to_analyze = min(21, n_channels)
+                        self.logger.error(f"CRITICAL: No channel configuration found, defaulting to {channels_to_analyze} EEG channels")
+                        self.logger.error(f"This could affect analysis accuracy if the actual configuration differs")
+                    
                     eeg_data = eeg_data[:channels_to_analyze, :]
 
                     analysis_results["total_eeg_channels"] = n_channels
                     analysis_results["analyzed_eeg_channels"] = channels_to_analyze
                     analysis_results["eeg_sample_count"] = chunks * samples_per_chunk
+                    analysis_results["n_configured_channels"] = n_configured_channels
                     analysis_results["sampling_rate"] = float(sampling_rate)
 
                     # Calculate 60Hz noise ratio for each channel using 10s windows
