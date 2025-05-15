@@ -3,11 +3,12 @@ Analysis transform for EEG data in the pipeline.
 
 This transform:
 1. Reads curated H5 files from S3 (curated-h5/)
-2. Loads the EEG data (first 20 channels)
+2. Loads the EEG data (using channel configuration from the file)
 3. Calculates 60Hz noise power (59-61Hz band) as a fraction of total power for each channel
-4. Generates visualizations of 60Hz noise power ratios across channels
-5. Saves analysis reports as JSON to processed/analysis/ prefix in S3
-6. Records metadata in DynamoDB
+4. Counts windows with all-zero values to detect "dead" or disconnected channels
+5. Generates visualizations of EEG metrics across channels
+6. Saves analysis reports as JSON to processed/analysis/ prefix in S3
+7. Records metadata in DynamoDB
 
 This is implemented using the BaseTransform architecture.
 """
@@ -31,8 +32,9 @@ class AnalysisTransform(BaseTransform):
     This transform analyzes EEG data and produces summary reports:
     1. Computes 60Hz noise power as a fraction of total power for each EEG channel
     2. Identifies channels with excessive line noise (above common thresholds)
-    3. Generates visualizations of 60Hz noise metrics
-    4. Outputs a JSON analysis report with detailed power statistics
+    3. Counts windows with all-zero values in each channel (detecting "dead" channels)
+    4. Generates visualizations of EEG metrics
+    5. Outputs a JSON analysis report with detailed statistics
 
     Note: EEG data is assumed to be in microvolts (µV) as per standard practice.
     """
@@ -135,7 +137,8 @@ class AnalysisTransform(BaseTransform):
                 "analyzed_eeg_channels": analysis_results.get("analyzed_eeg_channels", 0),
                 "eeg_samples": analysis_results.get("eeg_sample_count", 0),
                 "avg_60hz_noise_ratio": float(avg_noise_ratio),
-                "analysis_type": "eeg_60hz_noise"
+                "channels_with_zero_windows": analysis_results.get("channels_with_zero_windows", None),
+                "analysis_type": "eeg_metrics"
             }
 
             # Prepare files to upload
@@ -301,6 +304,9 @@ class AnalysisTransform(BaseTransform):
                     # Initialize binned FFT average for all channels
                     all_channels_binned_fft = np.zeros(len(bin_centers))
                     binned_fft_by_channel = {}
+                    
+                    # Initialize dictionary to store zero windows count by channel
+                    analysis_results["zero_windows_by_channel"] = {}
 
                     for channel in range(channels_to_analyze):
                         channel_data = eeg_data[channel, :]
@@ -309,6 +315,7 @@ class AnalysisTransform(BaseTransform):
                         window_power_ratios = []
                         window_60hz_powers = []
                         window_total_powers = []
+                        zero_windows_count = 0  # Counter for windows with all zeros
                         
                         # Initialize binned FFT for this channel
                         channel_binned_fft = np.zeros(len(bin_centers))
@@ -324,6 +331,10 @@ class AnalysisTransform(BaseTransform):
                                 continue
                                 
                             window_data = channel_data[start_idx:end_idx]
+                            
+                            # Check if all values in this window are zero
+                            if np.all(window_data == 0):
+                                zero_windows_count += 1
                             
                             # Apply Hanning window to reduce spectral leakage
                             window_data = window_data * np.hanning(len(window_data))
@@ -400,6 +411,9 @@ class AnalysisTransform(BaseTransform):
                             "avg_power_60hz": float(np.mean(window_60hz_powers)) if window_60hz_powers else 0.0,
                             "avg_total_power": float(np.mean(window_total_powers)) if window_total_powers else 0.0
                         }
+                        
+                        # Store the count of all-zero windows for this channel
+                        analysis_results["zero_windows_by_channel"][f"channel_{channel}"] = zero_windows_count
                 else:
                     self.logger.warning(f"No EEG device found in the file")
 
@@ -412,8 +426,12 @@ class AnalysisTransform(BaseTransform):
                     analysis_results["fft_bin_centers"] = bin_centers.tolist()
                     analysis_results["avg_binned_fft"] = all_channels_binned_fft.tolist()
                     analysis_results["binned_fft_by_channel"] = binned_fft_by_channel
+                    
+                    # Calculate summary for zero windows
+                    channels_with_zeros = sum(1 for count in analysis_results["zero_windows_by_channel"].values() if count > 0)
+                    analysis_results["channels_with_zero_windows"] = channels_with_zeros
                 
-                self.logger.info(f"Analysis complete: 60Hz noise ratio and binned FFT computed for {analysis_results.get('analyzed_eeg_channels', 0)} EEG channels")
+                self.logger.info(f"Analysis complete: 60Hz noise ratio, zero window detection, and binned FFT computed for {analysis_results.get('analyzed_eeg_channels', 0)} EEG channels")
 
         except Exception as e:
             self.logger.error(f"Error analyzing 60Hz noise for {session_id}: {e}", exc_info=True)
