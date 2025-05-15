@@ -232,18 +232,22 @@ class Session:
         }
         
     def create_upload_file(self, file_name, content=None):
-        """Create a file for upload.
+        """Create a file or directory for upload.
         
         Args:
-            file_name: Name of the file to create
-            content: Optional content to write to the file
+            file_name: Name of the file or directory to create.
+                       If the name ends with '.tiledb/' or '/', a directory is created.
+            content: Optional content to write to the file (ignored for directories)
             
         Returns:
-            Local path to the created file
+            Local path to the created file or directory
         """
         local_path = os.path.join(self.temp_dir, file_name)
         
-        if content is not None:
+        # If the path ends with .tiledb or another directory marker, ensure it exists as a directory
+        if file_name.endswith('.tiledb') or file_name.endswith('/'):
+            os.makedirs(local_path, exist_ok=True)
+        elif content is not None:
             mode = 'w' if isinstance(content, str) else 'wb'
             with open(local_path, mode) as f:
                 f.write(content)
@@ -294,6 +298,33 @@ class Session:
         
         self.logger.debug(f"Saved DynamoDB record to {file_path}")
         return file_path
+        
+    def get_zarr_input_path(self, s3_key):
+        """
+        Get a zarr input from S3 without downloading.
+        
+        Args:
+            s3_key: S3 key of the zarr store
+            
+        Returns:
+            The S3 key (used with open_dataset_from_s3_zarr)
+        """
+        # Just return the S3 key - no download needed since we'll access directly
+        return s3_key
+
+    def create_zarr_output_path(self, key_suffix):
+        """
+        Create a zarr output path for S3.
+        
+        Args:
+            key_suffix: Suffix for the S3 key
+            
+        Returns:
+            The S3 key to use for the zarr store
+        """
+        # Create the full S3 key
+        s3_key = f"{self.base_path}{self.session_id}/{key_suffix}"
+        return s3_key
         
     def cleanup(self):
         """Clean up temp directory."""
@@ -419,6 +450,7 @@ class BaseTransform:
             Dict with:
             - files_to_upload: List of (local_path, s3_key) tuples
             - files_to_copy: List of copy operation dicts
+            - zarr_stores: List of S3 zarr store keys (directly saved to S3)
             - metadata: Dict of metadata to record
             - status: Success or failure status
         """
@@ -656,6 +688,11 @@ class BaseTransform:
             
         Returns:
             Dict with processing result
+            
+        Note:
+            This method handles both single files and directory uploads. 
+            If a local path in files_to_upload is a directory, all contents 
+            will be uploaded recursively, preserving the directory structure.
         """
         try:
             # Log keep_local value before processing
@@ -680,6 +717,7 @@ class BaseTransform:
             # Extract the results
             files_to_upload = result.get('files_to_upload', [])
             files_to_copy = result.get('files_to_copy', [])
+            zarr_stores = result.get('zarr_stores', [])  # New field for zarr stores
             metadata = result.get('metadata', {})
             status = result.get('status', 'success')
             error_details = result.get('error_details')
@@ -711,13 +749,35 @@ class BaseTransform:
             # Process upload files
             for local_path, s3_key in files_to_upload:
                 dest_path = f"s3://{self.s3_bucket}/{s3_key}"
-                destination_paths.append(dest_path)
                 
-                if not self.dry_run:
-                    self.logger.info(f"Uploading {local_path} to {dest_path}")
-                    self.s3.upload_file(local_path, self.s3_bucket, s3_key)
+                # Check if the local path is a directory
+                if os.path.isdir(local_path):
+                    # Handle directory upload
+                    if not self.dry_run:
+                        self.logger.info(f"Uploading directory {local_path} to {dest_path}")
+                        dir_paths = self._upload_directory(local_path, s3_key)
+                        destination_paths.extend(dir_paths)
+                    else:
+                        self.logger.info(f"[DRY RUN] Would upload directory {local_path} to {dest_path}")
+                        # Add the base directory path for reference
+                        destination_paths.append(dest_path)
                 else:
-                    self.logger.info(f"[DRY RUN] Would upload {local_path} to {dest_path}")
+                    # Handle single file upload
+                    destination_paths.append(dest_path)
+                    if not self.dry_run:
+                        self.logger.info(f"Uploading file {local_path} to {dest_path}")
+                        self.s3.upload_file(local_path, self.s3_bucket, s3_key)
+                    else:
+                        self.logger.info(f"[DRY RUN] Would upload file {local_path} to {dest_path}")
+            
+            # Add zarr store paths to destination_paths
+            for store_key in zarr_stores:
+                dest_path = f"s3://{self.s3_bucket}/{store_key}"
+                destination_paths.append(dest_path)
+                if not self.dry_run:
+                    self.logger.info(f"Using zarr store directly saved to {dest_path}")
+                else:
+                    self.logger.info(f"[DRY RUN] Would use zarr store at {dest_path}")
             
             # Record the transform
             transform_record = self.record_transform(
@@ -779,6 +839,156 @@ class BaseTransform:
                 )
             except Exception:
                 return {"status": "failed", "error": str(e)}
+                
+    def _upload_directory(self, local_dir, s3_prefix):
+        """Upload a directory to S3, maintaining the folder structure.
+        
+        This method recursively walks through the local directory and uploads
+        all files while preserving the directory structure in S3.
+        
+        Args:
+            local_dir: Local directory path
+            s3_prefix: S3 key prefix for the directory
+            
+        Returns:
+            List of uploaded S3 destination paths
+        """
+        uploaded_paths = []
+        
+        for root, dirs, files in os.walk(local_dir):
+            for file in files:
+                local_file_path = os.path.join(root, file)
+                
+                # Get relative path within the directory
+                relative_path = os.path.relpath(local_file_path, local_dir)
+                
+                # Create the corresponding S3 key
+                s3_key = os.path.join(s3_prefix, relative_path).replace('\\', '/')
+                
+                # Upload the file
+                self.logger.info(f"Uploading file {local_file_path} to s3://{self.s3_bucket}/{s3_key}")
+                self.s3.upload_file(local_file_path, self.s3_bucket, s3_key)
+                
+                # Add to the list of uploaded paths
+                uploaded_paths.append(f"s3://{self.s3_bucket}/{s3_key}")
+        
+        return uploaded_paths
+        
+    def create_s3_zarr_store(self, store_key, mode='w'):
+        """
+        Create an S3 URL for a zarr store.
+        
+        Args:
+            store_key: S3 key for the zarr store (relative to bucket)
+            mode: Access mode ('w' for write, 'r' for read) - not used
+            
+        Returns:
+            A string containing the full S3 URL for the zarr store
+        """
+        # Create and return the full S3 URL
+        return f"s3://{self.s3_bucket}/{store_key}"
+
+    def save_dataset_to_s3_zarr(self, dataset, store_key, chunks=None):
+        """
+        Save an xarray dataset directly to S3 as zarr without local files.
+        
+        Args:
+            dataset: xarray Dataset to save
+            store_key: S3 key where zarr store will be created
+            chunks: Optional chunking configuration
+            
+        Returns:
+            S3 URI to the zarr store
+        """
+        try:
+            import xarray as xr
+        except ImportError:
+            self.logger.info("Installing xarray...")
+            import subprocess
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "xarray"])
+            import xarray as xr
+        
+        # Get S3 URI from store creation function
+        s3_uri = self.create_s3_zarr_store(store_key)
+        self.logger.info(f"Saving dataset directly to S3 zarr store at {s3_uri}")
+        
+        if self.dry_run:
+            self.logger.info(f"[DRY RUN] Would save dataset to {s3_uri}")
+            return s3_uri
+        
+        # Apply chunking if provided
+        if chunks is not None:
+            dataset = dataset.chunk(chunks)
+    
+        try:
+            # Save dataset directly to S3 using consolidated metadata
+            dataset.to_zarr(
+                store=s3_uri, 
+                mode='w',
+                consolidated=True
+            )
+            
+            # Note: s3fs connections will be automatically cleaned up when the process ends
+            pass
+        except Exception as e:
+            self.logger.error(f"Error saving to zarr: {e}")
+            # Fallback to local zarr and upload
+            import tempfile
+            import os
+            import shutil
+            
+            temp_dir = tempfile.mkdtemp()
+            try:
+                local_path = os.path.join(temp_dir, "data.zarr")
+                dataset.to_zarr(local_path, mode='w', consolidated=True)
+                
+                # Upload the local zarr directory to S3
+                for root, dirs, files in os.walk(local_path):
+                    for file in files:
+                        local_file_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(local_file_path, temp_dir)
+                        s3_file_key = f"{store_key}/{rel_path.replace(os.sep, '/').replace('data.zarr/', '')}"
+                        self.s3.upload_file(local_file_path, self.s3_bucket, s3_file_key)
+            finally:
+                shutil.rmtree(temp_dir)
+                # Note: s3fs connections will be automatically cleaned up when the process ends
+                pass
+        
+        self.logger.info(f"Successfully saved dataset to {s3_uri}")
+        return s3_uri
+
+    def open_dataset_from_s3_zarr(self, store_key):
+        """
+        Open an xarray dataset directly from S3 zarr store.
+        
+        Args:
+            store_key: S3 key of the zarr store
+            
+        Returns:
+            xarray Dataset loaded from S3
+        """
+        try:
+            import xarray as xr
+        except ImportError:
+            self.logger.info("Installing xarray...")
+            import subprocess
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "xarray"])
+            import xarray as xr
+        
+        # Get S3 URI from store creation function
+        s3_uri = self.create_s3_zarr_store(store_key)
+        self.logger.info(f"Opening dataset from S3 zarr store at {s3_uri}")
+        
+        # Open dataset directly from S3 using the URI
+        dataset = xr.open_zarr(
+            s3_uri, 
+            consolidated=True
+        )
+        
+        # Note: s3fs connections will be automatically cleaned up when the process ends
+        pass
+        
+        return dataset
     
     def process_items_batch(self, session_ids: List[str], start_idx: int = 0, end_idx: Optional[int] = None):
         """Process a batch of items.
