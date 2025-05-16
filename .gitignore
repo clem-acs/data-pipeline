@@ -10,3 +10,8 @@ __pycache__
 .env.secrets
 transform_workdir
 *.h5
+# fNIRS SNIRF files
+*.snirf
+
+# Zarr dataset directories
+*.zarr/
