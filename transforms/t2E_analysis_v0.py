@@ -5,10 +5,15 @@ This transform:
 1. Reads curated H5 files from S3 (curated-h5/)
 2. Loads the EEG data (using channel configuration from the file)
 3. Calculates 60Hz noise power (59-61Hz band) as a fraction of total power for each channel
-4. Counts windows with all-zero values to detect "dead" or disconnected channels
-5. Generates visualizations of EEG metrics across channels
-6. Saves analysis reports as JSON to processed/analysis/ prefix in S3
-7. Records metadata in DynamoDB
+4. Detects dead or disconnected channels by identifying windows with minimal signal variation
+5. Computes median standard deviation over time in 10-minute sections:
+   - Applies notch filter (60Hz) and bandpass filter (0.5-50Hz)
+   - Divides the recording into 10-minute sections
+   - Calculates standard deviation for each channel in each section
+   - Computes median standard deviation across channels for each section
+6. Generates visualizations of EEG metrics across channels and time
+7. Saves analysis reports as JSON to processed/analysis/ prefix in S3
+8. Records metadata in DynamoDB
 
 This is implemented using the BaseTransform architecture.
 """
@@ -20,6 +25,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Dict, Any, List, Optional, Set
+from scipy import signal
 
 # Import base transform
 from base_transform import BaseTransform, Session
@@ -32,9 +38,12 @@ class AnalysisTransform(BaseTransform):
     This transform analyzes EEG data and produces summary reports:
     1. Computes 60Hz noise power as a fraction of total power for each EEG channel
     2. Identifies channels with excessive line noise (above common thresholds)
-    3. Counts windows with all-zero values in each channel (detecting "dead" channels)
-    4. Generates visualizations of EEG metrics
-    5. Outputs a JSON analysis report with detailed statistics
+    3. Identifies dead channels by detecting windows with minimal signal variation (< 1e-5 μV)
+    4. Calculates median standard deviation over time in 10-minute sections
+       - Shows how signal quality/amplitude changes throughout the recording
+       - Helps identify recordings with consistent vs. degrading quality
+    5. Generates visualizations of EEG metrics (noise ratios, FFT spectra, std over time)
+    6. Outputs a JSON analysis report with detailed statistics
 
     Note: EEG data is assumed to be in microvolts (µV) as per standard practice.
     """
@@ -130,6 +139,17 @@ class AnalysisTransform(BaseTransform):
             if noise_ratios:
                 avg_noise_ratio = sum(noise_ratios) / len(noise_ratios)
             
+            # Calculate overall median standard deviation if available
+            median_std_overall = None
+            section_count = None
+            if "section_analysis" in analysis_results:
+                section_data = analysis_results["section_analysis"]
+                if "median_std_by_section" in section_data:
+                    median_stds = section_data["median_std_by_section"]
+                    if median_stds:
+                        median_std_overall = float(np.median(median_stds))
+                        section_count = section_data.get("n_sections")
+            
             metadata = {
                 "session_id": session_id,
                 "has_eeg": analysis_results.get("has_eeg", False),
@@ -137,7 +157,8 @@ class AnalysisTransform(BaseTransform):
                 "analyzed_eeg_channels": analysis_results.get("analyzed_eeg_channels", 0),
                 "eeg_samples": analysis_results.get("eeg_sample_count", 0),
                 "avg_60hz_noise_ratio": float(avg_noise_ratio),
-                "channels_with_zero_windows": analysis_results.get("channels_with_zero_windows", None),
+                "overall_median_std": median_std_overall,
+                "section_count": section_count,
                 "analysis_type": "eeg_metrics"
             }
 
@@ -164,6 +185,92 @@ class AnalysisTransform(BaseTransform):
                 "files_to_upload": []
             }
 
+    def calculate_median_std_over_sections(self, eeg_data: np.ndarray, section_duration_min: int = 10, 
+                                       sampling_rate: float = 500.0) -> Dict:
+        """Calculate median standard deviation over time sections.
+        
+        Args:
+            eeg_data: EEG data array in shape [channels, samples]
+            section_duration_min: Duration of each section in minutes
+            sampling_rate: Sampling rate in Hz
+            
+        Returns:
+            Dict with section analysis results
+        """
+        self.logger.info(f"Calculating median standard deviation over {section_duration_min}-minute sections")
+        
+        # Calculate number of samples per section
+        samples_per_section = int(section_duration_min * 60 * sampling_rate)
+        
+        # Get dimensions
+        n_channels, total_samples = eeg_data.shape
+        
+        # Calculate number of complete sections
+        n_sections = total_samples // samples_per_section
+        
+        if n_sections == 0:
+            self.logger.warning(f"Recording too short for {section_duration_min}-minute sections. Using entire recording as one section.")
+            n_sections = 1
+            samples_per_section = total_samples
+        
+        self.logger.info(f"Analyzing {n_sections} sections of {section_duration_min} minutes each")
+        
+        # Apply notch filter (60Hz)
+        self.logger.info("Applying 60Hz notch filter")
+        notch_b, notch_a = signal.iirnotch(60.0, 30.0, sampling_rate)
+        notch_filtered = np.zeros_like(eeg_data)
+        for ch in range(n_channels):
+            notch_filtered[ch, :] = signal.filtfilt(notch_b, notch_a, eeg_data[ch, :])
+        
+        # Apply bandpass filter (0.5-50Hz)
+        self.logger.info("Applying 0.5-50Hz bandpass filter")
+        bandpass_b, bandpass_a = signal.butter(4, [0.5, 50.0], btype='bandpass', fs=sampling_rate)
+        filtered_data = np.zeros_like(notch_filtered)
+        for ch in range(n_channels):
+            filtered_data[ch, :] = signal.filtfilt(bandpass_b, bandpass_a, notch_filtered[ch, :])
+        
+        # Initialize arrays to store results
+        section_medians = np.zeros(n_sections)
+        section_timestamps = np.zeros(n_sections)
+        all_std_values = []
+        
+        # Process each section
+        for i in range(n_sections):
+            start_idx = i * samples_per_section
+            end_idx = min((i+1) * samples_per_section, total_samples)
+            
+            # Extract data for this section
+            section_data = filtered_data[:, start_idx:end_idx]
+            
+            # Calculate standard deviation for each channel in this section
+            channel_stds = np.std(section_data, axis=1)
+            
+            # Store all std values for later analysis
+            all_std_values.append(channel_stds)
+            
+            # Calculate median standard deviation across channels
+            median_std = np.median(channel_stds)
+            section_medians[i] = median_std
+            
+            # Calculate timestamp for this section (middle point in seconds)
+            section_middle_sample = start_idx + (end_idx - start_idx) // 2
+            section_timestamps[i] = section_middle_sample / sampling_rate
+        
+        # Convert timestamps to minutes for better readability
+        section_timestamps_min = section_timestamps / 60.0
+        
+        # Prepare results
+        results = {
+            "section_duration_min": section_duration_min,
+            "n_sections": n_sections,
+            "section_timestamps_min": section_timestamps_min.tolist(),
+            "median_std_by_section": section_medians.tolist(),
+            "std_values_by_section": [std_array.tolist() for std_array in all_std_values]
+        }
+        
+        self.logger.info(f"Completed median standard deviation analysis over {n_sections} sections")
+        return results
+    
     def analyze_eeg_data(self, file_path: str, session_id: str) -> Dict:
         """Analyze the EEG data in a curated H5 file to calculate 60Hz noise.
 
@@ -305,8 +412,8 @@ class AnalysisTransform(BaseTransform):
                     all_channels_binned_fft = np.zeros(len(bin_centers))
                     binned_fft_by_channel = {}
                     
-                    # Initialize dictionary to store zero windows count by channel
-                    analysis_results["zero_windows_by_channel"] = {}
+                    # Initialize dictionary to store dead windows count by channel
+                    analysis_results["dead_windows_by_channel"] = {}
 
                     for channel in range(channels_to_analyze):
                         channel_data = eeg_data[channel, :]
@@ -315,7 +422,7 @@ class AnalysisTransform(BaseTransform):
                         window_power_ratios = []
                         window_60hz_powers = []
                         window_total_powers = []
-                        zero_windows_count = 0  # Counter for windows with all zeros
+                        dead_windows_count = 0  # Counter for windows with minimal variation
                         
                         # Initialize binned FFT for this channel
                         channel_binned_fft = np.zeros(len(bin_centers))
@@ -332,9 +439,17 @@ class AnalysisTransform(BaseTransform):
                                 
                             window_data = channel_data[start_idx:end_idx]
                             
-                            # Check if all values in this window are zero
-                            if np.all(window_data == 0):
-                                zero_windows_count += 1
+                            # Check for "dead" windows by looking for minimal variation
+                            VARIATION_THRESHOLD = 1e-5  # Consider a window "dead" if max-min < 1e-5 μV
+                            
+                            # Calculate the signal variation in this window
+                            window_min = float(np.min(window_data))
+                            window_max = float(np.max(window_data))
+                            window_variation = window_max - window_min
+                            
+                            # If there's minimal variation, consider it a dead window
+                            if window_variation < VARIATION_THRESHOLD:
+                                dead_windows_count += 1
                             
                             # Apply Hanning window to reduce spectral leakage
                             window_data = window_data * np.hanning(len(window_data))
@@ -412,8 +527,8 @@ class AnalysisTransform(BaseTransform):
                             "avg_total_power": float(np.mean(window_total_powers)) if window_total_powers else 0.0
                         }
                         
-                        # Store the count of all-zero windows for this channel
-                        analysis_results["zero_windows_by_channel"][f"channel_{channel}"] = zero_windows_count
+                        # Store the count of dead windows for this channel
+                        analysis_results["dead_windows_by_channel"][f"channel_{channel}"] = dead_windows_count
                 else:
                     self.logger.warning(f"No EEG device found in the file")
 
@@ -427,11 +542,23 @@ class AnalysisTransform(BaseTransform):
                     analysis_results["avg_binned_fft"] = all_channels_binned_fft.tolist()
                     analysis_results["binned_fft_by_channel"] = binned_fft_by_channel
                     
-                    # Calculate summary for zero windows
-                    channels_with_zeros = sum(1 for count in analysis_results["zero_windows_by_channel"].values() if count > 0)
-                    analysis_results["channels_with_zero_windows"] = channels_with_zeros
+                    # Calculate summary for dead windows
+                    channels_with_dead_windows = sum(1 for count in analysis_results["dead_windows_by_channel"].values() if count > 0)
+                    analysis_results["channels_with_dead_windows"] = channels_with_dead_windows
                 
-                self.logger.info(f"Analysis complete: 60Hz noise ratio, zero window detection, and binned FFT computed for {analysis_results.get('analyzed_eeg_channels', 0)} EEG channels")
+                # Calculate median standard deviation over sections
+                try:
+                    section_results = self.calculate_median_std_over_sections(
+                        eeg_data=eeg_data[:channels_to_analyze, :],
+                        sampling_rate=sampling_rate
+                    )
+                    analysis_results["section_analysis"] = section_results
+                    self.logger.info(f"Successfully added section-based standard deviation analysis")
+                except Exception as e:
+                    self.logger.error(f"Error calculating median standard deviation over sections: {e}")
+                    self.logger.error("Will continue with other analyses")
+                
+                self.logger.info(f"Analysis complete: 60Hz noise ratio, zero window detection, median std over sections, and binned FFT computed for {analysis_results.get('analyzed_eeg_channels', 0)} EEG channels")
 
         except Exception as e:
             self.logger.error(f"Error analyzing 60Hz noise for {session_id}: {e}", exc_info=True)
@@ -571,6 +698,49 @@ class AnalysisTransform(BaseTransform):
                     # Add to output files
                     dest_key = f"{self.destination_prefix}{fft_plot_file_name}"
                     output_files.append((local_fft_path, dest_key))
+                    
+            # Create median std over sections plot if data is available
+            if "section_analysis" in analysis_results:
+                section_data = analysis_results["section_analysis"]
+                if "median_std_by_section" in section_data and "section_timestamps_min" in section_data:
+                    # Create the plot
+                    std_plot_file_name = f"{session_id}_eeg_median_std_by_section.png"
+                    local_std_path = session.create_upload_file(std_plot_file_name)
+                    
+                    # Get data for plotting
+                    timestamps = section_data["section_timestamps_min"]
+                    median_stds = section_data["median_std_by_section"]
+                    
+                    if timestamps and median_stds:
+                        # Create figure
+                        fig, ax = plt.subplots(figsize=(14, 6))
+                        
+                        # Plot the median standard deviation over time
+                        ax.plot(timestamps, median_stds, 'o-', linewidth=2, markersize=8, color='blue')
+                        
+                        # Set logarithmic scale for y-axis
+                        ax.set_yscale('log')
+                        
+                        # Add title and labels
+                        section_duration = section_data.get("section_duration_min", 10)
+                        n_sections = section_data.get("n_sections", len(timestamps))
+                        ax.set_title(f"Median EEG Standard Deviation Over Time ({section_duration}-minute sections, {n_sections} sections)")
+                        ax.set_xlabel("Time (minutes)")
+                        ax.set_ylabel("Median Standard Deviation (μV) - Log Scale")
+                        ax.grid(True, linestyle='--', alpha=0.7)
+                        
+                        # Add a fixed reference line at 0.1
+                        ax.axhline(y=0.1, color='red', linestyle='--', alpha=0.7, 
+                                  label='Reference: 0.1 μV')
+                        ax.legend(loc='best')
+                        
+                        plt.tight_layout()
+                        plt.savefig(local_std_path)
+                        plt.close()
+                        
+                        # Add to output files
+                        dest_key = f"{self.destination_prefix}{std_plot_file_name}"
+                        output_files.append((local_std_path, dest_key))
 
         return output_files
 
