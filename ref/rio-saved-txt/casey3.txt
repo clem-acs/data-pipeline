@@ -1,0 +1,116 @@
+Opening Zarr store: C:\Users\riopo\data-pipeline\kasey-Wooten_B4_20250515_103657_events.zarr
+Zarr Format Version: 3
+Error opening with xarray: `compressor` is not available for Zarr format 3 arrays.
+This is expected with Zarr v3 stores. Falling back to direct zarr inspection.
+
+=== ZARR STRUCTURE ===
+Error printing tree: 'TreeRepr' object has no attribute 'encode'
+segments/ (Group)
+  segment_type: shape=(166,), dtype=object
+  duration: shape=(166,), dtype=float64
+  end_time: shape=(166,), dtype=float64
+  end_event_id: shape=(166,), dtype=object
+  containing_element_id: shape=(166,), dtype=object
+  element_relative_start: shape=(166,), dtype=float64
+  type_index: shape=(166,), dtype=object
+  start_time: shape=(166,), dtype=float64
+  start_event_id: shape=(166,), dtype=object
+element_id: shape=(554,), dtype=object
+elements/ (Group)
+  element_type: shape=(554,), dtype=object
+  audio_mode: shape=(554,), dtype=object
+  response_time_seconds: shape=(554,), dtype=int32
+  end_time: shape=(554,), dtype=float64
+  sequence_idx: shape=(554,), dtype=int32
+  duration: shape=(554,), dtype=float64
+  is_instruction: shape=(554,), dtype=int8
+  input_modality: shape=(554,), dtype=object
+  max_count: shape=(554,), dtype=int32
+  session_relative_time: shape=(554,), dtype=float64
+  task_id: shape=(554,), dtype=object
+  task_type: shape=(554,), dtype=object
+  start_time: shape=(554,), dtype=float64
+  with_interruptions: shape=(554,), dtype=int8
+  title: shape=(554,), dtype=object
+  session_fraction: shape=(554,), dtype=float64
+segment_id: shape=(166,), dtype=object
+task_id: shape=(31,), dtype=object
+tasks/ (Group)
+  count: shape=(31,), dtype=int32
+  end_time: shape=(31,), dtype=float64
+  allow_repeats: shape=(31,), dtype=int8
+  element_count: shape=(31,), dtype=int32
+  audio_mode: shape=(31,), dtype=object
+  input_modality: shape=(31,), dtype=object
+  session_fraction_start: shape=(31,), dtype=float64
+  session_fraction_end: shape=(31,), dtype=float64
+  completion_status: shape=(31,), dtype=object
+  duration: shape=(31,), dtype=float64
+  skip_time: shape=(31,), dtype=float64
+  skipped: shape=(31,), dtype=int8
+  task_type: shape=(31,), dtype=object
+  start_time: shape=(31,), dtype=float64
+  with_interruptions: shape=(31,), dtype=int8
+
+=== HIERARCHICAL GROUPS FOUND ===
+
+--- ELEMENTS ---
+Variables: 16
+Count: 554
+Variables:
+  audio_mode: shape=(554,), dtype=object
+  duration: shape=(554,), dtype=float64
+  element_type: shape=(554,), dtype=object
+  end_time: shape=(554,), dtype=float64
+  input_modality: shape=(554,), dtype=object
+  is_instruction: shape=(554,), dtype=int8
+  max_count: shape=(554,), dtype=int32
+  response_time_seconds: shape=(554,), dtype=int32
+  sequence_idx: shape=(554,), dtype=int32
+  session_fraction: shape=(554,), dtype=float64
+  session_relative_time: shape=(554,), dtype=float64
+  start_time: shape=(554,), dtype=float64
+  task_id: shape=(554,), dtype=object
+  task_type: shape=(554,), dtype=object
+  title: shape=(554,), dtype=object
+  with_interruptions: shape=(554,), dtype=int8
+
+--- TASKS ---
+Variables: 15
+Count: 31
+Variables:
+  allow_repeats: shape=(31,), dtype=int8
+  audio_mode: shape=(31,), dtype=object
+  completion_status: shape=(31,), dtype=object
+  count: shape=(31,), dtype=int32
+  duration: shape=(31,), dtype=float64
+  element_count: shape=(31,), dtype=int32
+  end_time: shape=(31,), dtype=float64
+  input_modality: shape=(31,), dtype=object
+  session_fraction_end: shape=(31,), dtype=float64
+  session_fraction_start: shape=(31,), dtype=float64
+  skip_time: shape=(31,), dtype=float64
+  skipped: shape=(31,), dtype=int8
+  start_time: shape=(31,), dtype=float64
+  task_type: shape=(31,), dtype=object
+  with_interruptions: shape=(31,), dtype=int8
+
+--- SEGMENTS ---
+Variables: 9
+Count: 166
+Variables:
+  containing_element_id: shape=(166,), dtype=object
+  duration: shape=(166,), dtype=float64
+  element_relative_start: shape=(166,), dtype=float64
+  end_event_id: shape=(166,), dtype=object
+  end_time: shape=(166,), dtype=float64
+  segment_type: shape=(166,), dtype=object
+  start_event_id: shape=(166,), dtype=object
+  start_time: shape=(166,), dtype=float64
+  type_index: shape=(166,), dtype=object
+
+=== ATTRIBUTES ===
+session_id: kasey-Wooten_B4_20250515_103657
+transform: event
+version: 0.1
+created_at: 2025-05-16 23:12:52

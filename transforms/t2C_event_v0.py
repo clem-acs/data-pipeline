@@ -15,6 +15,7 @@ import numpy as np
 import h5py
 import time
 import xarray as xr
+import zarr
 from typing import Dict, Any, List, Optional
 from collections import defaultdict
 
@@ -27,6 +28,16 @@ DEFAULT_INPUT_MODALITY = "text"
 
 # Module logger - only used before class initialization
 logger = logging.getLogger(__name__)
+
+def _convert_to_string_dtype(values):
+    """Convert values to proper string dtype for Zarr storage.
+    
+    Compatible with all zarr versions by using NumPy's standard string dtype.
+    """
+    # Replace None with empty strings
+    cleaned_values = ['' if v is None else v for v in values]
+    # Use NumPy's Unicode string dtype - compatible with all zarr versions
+    return np.array(cleaned_values, dtype='U')
 
 class EventTransform(BaseTransform):
     """Transform for extracting and organizing event data from H5 files into zarr format."""
@@ -115,7 +126,6 @@ class EventTransform(BaseTransform):
             
             # Check for empty dataset
             if not dataset.data_vars:
-                print("DEBUG-EMPTY: Creating placeholder dataset")
                 self.logger.warning(f"No data to save for session {session_id}, creating empty dataset")
                 # Create minimal dataset with a single variable and dimension for chunking safety
                 dataset = xr.Dataset(
@@ -134,22 +144,20 @@ class EventTransform(BaseTransform):
                     }
                 )
             else:
-                print(f"DEBUG-EMPTY: Dataset has {len(dataset.data_vars)} data variables")
+                self.logger.info(f"Dataset contains {len(dataset.data_vars)} data variables")
             
             # Define the destination zarr key
             zarr_key = f"{self.destination_prefix}{session_id}_events.zarr"
             
-            # Create explicit chunks based on dimensions
+            # Create explicit chunks based on dimensions (one chunk per dimension)
             chunks = {}
             for dim_name, dim_size in dataset.dims.items():
                 if dim_size > 0:
-                    chunks[dim_name] = min(100, dim_size)
+                    chunks[dim_name] = dim_size
             
-            # Debug dataset structure before saving
-            print(f"DEBUG-DATASET: Dataset structure before saving: {dataset}")
-            print(f"DEBUG-DATASET: Data variables: {list(dataset.data_vars.keys())}")
-            print(f"DEBUG-DATASET: Coordinates: {list(dataset.coords.keys())}")
-            print(f"DEBUG-CHUNKS: Final chunks dictionary before save: {chunks}")
+            self.logger.info(f"Saving hierarchical dataset with {len(dataset.data_vars)} variables to {zarr_key}")
+            self.logger.debug(f"Dataset contains groups: elements, tasks, segments")
+            self.logger.debug(f"Dataset coordinates: {list(dataset.coords.keys())}")
             
             # Directly save to S3 using BaseTransform's method with explicit chunks
             self.save_dataset_to_s3_zarr(dataset, zarr_key, chunks=chunks)
@@ -186,13 +194,13 @@ class EventTransform(BaseTransform):
             }
     
     def _create_xarray_dataset(self, processed_data):
-        """Convert processed event data into a single consolidated xarray Dataset.
+        """Convert processed event data into a hierarchical xarray Dataset.
         
         Args:
             processed_data: Dictionary of processed tasks, elements, and segments
             
         Returns:
-            xarray Dataset containing all event data
+            xarray Dataset with hierarchical structure using sub-groups
         """
         # Extract component data
         tasks = processed_data['tasks']
@@ -200,10 +208,13 @@ class EventTransform(BaseTransform):
         segments = processed_data['segments']
         session_id = processed_data['session_id']
         
+        # Initialize dataset groups
+        elements_group = {}
+        tasks_group = {}
+        segments_group = {}
+        
         # ------------ TASK DATA ------------
         task_ids = list(tasks.keys())
-        data_vars = {}
-        coords = {}
         
         if task_ids:
             # Create arrays for each task attribute
@@ -224,28 +235,19 @@ class EventTransform(BaseTransform):
                     # Use empty/default values if attribute doesn't exist
                     task_arrays[attr].append(task.get(attr, None))
             
-            # Add task data to dataset variables
+            # Store task data
             for attr, values in task_arrays.items():
-                # Add debugging for string values
                 if all(isinstance(v, str) or v is None for v in values):
-                    print(f"DEBUG-STRING-VALS: Task attribute {attr} has {len(values)} string values")
-                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
-                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
-                
-                # Convert strings to fixed-length string dtype
-                if all(isinstance(v, str) or v is None for v in values):
-                    # Replace None with empty strings and use fixed-length strings
-                    cleaned_values = ['' if v is None else v for v in values]
-                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                    # Use string dtype for string values
+                    values = _convert_to_string_dtype(values)
                 else:
                     # For numeric arrays, replace None with appropriate default
                     if any(v is None for v in values):
-                        # Determine type from non-None values
                         non_none_values = [v for v in values if v is not None]
                         if non_none_values:
                             if all(isinstance(v, (int, np.integer)) for v in non_none_values):
                                 cleaned_values = [0 if v is None else v for v in values]
-                                values = np.array(cleaned_values, dtype=np.int64)
+                                values = np.array(cleaned_values, dtype=np.int32)
                             elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
                                 cleaned_values = [0.0 if v is None else v for v in values]
                                 values = np.array(cleaned_values, dtype=np.float64)
@@ -254,19 +256,16 @@ class EventTransform(BaseTransform):
                                 values = np.array(cleaned_values, dtype=bool)
                             else:
                                 # Mixed or unknown type, use strings
-                                cleaned_values = ['' if v is None else str(v) for v in values]
-                                values = np.array(cleaned_values, dtype='U')
+                                values = _convert_to_string_dtype(['' if v is None else str(v) for v in values])
                         else:
-                            # All None values, default to strings
-                            values = np.array([''] * len(values), dtype='U')
+                            # All None values, use empty strings
+                            values = _convert_to_string_dtype([''] * len(values))
                     else:
                         # No None values, convert normally
                         values = np.array(values)
-                    
-                data_vars[f'task_{attr}'] = ('task_id', values)
-            
-            # Add task_id as a coordinate
-            coords['task_id'] = task_ids
+                
+                # Store in tasks group with proper attribute name (no prefix)
+                tasks_group[attr] = ('task_id', values)
         
         # ------------ ELEMENT DATA ------------
         element_ids = list(elements.keys())
@@ -286,31 +285,34 @@ class EventTransform(BaseTransform):
             # Fill arrays with element data
             for element_id in element_ids:
                 element = elements[element_id]
+                
+                # Add task_type from the associated task
+                task_id = element.get('task_id', '')
+                if task_id and task_id in tasks:
+                    element['task_type'] = tasks[task_id].get('task_type', '')
+                else:
+                    element['task_type'] = ''
+                
                 for attr in element_attributes:
                     element_arrays[attr].append(element.get(attr, None))
-            
-            # Add element data to dataset variables
-            for attr, values in element_arrays.items():
-                # Add debugging for string values
-                if all(isinstance(v, str) or v is None for v in values):
-                    print(f"DEBUG-STRING-VALS: Element attribute {attr} has {len(values)} string values")
-                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
-                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
                 
-                # Convert strings to fixed-length string dtype
+                # Add task_type if not already in attributes
+                if 'task_type' not in element_attributes:
+                    element_arrays['task_type'].append(element.get('task_type', ''))
+            
+            # Store element data
+            for attr, values in element_arrays.items():
                 if all(isinstance(v, str) or v is None for v in values):
-                    # Replace None with empty strings and use fixed-length strings
-                    cleaned_values = ['' if v is None else v for v in values]
-                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                    # Use string dtype for string values
+                    values = _convert_to_string_dtype(values)
                 else:
                     # For numeric arrays, replace None with appropriate default
                     if any(v is None for v in values):
-                        # Determine type from non-None values
                         non_none_values = [v for v in values if v is not None]
                         if non_none_values:
                             if all(isinstance(v, (int, np.integer)) for v in non_none_values):
                                 cleaned_values = [0 if v is None else v for v in values]
-                                values = np.array(cleaned_values, dtype=np.int64)
+                                values = np.array(cleaned_values, dtype=np.int32)
                             elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
                                 cleaned_values = [0.0 if v is None else v for v in values]
                                 values = np.array(cleaned_values, dtype=np.float64)
@@ -319,27 +321,24 @@ class EventTransform(BaseTransform):
                                 values = np.array(cleaned_values, dtype=bool)
                             else:
                                 # Mixed or unknown type, use strings
-                                cleaned_values = ['' if v is None else str(v) for v in values]
-                                values = np.array(cleaned_values, dtype='U')
+                                values = _convert_to_string_dtype(['' if v is None else str(v) for v in values])
                         else:
-                            # All None values, default to strings
-                            values = np.array([''] * len(values), dtype='U')
+                            # All None values, use empty strings
+                            values = _convert_to_string_dtype([''] * len(values))
                     else:
                         # No None values, convert normally
                         values = np.array(values)
                 
-                data_vars[f'element_{attr}'] = ('element_id', values)
-            
-            # Add element_id as a coordinate
-            coords['element_id'] = element_ids
+                # Store in elements group with proper attribute name (no prefix)
+                elements_group[attr] = ('element_id', values)
         
         # ------------ SEGMENT DATA ------------
         segment_types = list(segments.keys())
         
         if segment_types:
             all_segment_ids = []
-            segment_type_indices = []
             segment_arrays = defaultdict(list)
+            segment_type_indices = []
             
             # Define which segment attributes to store
             segment_attributes = [
@@ -348,7 +347,7 @@ class EventTransform(BaseTransform):
                 'start_event_id', 'end_event_id'
             ]
             
-            # First pass - collect all unique segment ids
+            # First pass - collect all unique segment ids and data
             for segment_type, segment_list in segments.items():
                 for segment in segment_list:
                     segment_id = segment['segment_id']
@@ -358,28 +357,19 @@ class EventTransform(BaseTransform):
                     for attr in segment_attributes:
                         segment_arrays[attr].append(segment.get(attr, None))
             
-            # Add segment data to dataset
+            # Store segment data
             for attr, values in segment_arrays.items():
-                # Add debugging for string values
                 if all(isinstance(v, str) or v is None for v in values):
-                    print(f"DEBUG-STRING-VALS: Segment attribute {attr} has {len(values)} string values")
-                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
-                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
-                
-                # Convert strings to fixed-length string dtype
-                if all(isinstance(v, str) or v is None for v in values):
-                    # Replace None with empty strings and use fixed-length strings
-                    cleaned_values = ['' if v is None else v for v in values]
-                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                    # Use string dtype for string values
+                    values = _convert_to_string_dtype(values)
                 else:
                     # For numeric arrays, replace None with appropriate default
                     if any(v is None for v in values):
-                        # Determine type from non-None values
                         non_none_values = [v for v in values if v is not None]
                         if non_none_values:
                             if all(isinstance(v, (int, np.integer)) for v in non_none_values):
                                 cleaned_values = [0 if v is None else v for v in values]
-                                values = np.array(cleaned_values, dtype=np.int64)
+                                values = np.array(cleaned_values, dtype=np.int32)
                             elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
                                 cleaned_values = [0.0 if v is None else v for v in values]
                                 values = np.array(cleaned_values, dtype=np.float64)
@@ -388,40 +378,45 @@ class EventTransform(BaseTransform):
                                 values = np.array(cleaned_values, dtype=bool)
                             else:
                                 # Mixed or unknown type, use strings
-                                cleaned_values = ['' if v is None else str(v) for v in values]
-                                values = np.array(cleaned_values, dtype='U')
+                                values = _convert_to_string_dtype(['' if v is None else str(v) for v in values])
                         else:
-                            # All None values, default to strings
-                            values = np.array([''] * len(values), dtype='U')
+                            # All None values, use empty strings
+                            values = _convert_to_string_dtype([''] * len(values))
                     else:
                         # No None values, convert normally
                         values = np.array(values)
                 
-                data_vars[f'segment_{attr}'] = ('segment_id', values)
-            
-            # Add segment coordinates
-            coords['segment_id'] = all_segment_ids
+                # Store in segments group with proper attribute name (no prefix)
+                segments_group[attr] = ('segment_id', values)
             
             # Convert segment_type_indices to fixed-length string dtype
-            segment_type_indices_array = np.array(segment_type_indices, dtype='U')
-            data_vars['segment_type_index'] = ('segment_id', segment_type_indices_array)
+            segment_type_indices_array = _convert_to_string_dtype(segment_type_indices)
+            segments_group['type_index'] = ('segment_id', segment_type_indices_array)
         
-        # ------------ RELATIONS DATA ------------
-        # Add element-segment relations map
-        if element_ids and all_segment_ids:
-            # Create a mapping from element_id to segment_ids
-            element_segments = defaultdict(list)
-            for i, segment_id in enumerate(all_segment_ids):
-                element_id = segment_arrays['containing_element_id'][i]
-                if element_id:
-                    element_segments[element_id].append(segment_id)
-            
-            # Store the mapping as attributes
-            element_segment_maps = {}
-            for element_id, segment_ids in element_segments.items():
-                element_segment_maps[f"element_{element_id}_segments"] = segment_ids
+        # Create data variables and coordinates for the entire dataset
+        data_vars = {}
+        coords = {}
         
-        # Create the dataset with all data variables and coordinates
+        # Create hierarchical structure using netCDF groups
+        if task_ids:
+            # Store task data in tasks group
+            for attr, (dim, values) in tasks_group.items():
+                data_vars[f"tasks/{attr}"] = (["task_id"], values)
+            coords["task_id"] = task_ids
+        
+        if element_ids:
+            # Store element data in elements group
+            for attr, (dim, values) in elements_group.items():
+                data_vars[f"elements/{attr}"] = (["element_id"], values)
+            coords["element_id"] = element_ids
+        
+        if all_segment_ids:
+            # Store segment data in segments group
+            for attr, (dim, values) in segments_group.items():
+                data_vars[f"segments/{attr}"] = (["segment_id"], values)
+            coords["segment_id"] = all_segment_ids
+        
+        # Create dataset with hierarchical structure
         ds = xr.Dataset(
             data_vars=data_vars,
             coords=coords,
@@ -430,31 +425,23 @@ class EventTransform(BaseTransform):
                 'transform': 'event',
                 'version': '0.1',
                 'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
-                **(element_segment_maps if 'element_segment_maps' in locals() else {})
             }
         )
         
-        # Add debugging prints for dimensions
-        print(f"DEBUG-DIMS: Dataset dimensions: {ds.dims}")
+        # Create explicit chunks based on dimensions (one chunk per dimension)
+        chunks = {}
         for dim_name, dim_size in ds.dims.items():
-            print(f"DEBUG-DIMS: Dimension {dim_name} has size {dim_size}")
+            if dim_size > 0:
+                chunks[dim_name] = dim_size
         
-        # Apply chunking strategy - SAFER APPROACH
-        if ds.dims:  # Only apply chunking if dataset has dimensions
-            # Create default chunking for each dimension in the dataset
-            default_chunks = {}
-            for dim_name, dim_size in ds.dims.items():
-                if dim_size > 0:  # Only chunk non-empty dimensions
-                    default_chunks[dim_name] = min(100, dim_size)
-            
-            if default_chunks:  # Only apply if we have valid chunk sizes
-                ds = ds.chunk(default_chunks)
-            
-            # Add explicit chunk sizes for coordinates
-            for name in ds.coords:
-                # If xarray hasn't set a chunk grid yet, give it the full shape as one chunk
-                if ds[name].encoding.get("chunks") is None:
-                    ds[name].encoding["chunks"] = ds[name].shape
+        # Apply chunking
+        if chunks:
+            ds = ds.chunk(chunks)
+        
+        # Add explicit chunk sizes for coordinates to avoid None values
+        for name in ds.coords:
+            if ds[name].encoding.get("chunks") is None:
+                ds[name].encoding["chunks"] = ds[name].shape
         
         return ds
     
