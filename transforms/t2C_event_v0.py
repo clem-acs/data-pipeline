@@ -2,7 +2,7 @@
 T2E Events Transform
 
 Extracts and organizes event data from curated H5 files into a structured format
-for easy integration with TileDB and other transforms.
+using xarray and zarr for efficient storage and access.
 
 IMPORTANT: In our H5 files, timestamps are stored as [server_timestamp, client_timestamp].
 That is, timestamps[i][0] is the server timestamp and timestamps[i][1] is the client timestamp.
@@ -14,6 +14,7 @@ import logging
 import numpy as np
 import h5py
 import time
+import xarray as xr
 from typing import Dict, Any, List, Optional
 from collections import defaultdict
 
@@ -28,7 +29,7 @@ DEFAULT_INPUT_MODALITY = "text"
 logger = logging.getLogger(__name__)
 
 class EventTransform(BaseTransform):
-    """Transform for extracting and organizing event data from H5 files."""
+    """Transform for extracting and organizing event data from H5 files into zarr format."""
     
     SOURCE_PREFIX = "curated-h5/"
     DEST_PREFIX = "processed/event/"
@@ -84,47 +85,93 @@ class EventTransform(BaseTransform):
                     "error_details": f"No H5 file found for session {session_id}",
                     "metadata": {"session_id": session_id},
                     "files_to_copy": [],
-                    "files_to_upload": []
+                    "files_to_upload": [],
+                    "zarr_stores": []
                 }
             
             # Download the H5 file
             local_source = session.download_file(h5_key)
             
-            # Create output file
-            output_filename = f"{session_id}_events.h5"
-            local_dest = session.create_upload_file(output_filename)
-            
             # Process the file
             with h5py.File(local_source, 'r') as source_h5:
                 # Extract and process events
                 self.logger.info(f"Extracting events for {session_id}")
-                success = self._process_events(source_h5, local_dest, session_id)
+                events = self._extract_raw_events(source_h5)
+                processed_data = self._process_event_data(events, session_id, source_h5)
                 
-                if not success:
+                if not processed_data:
                     self.logger.error(f"Failed to process events for {session_id}")
                     return {
                         "status": "failed",
                         "error_details": f"Failed to process events for {session_id}",
                         "metadata": {"session_id": session_id},
                         "files_to_copy": [],
-                        "files_to_upload": []
+                        "files_to_upload": [],
+                        "zarr_stores": []
                     }
+            
+            # Create xarray dataset from processed data
+            dataset = self._create_xarray_dataset(processed_data)
+            
+            # Check for empty dataset
+            if not dataset.data_vars:
+                print("DEBUG-EMPTY: Creating placeholder dataset")
+                self.logger.warning(f"No data to save for session {session_id}, creating empty dataset")
+                # Create minimal dataset with a single variable and dimension for chunking safety
+                dataset = xr.Dataset(
+                    data_vars={
+                        'empty_flag': (['empty_dim'], np.array([True]))
+                    },
+                    coords={
+                        'empty_dim': [0]
+                    },
+                    attrs={
+                        'session_id': session_id,
+                        'transform': 'event',
+                        'version': '0.1',
+                        'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                        'empty': True
+                    }
+                )
+            else:
+                print(f"DEBUG-EMPTY: Dataset has {len(dataset.data_vars)} data variables")
+            
+            # Define the destination zarr key
+            zarr_key = f"{self.destination_prefix}{session_id}_events.zarr"
+            
+            # Create explicit chunks based on dimensions
+            chunks = {}
+            for dim_name, dim_size in dataset.dims.items():
+                if dim_size > 0:
+                    chunks[dim_name] = min(100, dim_size)
+            
+            # Debug dataset structure before saving
+            print(f"DEBUG-DATASET: Dataset structure before saving: {dataset}")
+            print(f"DEBUG-DATASET: Data variables: {list(dataset.data_vars.keys())}")
+            print(f"DEBUG-DATASET: Coordinates: {list(dataset.coords.keys())}")
+            print(f"DEBUG-CHUNKS: Final chunks dictionary before save: {chunks}")
+            
+            # Directly save to S3 using BaseTransform's method with explicit chunks
+            self.save_dataset_to_s3_zarr(dataset, zarr_key, chunks=chunks)
             
             # Create metadata for DynamoDB
             metadata = {
                 "session_id": session_id,
-                "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                "processed_at": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                "storage_format": "zarr_xarray",
+                "task_count": len(processed_data['tasks']),
+                "element_count": len(processed_data['elements']),
+                "segment_count": sum(len(segments) for segments in processed_data['segments'].values()),
+                "segment_types": list(processed_data['segments'].keys())
             }
-            
-            # Define the destination key
-            dest_key = f"{self.destination_prefix}{output_filename}"
             
             self.logger.info(f"Successfully processed events for {session_id}")
             return {
                 "status": "success",
                 "metadata": metadata,
                 "files_to_copy": [],
-                "files_to_upload": [(local_dest, dest_key)]
+                "files_to_upload": [],
+                "zarr_stores": [zarr_key]
             }
             
         except Exception as e:
@@ -134,34 +181,282 @@ class EventTransform(BaseTransform):
                 "error_details": str(e),
                 "metadata": {"session_id": session_id},
                 "files_to_copy": [],
-                "files_to_upload": []
+                "files_to_upload": [],
+                "zarr_stores": []
             }
     
-    def _process_events(self, source_h5, dest_file, session_id):
-        """Extract and organize events from H5 file.
+    def _create_xarray_dataset(self, processed_data):
+        """Convert processed event data into a single consolidated xarray Dataset.
         
         Args:
-            source_h5: Source H5 file object
-            dest_file: Path to destination file
-            session_id: Session ID
+            processed_data: Dictionary of processed tasks, elements, and segments
             
         Returns:
-            bool: True if processing succeeded
+            xarray Dataset containing all event data
         """
-        try:
-            # Extract raw events from H5
-            events = self._extract_raw_events(source_h5)
+        # Extract component data
+        tasks = processed_data['tasks']
+        elements = processed_data['elements']
+        segments = processed_data['segments']
+        session_id = processed_data['session_id']
+        
+        # ------------ TASK DATA ------------
+        task_ids = list(tasks.keys())
+        data_vars = {}
+        coords = {}
+        
+        if task_ids:
+            # Create arrays for each task attribute
+            task_arrays = defaultdict(list)
             
-            # Process event data
-            processed_data = self._process_event_data(events, session_id, source_h5)
+            # Define which task attributes to store
+            task_attributes = [
+                'task_type', 'start_time', 'end_time', 'duration', 
+                'completion_status', 'session_fraction_start', 'session_fraction_end',
+                'count', 'allow_repeats', 'with_interruptions', 'input_modality', 
+                'audio_mode', 'skipped', 'skip_time', 'element_count'
+            ]
             
-            # Save to destination file
-            self._save_processed_data(processed_data, dest_file)
+            # Fill arrays with task data
+            for task_id in task_ids:
+                task = tasks[task_id]
+                for attr in task_attributes:
+                    # Use empty/default values if attribute doesn't exist
+                    task_arrays[attr].append(task.get(attr, None))
             
-            return True
-        except Exception as e:
-            self.logger.exception(f"Error processing events: {e}")
-            return False
+            # Add task data to dataset variables
+            for attr, values in task_arrays.items():
+                # Add debugging for string values
+                if all(isinstance(v, str) or v is None for v in values):
+                    print(f"DEBUG-STRING-VALS: Task attribute {attr} has {len(values)} string values")
+                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
+                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
+                
+                # Convert strings to fixed-length string dtype
+                if all(isinstance(v, str) or v is None for v in values):
+                    # Replace None with empty strings and use fixed-length strings
+                    cleaned_values = ['' if v is None else v for v in values]
+                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                else:
+                    # For numeric arrays, replace None with appropriate default
+                    if any(v is None for v in values):
+                        # Determine type from non-None values
+                        non_none_values = [v for v in values if v is not None]
+                        if non_none_values:
+                            if all(isinstance(v, (int, np.integer)) for v in non_none_values):
+                                cleaned_values = [0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.int64)
+                            elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
+                                cleaned_values = [0.0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.float64)
+                            elif all(isinstance(v, bool) for v in non_none_values):
+                                cleaned_values = [False if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=bool)
+                            else:
+                                # Mixed or unknown type, use strings
+                                cleaned_values = ['' if v is None else str(v) for v in values]
+                                values = np.array(cleaned_values, dtype='U')
+                        else:
+                            # All None values, default to strings
+                            values = np.array([''] * len(values), dtype='U')
+                    else:
+                        # No None values, convert normally
+                        values = np.array(values)
+                    
+                data_vars[f'task_{attr}'] = ('task_id', values)
+            
+            # Add task_id as a coordinate
+            coords['task_id'] = task_ids
+        
+        # ------------ ELEMENT DATA ------------
+        element_ids = list(elements.keys())
+        
+        if element_ids:
+            # Create arrays for each element attribute
+            element_arrays = defaultdict(list)
+            
+            # Define which element attributes to store
+            element_attributes = [
+                'element_type', 'start_time', 'end_time', 'duration',
+                'title', 'is_instruction', 'task_id', 'sequence_idx', 'max_count',
+                'session_fraction', 'session_relative_time', 'input_modality', 
+                'audio_mode', 'with_interruptions', 'response_time_seconds'
+            ]
+            
+            # Fill arrays with element data
+            for element_id in element_ids:
+                element = elements[element_id]
+                for attr in element_attributes:
+                    element_arrays[attr].append(element.get(attr, None))
+            
+            # Add element data to dataset variables
+            for attr, values in element_arrays.items():
+                # Add debugging for string values
+                if all(isinstance(v, str) or v is None for v in values):
+                    print(f"DEBUG-STRING-VALS: Element attribute {attr} has {len(values)} string values")
+                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
+                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
+                
+                # Convert strings to fixed-length string dtype
+                if all(isinstance(v, str) or v is None for v in values):
+                    # Replace None with empty strings and use fixed-length strings
+                    cleaned_values = ['' if v is None else v for v in values]
+                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                else:
+                    # For numeric arrays, replace None with appropriate default
+                    if any(v is None for v in values):
+                        # Determine type from non-None values
+                        non_none_values = [v for v in values if v is not None]
+                        if non_none_values:
+                            if all(isinstance(v, (int, np.integer)) for v in non_none_values):
+                                cleaned_values = [0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.int64)
+                            elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
+                                cleaned_values = [0.0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.float64)
+                            elif all(isinstance(v, bool) for v in non_none_values):
+                                cleaned_values = [False if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=bool)
+                            else:
+                                # Mixed or unknown type, use strings
+                                cleaned_values = ['' if v is None else str(v) for v in values]
+                                values = np.array(cleaned_values, dtype='U')
+                        else:
+                            # All None values, default to strings
+                            values = np.array([''] * len(values), dtype='U')
+                    else:
+                        # No None values, convert normally
+                        values = np.array(values)
+                
+                data_vars[f'element_{attr}'] = ('element_id', values)
+            
+            # Add element_id as a coordinate
+            coords['element_id'] = element_ids
+        
+        # ------------ SEGMENT DATA ------------
+        segment_types = list(segments.keys())
+        
+        if segment_types:
+            all_segment_ids = []
+            segment_type_indices = []
+            segment_arrays = defaultdict(list)
+            
+            # Define which segment attributes to store
+            segment_attributes = [
+                'segment_type', 'start_time', 'end_time', 'duration',
+                'containing_element_id', 'element_relative_start',
+                'start_event_id', 'end_event_id'
+            ]
+            
+            # First pass - collect all unique segment ids
+            for segment_type, segment_list in segments.items():
+                for segment in segment_list:
+                    segment_id = segment['segment_id']
+                    all_segment_ids.append(segment_id)
+                    segment_type_indices.append(segment_type)
+                    
+                    for attr in segment_attributes:
+                        segment_arrays[attr].append(segment.get(attr, None))
+            
+            # Add segment data to dataset
+            for attr, values in segment_arrays.items():
+                # Add debugging for string values
+                if all(isinstance(v, str) or v is None for v in values):
+                    print(f"DEBUG-STRING-VALS: Segment attribute {attr} has {len(values)} string values")
+                    print(f"DEBUG-STRING-VALS: Sample values: {values[:3]}")
+                    print(f"DEBUG-STRING-VALS: None values count: {sum(1 for v in values if v is None)}")
+                
+                # Convert strings to fixed-length string dtype
+                if all(isinstance(v, str) or v is None for v in values):
+                    # Replace None with empty strings and use fixed-length strings
+                    cleaned_values = ['' if v is None else v for v in values]
+                    values = np.array(cleaned_values, dtype='U')  # Use Unicode strings
+                else:
+                    # For numeric arrays, replace None with appropriate default
+                    if any(v is None for v in values):
+                        # Determine type from non-None values
+                        non_none_values = [v for v in values if v is not None]
+                        if non_none_values:
+                            if all(isinstance(v, (int, np.integer)) for v in non_none_values):
+                                cleaned_values = [0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.int64)
+                            elif all(isinstance(v, (float, np.floating)) for v in non_none_values):
+                                cleaned_values = [0.0 if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=np.float64)
+                            elif all(isinstance(v, bool) for v in non_none_values):
+                                cleaned_values = [False if v is None else v for v in values]
+                                values = np.array(cleaned_values, dtype=bool)
+                            else:
+                                # Mixed or unknown type, use strings
+                                cleaned_values = ['' if v is None else str(v) for v in values]
+                                values = np.array(cleaned_values, dtype='U')
+                        else:
+                            # All None values, default to strings
+                            values = np.array([''] * len(values), dtype='U')
+                    else:
+                        # No None values, convert normally
+                        values = np.array(values)
+                
+                data_vars[f'segment_{attr}'] = ('segment_id', values)
+            
+            # Add segment coordinates
+            coords['segment_id'] = all_segment_ids
+            
+            # Convert segment_type_indices to fixed-length string dtype
+            segment_type_indices_array = np.array(segment_type_indices, dtype='U')
+            data_vars['segment_type_index'] = ('segment_id', segment_type_indices_array)
+        
+        # ------------ RELATIONS DATA ------------
+        # Add element-segment relations map
+        if element_ids and all_segment_ids:
+            # Create a mapping from element_id to segment_ids
+            element_segments = defaultdict(list)
+            for i, segment_id in enumerate(all_segment_ids):
+                element_id = segment_arrays['containing_element_id'][i]
+                if element_id:
+                    element_segments[element_id].append(segment_id)
+            
+            # Store the mapping as attributes
+            element_segment_maps = {}
+            for element_id, segment_ids in element_segments.items():
+                element_segment_maps[f"element_{element_id}_segments"] = segment_ids
+        
+        # Create the dataset with all data variables and coordinates
+        ds = xr.Dataset(
+            data_vars=data_vars,
+            coords=coords,
+            attrs={
+                'session_id': session_id,
+                'transform': 'event',
+                'version': '0.1',
+                'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                **(element_segment_maps if 'element_segment_maps' in locals() else {})
+            }
+        )
+        
+        # Add debugging prints for dimensions
+        print(f"DEBUG-DIMS: Dataset dimensions: {ds.dims}")
+        for dim_name, dim_size in ds.dims.items():
+            print(f"DEBUG-DIMS: Dimension {dim_name} has size {dim_size}")
+        
+        # Apply chunking strategy - SAFER APPROACH
+        if ds.dims:  # Only apply chunking if dataset has dimensions
+            # Create default chunking for each dimension in the dataset
+            default_chunks = {}
+            for dim_name, dim_size in ds.dims.items():
+                if dim_size > 0:  # Only chunk non-empty dimensions
+                    default_chunks[dim_name] = min(100, dim_size)
+            
+            if default_chunks:  # Only apply if we have valid chunk sizes
+                ds = ds.chunk(default_chunks)
+            
+            # Add explicit chunk sizes for coordinates
+            for name in ds.coords:
+                # If xarray hasn't set a chunk grid yet, give it the full shape as one chunk
+                if ds[name].encoding.get("chunks") is None:
+                    ds[name].encoding["chunks"] = ds[name].shape
+        
+        return ds
     
     def _extract_raw_events(self, h5_file):
         """Extract raw events from the H5 file.
@@ -730,301 +1025,6 @@ class EventTransform(BaseTransform):
         if 'metadata' in h5_file and 'start_time' in h5_file['metadata'].attrs:
             return float(h5_file['metadata'].attrs['start_time'])
         return None
-    
-    def _save_processed_data(self, processed_data, dest_file):
-        """Save processed data to H5 file.
-        
-        Args:
-            processed_data: Processed event data
-            dest_file: Path to destination file
-        """
-        with h5py.File(dest_file, 'w') as h5f:
-            # Create metadata group
-            metadata = h5f.create_group('metadata')
-            metadata.attrs['session_id'] = processed_data['session_id']
-            metadata.attrs['transform'] = 'event'
-            metadata.attrs['version'] = '0.1'
-            
-            # Print debug summary
-            print(f"DEBUG-SUMMARY: All task_ids in dictionary: {list(processed_data['tasks'].keys())}")
-            print(f"DEBUG-SUMMARY: Total tasks: {len(processed_data['tasks'])}, Total elements: {len(processed_data['elements'])}")
-            
-            # Create statistics
-            stats = metadata.create_group('stats')
-            stats.attrs['num_tasks'] = len(processed_data['tasks'])
-            stats.attrs['num_elements'] = len(processed_data['elements'])
-            
-            for segment_type, segments in processed_data['segments'].items():
-                stats.attrs[f'num_{segment_type}_segments'] = len(segments)
-            
-            # Create elements group and table
-            elements_group = h5f.create_group('elements')
-            element_dtype = self._create_element_dtype()
-            element_data = self._convert_to_array(processed_data['elements'], element_dtype, 'elements')
-            
-            elements_table = elements_group.create_dataset(
-                'table',
-                data=element_data,
-                dtype=element_dtype
-            )
-            
-            # Create tasks group and table
-            tasks_group = h5f.create_group('tasks')
-            task_dtype = self._create_task_dtype()
-            task_data = self._convert_to_array(processed_data['tasks'], task_dtype, 'tasks')
-            
-            tasks_table = tasks_group.create_dataset(
-                'table',
-                data=task_data,
-                dtype=task_dtype
-            )
-            
-            # Create segments group and tables
-            segments_group = h5f.create_group('segments')
-            segment_dtype = self._create_segment_dtype()
-            
-            for segment_type, segment_list in processed_data['segments'].items():
-                if segment_list:
-                    segment_data = self._convert_to_array(segment_list, segment_dtype, 'segments')
-                    segments_group.create_dataset(
-                        segment_type,
-                        data=segment_data,
-                        dtype=segment_dtype
-                    )
-            
-            # Create indices
-            indices_group = h5f.create_group('indices')
-            
-            # Create element_by_task index - build directly from elements
-            element_by_task = indices_group.create_group('element_by_task')
-            task_to_elements = defaultdict(list)
-
-            # Collect elements by task_id
-            for element_id, element in processed_data['elements'].items():
-                task_id = element.get('task_id', '')
-                if task_id:
-                    task_to_elements[task_id].append(element_id)
-
-            # Create datasets for each task's elements
-            for task_id, element_ids in task_to_elements.items():
-                if element_ids:
-                    element_ids = [e_id.encode('utf-8') if isinstance(e_id, str) else e_id for e_id in element_ids]
-                    element_by_task.create_dataset(
-                        task_id,
-                        data=np.array(element_ids, dtype='S64')
-                    )
-            
-            # Element types can be queried directly from the elements table
-            
-            # Create segments_by_element index - built from segments table instead of element lists
-            segments_by_element = indices_group.create_group('segments_by_element')
-            element_segments = {}
-
-            # Collect segments by their containing element
-            for segment_type, segment_list in processed_data['segments'].items():
-                for segment in segment_list:
-                    element_id = segment.get('containing_element_id', '')
-                    if element_id:
-                        if element_id not in element_segments:
-                            element_segments[element_id] = []
-                        element_segments[element_id].append(segment['segment_id'])
-
-            # Create datasets for each element's segments
-            for element_id, segment_ids in element_segments.items():
-                if segment_ids:
-                    segment_ids = [s_id.encode('utf-8') if isinstance(s_id, str) else s_id for s_id in segment_ids]
-                    segments_by_element.create_dataset(
-                        element_id,
-                        data=np.array(segment_ids, dtype='S64')
-                    )
-            
-            # Segments by task can be derived by combining segments_by_element with element_by_task indices
-    
-    def _create_element_dtype(self):
-        """Create numpy dtype for elements table.
-
-        Returns:
-            np.dtype: Element table dtype
-        """
-        return np.dtype([
-            # 1. Identifiers & Metadata
-            ('element_id', h5py.special_dtype(vlen=str)),
-            ('element_type', h5py.special_dtype(vlen=str)),
-            ('title', h5py.special_dtype(vlen=str)),
-            ('is_instruction', np.bool_),
-
-            # 2. Task Relationships
-            ('task_id', h5py.special_dtype(vlen=str)),
-            ('task_type', h5py.special_dtype(vlen=str)),
-            ('sequence_idx', np.int32),
-            ('max_count', np.int32),
-
-            # 3. Timing & Position
-            ('start_time', np.float64),
-            ('end_time', np.float64),
-            ('duration', np.float64),
-            ('session_fraction', np.float32),
-            ('session_relative_time', np.float64),
-
-            # 4. Presentation Configuration
-            ('audio_mode', h5py.special_dtype(vlen=str)),
-            ('with_interruptions', np.bool_),
-
-            # 5. Response Characteristics
-            ('input_modality', h5py.special_dtype(vlen=str)),
-            ('response_time_seconds', np.float64),
-
-            # 6. Event References
-            ('element_sent_id', h5py.special_dtype(vlen=str)),
-            ('element_replied_id', h5py.special_dtype(vlen=str)),
-            ('event_id', h5py.special_dtype(vlen=str)),
-
-            # Note: Segment relationships are now managed only through indices
-        ])
-    
-    def _create_task_dtype(self):
-        """Create numpy dtype for tasks table.
-
-        Returns:
-            np.dtype: Task table dtype
-        """
-        return np.dtype([
-            # 1. Identifiers & Type
-            ('task_id', h5py.special_dtype(vlen=str)),
-            ('task_type', h5py.special_dtype(vlen=str)),
-
-            # 2. Timing
-            ('start_time', np.float64),
-            ('end_time', np.float64),
-            ('duration', np.float64),
-            ('session_fraction_start', np.float32),
-            ('session_fraction_end', np.float32),
-
-            # 3. Core Configuration
-            ('count', np.int32),
-            ('allow_repeats', np.bool_),
-            ('with_interruptions', np.bool_),
-            ('audio_mode', h5py.special_dtype(vlen=str)),
-
-
-            # 5. Input Configuration
-            ('input_modality', h5py.special_dtype(vlen=str)),
-
-            # 6. Status Information
-            ('completion_status', h5py.special_dtype(vlen=str)),
-            ('skipped', np.bool_),
-            ('skip_time', np.float64),
-            ('skip_event_id', h5py.special_dtype(vlen=str)),
-
-            # 7. Event References
-            ('task_started_id', h5py.special_dtype(vlen=str)),
-            ('task_completed_id', h5py.special_dtype(vlen=str)),
-
-            # 8. Element Relationships
-            ('element_count', np.int32),
-
-            # Note: Segment relationships are now managed only through indices
-        ])
-    
-    def _create_segment_dtype(self):
-        """Create numpy dtype for segments table.
-        
-        Returns:
-            np.dtype: Segment table dtype
-        """
-        return np.dtype([
-            # 1. Core Information
-            ('segment_id', h5py.special_dtype(vlen=str)),
-            ('segment_type', h5py.special_dtype(vlen=str)),
-            ('start_time', np.float64),
-            ('end_time', np.float64),
-            ('duration', np.float64),
-            
-            # 2. Container Relationships
-            ('containing_element_id', h5py.special_dtype(vlen=str)),
-            ('element_relative_start', np.float64),
-            
-            # 3. Event References
-            ('start_event_id', h5py.special_dtype(vlen=str)),
-            ('end_event_id', h5py.special_dtype(vlen=str)),
-        ])
-    
-    def _convert_to_array(self, items, dtype, item_type='elements'):
-        """Convert items to a structured numpy array with NULL safety.
-
-        Args:
-            items: Dictionary or list of items
-            dtype: Numpy dtype for the array
-            item_type: Type of items ('elements', 'tasks', or 'segments')
-
-        Returns:
-            np.ndarray: Structured array
-        """
-        # Initialize array
-        array_data = np.zeros(len(items), dtype=dtype)
-
-        # Define special fields that need array conversion by item type
-        # Note: No more special fields requiring array conversion
-        array_fields = {
-            'elements': [],  # No segment arrays
-            'tasks': [],     # No element_ids array
-            'segments': []
-        }
-        special_fields = array_fields.get(item_type, [])
-
-        # Convert items based on type
-        if item_type == 'segments':
-            # Segments handling (unchanged)
-            for i, item in enumerate(items):
-                for field in dtype.names:
-                    if field in item:
-                        array_data[i][field] = item[field]
-        else:
-            # Handle dictionary items (tasks, elements)
-            for i, (item_id, item) in enumerate(items.items()):
-                for field in dtype.names:
-                    if field not in item:
-                        # Initialize array fields to empty arrays instead of skipping
-                        if field in special_fields:
-                            array_data[i][field] = np.array([], dtype='S64')
-                        continue
-
-                    # Handle special field arrays with NULL safety
-                    if field in special_fields:
-                        # Always create a valid array, even if item[field] is None or empty
-                        if self._is_empty_or_none(item[field]):
-                            array_data[i][field] = np.array([], dtype='S64')
-                        elif isinstance(item[field], list):
-                            # Filter out None values and convert strings to bytes
-                            ids = []
-                            for id_val in item[field]:
-                                if not self._is_empty_or_none(id_val):
-                                    if isinstance(id_val, str):
-                                        ids.append(id_val.encode('utf-8'))
-                                    else:
-                                        ids.append(id_val)
-                            array_data[i][field] = np.array(ids, dtype='S64')
-                        else:
-                            # Non-list value, create empty array
-                            array_data[i][field] = np.array([], dtype='S64')
-                    else:
-                        # Regular non-array field
-                        array_data[i][field] = item[field]
-
-                # Task-specific post-processing
-                if item_type == 'tasks':
-                    # Element count is now directly maintained
-                    if 'element_count' not in item:
-                        array_data[i]['element_count'] = 0
-
-                    # Set defaults for optional fields
-                    if not item.get('completion_status'):
-                        array_data[i]['completion_status'] = 'completed'
-
-                    if 'skipped' not in item:
-                        array_data[i]['skipped'] = False
-
-        return array_data
     
     @classmethod
     def from_args(cls, args):
