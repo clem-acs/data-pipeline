@@ -1,15 +1,36 @@
+# Python artifacts
 __pycache__
 .ropeproject
 venv
-*.egg-info
-__pycache__
-*.snirf
 .venv
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+
+# Environment and secrets
 .env
-*.log
 .env.secrets
+
+# Logs
+*.log
+
+# Work directories
 transform_workdir
+
+# Data files
 *.h5
+*.csv
+*.parquet
+*.json
+*.npy
+*.npz
+
+# Large files in specific directories
+ref/rio-saved-txt/
+ref/s3h5fnirs/*.csv
+ref/s3h5fnirs/channel_distances.csv
+
 # fNIRS SNIRF files
 *.snirf
 
