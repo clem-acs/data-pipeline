@@ -1,0 +1,13 @@
+boto3
+dask
+pandas
+numpy
+s3fs
+tqdm
+torch
+mne
+python-dotenv
+autocorrect
+transformers
+xarray
+zarr

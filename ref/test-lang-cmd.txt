@@ -1,0 +1,18 @@
+# List available transforms
+python -m cli --list-transforms
+
+# List available sessions to find those with R/S language data
+python -m cli lang --list-sessions --verbose
+
+# Process a specific session with R/S language data (TEST MODE)
+python -m cli lang --verbose 2>&1 | tee cor1.txt
+
+
+--session "omar royce herrera_20250503_201253" --verbose --test
+
+# Command argument explanation:
+# --test: Combined flag that activates both --dry-run and --keep-local
+#   --dry-run: Simulates all actions without making changes to S3 or DynamoDB
+#   --keep-local: Keeps temporary files (doesn't delete working directory)
+# --verbose: Shows detailed debug logs
+# --session: Specifies which session to process
