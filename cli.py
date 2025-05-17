@@ -17,6 +17,7 @@ try:
     from .transforms.t2C_event_v0 import EventTransform
     from .transforms.t2D_validate_v0 import ValidateTransform
     from .transforms.t2E_analysis_v0 import AnalysisTransform
+    from .transforms.t4A_query_v0 import QueryTransform
     from .utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -30,6 +31,7 @@ except ImportError:
     from transforms.t2D_validate_v0 import ValidateTransform
     from transforms.t2E_analysis_v0 import AnalysisTransform
     from transforms.t2F_audio_v0 import AudioExtractTransform
+    from transforms.t4A_query_v0 import QueryTransform
     from utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -58,6 +60,7 @@ TRANSFORMS = {
     'analyze': AnalysisTransform,
     'audio': AudioExtractTransform,
     'event': EventTransform,
+    'qry': QueryTransform,
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
     # 'extract': FeatureExtractionTransform,
