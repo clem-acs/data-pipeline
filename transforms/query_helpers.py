@@ -147,6 +147,144 @@ def join_elements_tasks(elements: Dict[str, np.ndarray],
     return result
 
 
+def extract_full_windows(
+    wgroup: zarr.Group,
+    hits: np.ndarray          # indices of the windows you want
+) -> Dict[str, np.ndarray]:
+    """
+    Return every variable whose first dimension matches the time dimension.
+    
+    This efficiently slices all window data arrays with the same indices.
+    
+    Args:
+        wgroup: Zarr group containing window data
+        hits: Array of window indices to extract
+        
+    Returns:
+        Dictionary with all arrays that have a matching first dimension
+    """
+    # Add debug print
+    import logging
+    logging.debug(f"extract_full_windows called with {len(hits)} indices: min={hits.min() if len(hits) > 0 else -1}, max={hits.max() if len(hits) > 0 else -1}")
+    
+    out = {}
+    time_arr_length = wgroup["time"].shape[0]
+    logging.debug(f"Time array length in wgroup: {time_arr_length}")
+    
+    # Add debug print here
+    import logging
+    for key in wgroup.array_keys():
+        arr = wgroup[key]
+        logging.debug(f"Array {key} shape={arr.shape}, matches time?={arr.shape[0] == time_arr_length if arr.shape else False}")
+    
+    # Debug prints about the hits array BEFORE processing any arrays
+    # Use print directly to ensure it shows up in output
+    print(f"BEFORE PROCESSING: hits len={len(hits)}, unique={len(np.unique(hits))}, "
+          f"sorted_ok={(hits[:-1] < hits[1:]).all() if len(hits) > 1 else True}, "
+          f"max_hit={hits.max() if len(hits) > 0 else -1}, time_len={wgroup['time'].shape[0]}")
+    print(f"BEFORE PROCESSING: unique={len(np.unique(hits))}  total={len(hits)}  "
+          f"sorted={(hits[:-1] < hits[1:]).all() if len(hits) > 1 else True}")
+    
+    for key in wgroup.array_keys():
+        arr = wgroup[key]
+        if arr.shape and arr.shape[0] == time_arr_length:
+            # Use vindex for efficient chunk-wise slicing
+            import logging
+            logging.debug(
+                f"Processing {key}: array shape={arr.shape[0]}, "
+                f"hit indices range {hits.min() if len(hits) > 0 else -1}-{hits.max() if len(hits) > 0 else -1}"
+            )
+            
+            # Check for invalid indices before using vindex
+            invalid_indices = hits[hits >= arr.shape[0]]
+            if len(invalid_indices) > 0:
+                logging.warning(f"Found {len(invalid_indices)} out-of-bounds indices: {invalid_indices[:5]}{'...' if len(invalid_indices) > 5 else ''}")
+                valid_hits = hits[hits < arr.shape[0]]
+                if len(valid_hits) == 0:
+                    logging.warning(f"No valid indices for {key}, skipping")
+                    continue
+                hits_to_use = valid_hits
+            else:
+                hits_to_use = hits
+            
+            # Explicitly build selection tuple with slices for remaining dimensions
+            # Avoid using ellipsis completely as it causes selection.index(Ellipsis) to fail with NumPy arrays
+            sel = (hits_to_use,) + tuple(slice(None) for _ in range(arr.ndim - 1))
+            out[key] = arr.oindex[sel]
+    
+    import logging
+    logging.info(f"Extracted {len(hits)} windows with {len(out)} matching arrays")
+    return out
+
+
+def build_labels(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarray, 
+                label_map: Optional[Dict[str, Union[str, int]]] = None) -> np.ndarray:
+    """
+    Build labels array for window indices based on which element they fall into.
+    
+    Args:
+        elems: Dictionary with element data (element_ids, start_time, end_time)
+        hits: Array of window indices that match
+        times: Array of timestamps for each window
+        label_map: Optional mapping from patterns to label values
+        
+    Returns:
+        Array of labels for each hit
+    """
+    if label_map is None:
+        # Return numeric labels directly for more efficient processing
+        label_map = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+    
+    labels = np.full(len(hits), label_map.get("unknown", 3), dtype=np.int32)
+    
+    for i, hit_idx in enumerate(hits):
+        hit_time = times[hit_idx]
+        # Find the element this hit belongs to
+        for j, (eid, start, end) in enumerate(zip(elems["element_ids"], 
+                                                elems["start_time"], 
+                                                elems["end_time"])):
+            if start <= hit_time <= end:
+                # Convert element_id to string for pattern matching
+                eid_str = eid.decode("utf-8") if isinstance(eid, (bytes, np.bytes_)) else str(eid)
+                
+                # Determine label from element_id patterns
+                for pattern, value in label_map.items():
+                    if pattern in eid_str:
+                        labels[i] = value
+                        break
+                
+                break
+    
+    return labels
+
+
+def build_eids(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarray) -> np.ndarray:
+    """
+    Build element_ids array for window indices based on which element they fall into.
+    
+    Args:
+        elems: Dictionary with element data (element_ids, start_time, end_time)
+        hits: Array of window indices that match
+        times: Array of timestamps for each window
+        
+    Returns:
+        Array of element_ids for each hit
+    """
+    eids = np.empty(len(hits), dtype=object)
+    
+    for i, hit_idx in enumerate(hits):
+        hit_time = times[hit_idx]
+        # Find the element this hit belongs to
+        for eid, start, end in zip(elems["element_ids"], 
+                                 elems["start_time"], 
+                                 elems["end_time"]):
+            if start <= hit_time <= end:
+                eids[i] = eid
+                break
+    
+    return eids
+
+
 def collect_windows(
     window_group: zarr.Group,
     time_arr: np.ndarray,

@@ -1,0 +1,27 @@
+# Alternative commands to try for fixing the JSON parsing issue
+
+# 1. With double quotes around the JSON (and escaped inner quotes)
+python cli.py qry --eye-neural --label-map "{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}"
+
+# 2. Without any quotes (sometimes works on Windows)
+python cli.py qry --eye-neural --label-map {\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}
+
+# 3. Using a simpler JSON string
+python cli.py qry --eye-neural --label-map {"closed":0}
+
+# 4. Without the label-map parameter (uses default map)
+python cli.py qry --eye-neural
+
+# 5. With a file-based approach (create a file first)
+# First create label_map.json with the content: {"closed":0,"open":1,"intro":2,"unknown":3}
+# Then run:
+python cli.py qry --eye-neural --label-map "$(cat label_map.json)"
+
+# 6. Using Python module syntax instead of direct script execution
+python -m data_pipeline.cli qry --eye-neural --label-map '{"closed":0,"open":1,"intro":2,"unknown":3}'
+
+# 7. Escaping approach for PowerShell
+python cli.py qry --eye-neural --label-map '{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}'
+
+# 8. JSON with single quotes for Windows CMD
+python cli.py qry --eye-neural --label-map "{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}"

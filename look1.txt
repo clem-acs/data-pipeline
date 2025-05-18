@@ -1,0 +1,27 @@
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+
+=== Session: lydia_10m_20250423_161755_events.zarr ===
+eeg          shape=(329, 21, 105), dtype=float32
+fnirs        shape=(329, 9360), dtype=float32
+time         shape=(329,), dtype=float64
+labels       shape=(329,), dtype=int32
+element_ids  shape=(329,), dtype=object
+
+Total windows: 329
+Label distribution:
+  intro    (2):   24  ( 7.3%)
+  unknown  (3):  191  (58.1%)
+  open     (1):  114  (34.7%)
+
+First 3 windows:
+  idx 0  ts=1745450606369.0  eid=eye_1_intro  label=intro
+  idx 1  ts=1745450606579.0  eid=eye_1_intro  label=intro
+  idx 2  ts=1745450606789.0  eid=eye_1_intro  label=intro
+
+Dataset looks consistent 
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000027071588BF0>
+Unclosed connector
+connections: ['[(<aiohttp.client_proto.ResponseHandler object at 0x000002707207D250>, 55937.078), (<aiohttp.client_proto.ResponseHandler object at 0x000002707207D970>, 55937.093), (<aiohttp.client_proto.ResponseHandler object at 0x000002707207EC30>, 55937.093), (<aiohttp.client_proto.ResponseHandler object at 0x000002707207D130>, 55937.39)]']
+connector: <aiohttp.connector.TCPConnector object at 0x000002706EFEEAB0>

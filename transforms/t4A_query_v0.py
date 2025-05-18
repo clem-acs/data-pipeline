@@ -7,13 +7,15 @@ Outputs a single consolidated v3 store per query under:
 
 Key features:
     • Zarr-v3-safe writes (create_dataset with explicit shape/dtype)
-    • Robust first-session detection (checks '<store>/.zmetadata')
+    • Robust first-session detection (checks '<store>/zarr.json')
     • Object/Unicode dtypes converted to fixed-width bytes
-    • Helper utilities (bytesify, filter_elements, collect_windows, etc.)
+    • Helper utilities (bytesify, filter_elements, extract_full_windows, etc.)
     • Metadata consolidation with root.store
     • Generic query registry system
+    • Element-based neural window extraction with configurable labels
 """
 
+import json
 import logging
 import time
 import os
@@ -32,6 +34,9 @@ from transforms.query_helpers import (
     filter_elements, 
     join_elements_tasks,
     collect_windows,
+    extract_full_windows,
+    build_labels,
+    build_eids,
     get_neural_windows_dataset
 )
 
@@ -53,15 +58,18 @@ class QueryTransform(BaseTransform):
         # Additional queries will be added here
     }
 
-    def __init__(self, query_name: Optional[str] = None, **kwargs):
+    def __init__(self, query_name: Optional[str] = None, 
+                 label_map: Optional[Dict[str, int]] = None, **kwargs):
         """
         Initialize the query transform.
         
         Args:
             query_name: Name of the query to run (must be in QUERY_REGISTRY)
+            label_map: Optional mapping from element_id patterns to labels
             **kwargs: Additional arguments for BaseTransform
         """
         self.query_name = query_name
+        self.label_map = label_map or {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
         
         # Set default transform info if not provided
         transform_id = kwargs.pop('transform_id', 't4A_query_v0')
@@ -80,6 +88,8 @@ class QueryTransform(BaseTransform):
         
         if self.query_name:
             self.logger.info(f"Initialized QueryTransform for query '{self.query_name}'")
+            if self.label_map:
+                self.logger.info(f"Using label map: {self.label_map}")
 
     @classmethod
     def add_subclass_arguments(cls, parser):
@@ -97,6 +107,13 @@ class QueryTransform(BaseTransform):
                 dest="query_name",
                 help=f"Run the {q} query"
             )
+            
+        # Add arguments for label mapping
+        parser.add_argument(
+            "--label-map", 
+            type=str,
+            help="Label mapping in JSON format, e.g., '{\"closed\":0,\"open\":1,\"intro\":2}'"
+        )
 
     @classmethod
     def from_args(cls, args):
@@ -109,8 +126,21 @@ class QueryTransform(BaseTransform):
         Returns:
             Initialized QueryTransform instance
         """
+        # Parse label map if provided
+        label_map = None
+        if hasattr(args, "label_map") and args.label_map:
+            try:
+                label_map = json.loads(args.label_map)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON for label-map: {e}")
+        
+        # Create a query-specific transform_id to track each query type separately
+        transform_id = f"t4A_query_v0_{args.query_name}" if args.query_name else "t4A_query_v0"
+                
         return cls(
             query_name=args.query_name,
+            label_map=label_map,
+            transform_id=transform_id,  # Use query-specific transform_id
             source_prefix=getattr(args, "source_prefix", cls.SOURCE_PREFIX),
             destination_prefix=getattr(args, "dest_prefix", cls.DEST_PREFIX),
             s3_bucket=args.s3_bucket,
@@ -453,8 +483,129 @@ class QueryTransform(BaseTransform):
             return None
             
         # Filter for task_type='eye'
-        return filter_elements(elems, task_type="eye")
+        filtered_elems = filter_elements(elems, task_type="eye")
+        
+        # Add debug print
+        if filtered_elems:
+            self.logger.debug(f"Found {len(filtered_elems['element_ids'])} eye elements for session {sid}")
+            # Print sample element
+            if len(filtered_elems['element_ids']) > 0:
+                self.logger.debug(f"Sample eye element: ID={filtered_elems['element_ids'][0]}, time_range={filtered_elems['start_time'][0]}-{filtered_elems['end_time'][0]}")
+        else:
+            self.logger.debug(f"No eye elements found for session {sid}")
+            
+        return filtered_elems
 
+    def _query_elements_neural_windows(
+        self, 
+        zgroup: zarr.Group, 
+        sid: str, 
+        filter_kwargs: Dict[str, Any],
+        label_map: Optional[Dict[str, int]] = None
+    ) -> Optional[Dict[str, np.ndarray]]:
+        """
+        Extract neural windows during elements that match specified filters.
+        
+        Args:
+            zgroup: Zarr group containing elements data
+            sid: Session ID
+            filter_kwargs: Dictionary of keyword arguments for filter_elements
+            label_map: Optional mapping from element_id patterns to numeric labels
+            
+        Returns:
+            Dictionary with windows and metadata
+        """
+        # Get filtered elements
+        all_elems = self._extract_elements_data(zgroup, sid)
+        if all_elems is None:
+            return None
+            
+        filtered_elems = filter_elements(all_elems, **filter_kwargs)
+        if filtered_elems is None:
+            return None
+        
+        logging.info(f"Found {len(filtered_elems['element_ids'])} matching elements for session {sid}")
+        
+        # Add debug print for element durations
+        self.logger.debug(
+            f"Found {len(filtered_elems['element_ids'])} matching eye elements with durations: " + 
+            ", ".join([f"{end-start}ms" for start, end in zip(filtered_elems['start_time'], filtered_elems['end_time'])])[:100] + 
+            "..."
+        )
+
+        # Use label map from instance if not provided
+        if label_map is None:
+            label_map = self.label_map
+
+        # Clean session ID for window store path (remove _events.zarr suffix if present)
+        clean_sid = sid
+        if clean_sid.endswith("_events.zarr"):
+            clean_sid = clean_sid.replace("_events.zarr", "")
+        
+        # Open the window store for this session
+        window_key = f"processed/windows/{clean_sid}_windowed.zarr"
+        logging.info(f"Looking for window store at: {window_key}")
+        
+        # Add debug print
+        self.logger.debug(f"Window store path: {window_key}")
+        try:
+            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
+            self.logger.debug(f"Window zarr store found at {window_key}")
+        except self.s3.exceptions.ClientError as e:
+            self.logger.debug(f"Window zarr store NOT found: {e}")
+            self.logger.warning(f"No window store for {sid}")
+            return None
+        
+        # Open window zarr store
+        wgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}")
+        
+        # Add debug print
+        self.logger.debug(f"Window zarr array keys: {list(wgroup.array_keys())}")
+        
+        # Get timestamps array
+        t = wgroup["time"][:]
+        self.logger.debug(f"Time array shape: {wgroup['time'].shape}")
+        
+        # Add debug print for time ranges
+        self.logger.debug(
+            f"Session {sid}: Element time ranges {filtered_elems['start_time'].min()}-{filtered_elems['end_time'].max()} vs "
+            f"Window timestamps {t.min()}-{t.max()} (length={len(t)})"
+        )
+        
+        # Find all hits within the element time ranges
+        hits = []
+        for eid, (start, end) in zip(filtered_elems["element_ids"],
+                                   zip(filtered_elems["start_time"], filtered_elems["end_time"])):
+            window_indices = np.where((t >= start) & (t <= end))[0]
+            if window_indices.size > 0:
+                hits.extend(window_indices)
+        
+        if not hits:
+            self.logger.debug(f"No window hits found for eye elements")
+            return None
+            
+        # Sort for chronological order
+        hits = np.sort(np.array(hits))
+        
+        # Add debug print
+        self.logger.debug(f"Generated {len(hits)} window indices, min={min(hits)}, max={max(hits)}")
+        if len(hits) > 1000:
+            self.logger.debug(f"Large number of hits - first 5: {hits[:5]}, last 5: {hits[-5:]}")
+        
+        logging.info(f"Found {len(hits)} windows across {len(filtered_elems['element_ids'])} elements for session {sid}")
+        
+        # Use extract_full_windows to get all variables for the hits
+        result = extract_full_windows(wgroup, hits)
+        
+        # Add session_id and generate labels and element_ids
+        result.update({
+            "session_id": sid,
+            "labels": bytesify(build_labels(filtered_elems, hits, t, label_map)),
+            "element_ids": bytesify(build_eids(filtered_elems, hits, t))
+        })
+        
+        return result
+        
     def _query_eye_neural_windows(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, np.ndarray]]:
         """
         Extract neural data windows during 'eye' task elements.
@@ -466,52 +617,13 @@ class QueryTransform(BaseTransform):
         Returns:
             Dictionary with windows, labels, and element_ids
         """
-        # First get the eye elements
-        elems = self._query_eye_elements(zgroup, sid)
-        if elems is None:
-            return None
-        
-        # Open the window store for this session
-        window_key = f"processed/window/{sid}_windows.zarr"
-        
-        try:
-            # Check if window store exists
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/.zmetadata")
-        except self.s3.exceptions.ClientError:
-            self.logger.warning(f"No window store for {sid}")
-            return None
-        
-        # Open window zarr store
-        wgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}")
-        
-        # Locate time axis & data variable
-        time_var = next((n for n in ("time", "timestamp", "timestamps") if n in wgroup), None)
-        data_var = next((n for n in ("neural_data", "eeg", "data", "signal") if n in wgroup), None)
-        
-        if not (time_var and data_var):
-            self.logger.warning(f"Unable to locate time/data vars in window store for {sid}")
-            return None
-        
-        # Get time array and prepare intervals
-        time_arr = wgroup[time_var][:]
-        intervals = list(zip(elems["element_ids"], zip(elems["start_time"], elems["end_time"])))
-        
-        # Extract windows with labels
-        label_map = {"closed": "closed", "open": "open", "intro": "intro"}
-        wins, labels, eids = collect_windows(
-            wgroup, time_arr, intervals, data_var, label_map
+        # Use the generic method with task_type="eye" filter
+        return self._query_elements_neural_windows(
+            zgroup=zgroup,
+            sid=sid,
+            filter_kwargs={"task_type": "eye"},
+            label_map=self.label_map
         )
-        
-        if not wins.size:
-            return None
-        
-        # Return with the session ID
-        return {
-            "session_id": sid,
-            "windows": wins.astype(np.float32),
-            "labels": bytesify(labels),
-            "element_ids": bytesify(eids),
-        }
 
     # ------------------------------------------------------------------ #
     #  PyTorch Dataset Conversion
