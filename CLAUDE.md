@@ -68,10 +68,8 @@ so that query should be able to run from here, just as a simpler element-only qu
 python cli.py qry --[normal cli args] --query_name 
 where query_name might be like --eye for the eye one, or --all-elements or others. i'll add lots
 
-now, all-elements is working, but i want to do it now where it queries windows based on timestamps, and slices them from each sessions window zarr store into a window/lavel dataset, so like for each element start/end time i specify, it returns all the windows between that start/ed time
+now, it worked. i ran something, and saved in the s3 in processed/queries/eye_neural.zarr
+but then the label map i gave was slightly wrong, so i want to rerun it again, with my new label map. it didn't work, because there was already something there in the folder when it tried to write.
 
-there are functions in query_helpers.py which should help, read those
-but when i run
-python cli.py qry --eye-neural --label-map "{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}" 2>&1 | tee i5.txt
-i get the output currently in i5.txt - there is an error. without changing anything in the code, can you isolate exactly what is causing the error and why? report back, ultrathink
-
+i do want it not to rerun queries on a session if they've already been run on that session. but they should overrun - write over the result -- if i put the flag --include-processed or if the label map is different. they should write over the zarr store with the new info. analyze base transform, cli.py t4a, the other transforms to understand why this isn't happening correctly. what is the current flow, why is this not working. don't change anything yet, just report back ultrathink
+look in i11.txt, which you have full access to, to understand the error flow

@@ -218,8 +218,12 @@ class QueryTransform(BaseTransform):
             session_id: Session ID being processed
             data: Dictionary with query results
         """
-        # Create/get session-specific subgroup
-        sg = sessions_group.require_group(sanitize_session_id(session_id))
+        # Get the sanitized session key
+        session_key = sanitize_session_id(session_id)
+        
+        # Always try to create the group - if it exists, zarr with overwrite=True will handle it
+        # This bypasses the need to check consolidated metadata which might be stale
+        sg = sessions_group.create_group(session_key, overwrite=True)
         
         # Save each item
         for key, val in data.items():
@@ -249,7 +253,8 @@ class QueryTransform(BaseTransform):
                     data=val,
                     shape=val.shape,
                     dtype=val.dtype,
-                    chunks=chunks
+                    chunks=chunks,
+                    overwrite=True  # Allow overwriting existing arrays
                 )
             elif isinstance(val, (str, int, float, bool)):
                 # Store scalar values as attributes
@@ -260,6 +265,7 @@ class QueryTransform(BaseTransform):
         session_result: Dict[str, Any],
         result_key: str,
         session_id: str,
+        overwrite: bool = False,
     ):
         """
         Save a session's result to the zarr store.
@@ -270,6 +276,7 @@ class QueryTransform(BaseTransform):
             session_result: Dictionary with this session's query results
             result_key: S3 key for the zarr store
             session_id: Session ID being processed
+            overwrite: Whether to overwrite existing session data
         """
         uri = f"s3://{self.s3_bucket}/{result_key}"
         
@@ -292,12 +299,17 @@ class QueryTransform(BaseTransform):
                     version="0.2",
                     session_count=0,
                     session_ids=[],
+                    label_map=self.label_map,  # Store label map in metadata
                 )
                 sessions_group = root.require_group("sessions")
             else:
                 # Open existing store
                 root = zarr.open_group(store=uri, mode="a", storage_options={"anon": False})
                 sessions_group = root["sessions"]
+                
+                # Log if we're overwriting
+                if overwrite:
+                    self.logger.info(f"Overwriting existing data for session {session_id} if present")
             
             # Create backup of critical metadata for transaction-like safety
             backup = {
@@ -313,6 +325,7 @@ class QueryTransform(BaseTransform):
             root.attrs["session_ids"] = sorted(ids)
             root.attrs["session_count"] = len(ids)
             root.attrs["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            root.attrs["label_map"] = self.label_map  # Update label map in metadata
             
             # Consolidate metadata
             zarr.consolidate_metadata(root.store)
@@ -343,6 +356,14 @@ class QueryTransform(BaseTransform):
             
             # Re-raise the original exception
             raise e
+        finally:
+            # Consolidate metadata again after all writes are complete
+            try:
+                if 'root' in locals() and root is not None:
+                    zarr.consolidate_metadata(root.store)
+                    root = None  # Help aiohttp close handles
+            except Exception as cons_error:
+                self.logger.warning(f"Error during final metadata consolidation: {cons_error}")
 
     # ------------------------------------------------------------------ #
     #  BaseTransform hooks
@@ -429,7 +450,9 @@ class QueryTransform(BaseTransform):
             # Save results if not dry run
             if not self.dry_run:
                 out_key = f"{self.destination_prefix}{self.query_name}.zarr"
-                self._save_session_result(result, out_key, sid)
+                # Use include_processed from BaseTransform to determine overwrite behavior
+                overwrite = getattr(self, 'include_processed', False)
+                self._save_session_result(result, out_key, sid, overwrite=overwrite)
             
             # Return success
             return {

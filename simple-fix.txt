@@ -1,0 +1,103 @@
+Simple Fixes for Query Overwrite Issue
+
+File: transforms/t4A_query_v0.py
+
+1. Modify _save_session_result to accept an overwrite parameter and delete existing session data:
+
+def _save_session_result(
+    self,
+    session_result: Dict[str, Any],
+    result_key: str,
+    session_id: str,
+    overwrite: bool = False,  # Add this parameter
+):
+    uri = f"s3://{self.s3_bucket}/{result_key}"
+    
+    # Is this the first session? Check for zarr.json file
+    try:
+        self.s3.head_object(Bucket=self.s3_bucket, Key=f"{result_key}/zarr.json")
+        first = False
+        self.logger.info(f"Appending results for session {session_id} to {uri}")
+    except self.s3.exceptions.ClientError:
+        first = True
+        self.logger.info(f"Initializing new zarr store at {uri}")
+
+    try:
+        if first:
+            # Initialize the zarr store
+            root = zarr.group(store=uri, storage_options={"anon": False})
+            root.attrs.update(
+                query_name=self.query_name,
+                created_at=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                version="0.2",
+                session_count=0,
+                session_ids=[],
+                label_map=self.label_map,  # Store label map in metadata
+            )
+            sessions_group = root.require_group("sessions")
+        else:
+            # Open existing store
+            root = zarr.open_group(store=uri, mode="a", storage_options={"anon": False})
+            sessions_group = root["sessions"]
+            
+            # If overwrite is True and session exists, delete it
+            session_key = sanitize_session_id(session_id)
+            if overwrite and session_key in sessions_group:
+                self.logger.info(f"Overwriting existing data for session {session_id}")
+                del sessions_group[session_key]
+        
+        # Create backup of critical metadata for transaction-like safety
+        backup = {
+            'attrs': dict(root.attrs)
+        }
+        
+        # Write session subgroup
+        self._save_session_to_subgroup(sessions_group, session_id, session_result)
+        
+        # Update root attrs
+        ids = set(root.attrs.get("session_ids", []))
+        ids.add(session_id)
+        root.attrs["session_ids"] = sorted(ids)
+        root.attrs["session_count"] = len(ids)
+        root.attrs["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        root.attrs["label_map"] = self.label_map  # Update label map in metadata
+        
+        # Consolidate metadata
+        zarr.consolidate_metadata(root.store)
+        
+    except Exception as e:
+        self.logger.error(f"Error saving results for {session_id}: {e}")
+        
+        # Rest of the function remains the same...
+
+
+2. Update process_session to pass the include_processed flag to _save_session_result:
+
+def process_session(self, session: Session) -> Dict[str, Any]:
+    # ... existing code ...
+    
+    # Save results if not dry run
+    if not self.dry_run:
+        out_key = f"{self.destination_prefix}{self.query_name}.zarr"
+        
+        # Use include_processed from BaseTransform to determine overwrite behavior
+        overwrite = getattr(self, 'include_processed', False)
+        self._save_session_result(result, out_key, sid, overwrite=overwrite)
+    
+    # ... rest of the function ...
+
+
+3. Ensure the include_processed flag is passed from the CLI through BaseTransform:
+
+In BaseTransform.run_pipeline (this is already handled appropriately, the flag is
+already passed to the transform instance, we just need to store it):
+
+# Add this line at the beginning of run_pipeline in base_transform.py
+self.include_processed = include_processed
+
+This way, we can reference self.include_processed in the process_session method.
+
+That's it! With these changes, the transform will:
+1. Delete existing session data when overwrite=True before saving new data
+2. Store and update the label map in the zarr store metadata
+3. Pass the --include-processed flag through to control overwrite behavior

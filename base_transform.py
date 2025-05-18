@@ -1055,6 +1055,9 @@ class BaseTransform:
         Returns:
             Dict with processing statistics
         """
+        # Store include_processed as an instance variable so child classes can access it
+        self.include_processed = include_processed
+        
         if session_ids is None:
             # Find sessions that need processing
             self.logger.info("Finding sessions to process")

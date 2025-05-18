@@ -1,0 +1,23 @@
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+
+Total windows: 329
+Label breakdown (showing {N_EXAMPLES} unique element_ids each)
+
+intro    (2):   24  ( 7.3%)
+  first ts: 1745450606369   last ts: 1745450611199
+  sample eids: eye_1_intro
+
+unknown  (3):  191  (58.1%)
+  first ts: 1745450611409   last ts: 1745450666429
+  sample eids: eye_1_close_2, eye_1_close_4
+
+open     (1):  114  (34.7%)
+  first ts: 1745450631569   last ts: 1745450675459
+  sample eids: eye_1_open_2, eye_1_open_4
+
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001C0FF620FB0>
+Unclosed connector
+connections: ['[(<aiohttp.client_proto.ResponseHandler object at 0x000001C09CA197F0>, 56326.578), (<aiohttp.client_proto.ResponseHandler object at 0x000001C09CA193D0>, 56326.578), (<aiohttp.client_proto.ResponseHandler object at 0x000001C09CA1AAB0>, 56326.593), (<aiohttp.client_proto.ResponseHandler object at 0x000001C09CA1AD50>, 56326.875)]']
+connector: <aiohttp.connector.TCPConnector object at 0x000001C09C045F70>

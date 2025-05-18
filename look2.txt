@@ -1,0 +1,16 @@
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+
+Total windows: 329
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\look-data.py", line 26, in <module>
+    print("Label breakdown (showing \u2264{N_EXAMPLES} unique element_ids each)\n")
+  File "C:\Users\riopo\anaconda3\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2264' in position 25: character maps to <undefined>
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001BB88E8F350>
+Unclosed connector
+connections: ['[(<aiohttp.client_proto.ResponseHandler object at 0x000001BB8990ABD0>, 56278.656), (<aiohttp.client_proto.ResponseHandler object at 0x000001BB8990A750>, 56278.656), (<aiohttp.client_proto.ResponseHandler object at 0x000001BB8990AD50>, 56278.656), (<aiohttp.client_proto.ResponseHandler object at 0x000001BB89909490>, 56278.968)]']
+connector: <aiohttp.connector.TCPConnector object at 0x000001BB88E8FBC0>

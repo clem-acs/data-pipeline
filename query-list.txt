@@ -1,0 +1,48 @@
+# Query Transform CLI Examples
+
+## Basic Queries
+
+# Query all elements across sessions
+python -m data_pipeline.cli qry --all-elements
+
+# Query only eye task elements across sessions
+python -m data_pipeline.cli qry --eye-elements
+
+# Query neural windows during eye tasks with default labels
+python -m data_pipeline.cli qry --eye-neural
+
+## Queries with Custom Label Maps
+
+# Eye neural with custom numeric labels (closed=0, open=1, intro=2, calibration=3)
+python cli.py qry --eye-neural --label-map '{"closed":0,"open":1,"intro":2,"unknown":3}' 2>&1 | tee i1.txt
+
+# Eye neural with descriptive string labels
+python -m data_pipeline.cli qry --eye-neural --label-map '{"closed":"eyes_closed","open":"eyes_open","intro":"introduction"}'
+
+## Adding Standard BaseTransform Arguments
+
+# Specify S3 bucket
+python -m data_pipeline.cli qry --eye-neural --s3-bucket conduit-data-dev
+
+# Dry run (doesn't save results)
+python -m data_pipeline.cli qry --eye-neural --dry-run
+
+# Use verbose logging
+python -m data_pipeline.cli qry --eye-neural --verbose
+
+# Keep local files after processing
+python -m data_pipeline.cli qry --eye-neural --keep-local
+
+# Custom source/destination prefixes
+python -m data_pipeline.cli qry --eye-neural --source-prefix processed/event/ --dest-prefix processed/custom_queries/
+
+# Process in batches with limited items
+python -m data_pipeline.cli qry --eye-neural --batch-size 5 --max-items 20
+
+## Complete Examples
+
+# Full eye neural query with custom labels and logging
+python -m data_pipeline.cli qry --eye-neural --label-map '{"closed":0,"open":1,"intro":2}' --verbose --s3-bucket conduit-data-dev
+
+# Production run with all options
+python -m data_pipeline.cli qry --eye-neural --label-map '{"closed":0,"open":1,"intro":2,"baseline":3}' --s3-bucket conduit-data-dev --batch-size 10 --verbose

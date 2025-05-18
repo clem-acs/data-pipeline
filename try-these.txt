@@ -1,7 +1,13 @@
 # Alternative commands to try for fixing the JSON parsing issue
 
 # 1. With double quotes around the JSON (and escaped inner quotes)
-python cli.py qry --eye-neural --label-map "{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}"
+python cli.py qry --eye-neural --label-map "{\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}" --include-processed --verbose --session lydia_10m_20250423_161755_events.zarr 2>&1 | tee i11.txt
+
+
+will just this tiny change fix it?
+python cli.py qry --eye-neural --label-map "{\"close\":0,\"open\":1,\"intro\":2,\"unknown\":3}" --include-processed --verbose --session lydia_10m_20250423_161755_events.zarr 2>&1 | tee i11.txt
+
+
 
 # 2. Without any quotes (sometimes works on Windows)
 python cli.py qry --eye-neural --label-map {\"closed\":0,\"open\":1,\"intro\":2,\"unknown\":3}

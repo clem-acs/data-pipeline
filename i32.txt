@@ -1,0 +1,216 @@
+Successfully imported LangTransform
+2025-05-19 00:21:36 - pipeline.t4A_query_v0_eye_neural - DEBUG - Initializing AWS clients
+2025-05-19 00:21:37 - pipeline.t4A_query_v0_eye_neural - DEBUG - Ensuring DynamoDB tables exist
+2025-05-19 00:21:38 - pipeline.t4A_query_v0_eye_neural - DEBUG - Managing script version in S3
+2025-05-19 00:21:38 - pipeline.t4A_query_v0_eye_neural - DEBUG - Managing script version 4A v0
+MD5 mismatch for s3://conduit-data-dev/scripts/4A_tiledb_event_v0.py
+Script in S3 does not match recorded MD5 hash
+Current script content differs from recorded version (MD5 mismatch)
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO - Script uploaded to s3://conduit-data-dev/scripts/4A_query_v0.py
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO - Transform initialized with:
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO -   Source prefix: processed/event/
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO -   Destination prefix: processed/queries/
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO -   Transform ID: t4A_query_v0_eye_neural
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO - Initialized QueryTransform for query 'eye_neural'
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - INFO - Using label map: {'close': 0, 'open': 1, 'intro': 2, 'unknown': 3}
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - DEBUG - Initializing AWS clients
+2025-05-19 00:21:43 - pipeline.t4A_query_v0_eye_neural - DEBUG - Ensuring DynamoDB tables exist
+2025-05-19 00:21:44 - pipeline.t4A_query_v0_eye_neural - DEBUG - Managing script version in S3
+2025-05-19 00:21:44 - pipeline.t4A_query_v0_eye_neural - DEBUG - Managing script version 4A v0
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO - Using existing script at s3://conduit-data-dev/scripts/4A_tiledb_event_v0.py
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO - Transform initialized with:
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO -   Source prefix: processed/event/
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO -   Destination prefix: processed/queries/
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO -   Transform ID: t4A_query_v0_eye_neural
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO - Initialized QueryTransform for query 'eye_neural'
+2025-05-19 00:21:45 - pipeline.t4A_query_v0_eye_neural - INFO - Using label map: {'close': 0, 'open': 1, 'intro': 2, 'unknown': 3}
+Looking for sessions in s3://conduit-data-dev/processed/event/
+Session selection with minimum duration of 0 minutes:
+Session Name                        Type         Start Time           End Time/Info        Duration        Files
+--------------------------------------------------------------------------------------------------------------
+lydia_10m_20250423_161755_events.zarr Raw[Folder]  N/A                                       0s              0    
+
+Total sessions: 1
+Processing 1 session IDs: ['lydia_10m_20250423_161755_events.zarr']
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Processing all 1 items including previously processed ones
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Processing all 1 items at once
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Processing batch of 1 items (indices 0-0)
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Processing item 1/1: lydia_10m_20250423_161755_events.zarr
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - BaseTransform.process_item: keep_local before processing = False
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - BaseTransform.process_item: dry_run before processing = False
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - DEBUG - Session path: processed/event/lydia_10m_20250423_161755_events.zarr/
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - DEBUG - Created temp directory: C:\Users\riopo\data-pipeline\transform_workdir\t4A_query_v0_eye_neural_20250519_002147_lydia_10m_20250423_161755_events.zarr
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - About to call process_session with keep_local = False
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Processing session with ID: lydia_10m_20250423_161755_events.zarr
+2025-05-19 00:21:47 - pipeline.t4A_query_v0_eye_neural - INFO - Looking for zarr at key: processed/event/lydia_10m_20250423_161755_events.zarr/zarr.json
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:44: UserWarning: The codec `vlen-utf8` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Found 7 matching eye elements with durations: 5028.0ms, 20015.0ms, 15017.0ms, 20016.0ms, 16400.0ms, 5899.0ms, 4351.0ms...
+DEBUG:pipeline.t4A_query_v0_eye_neural:Found 7 matching eye elements with durations: 5028.0ms, 20015.0ms, 15017.0ms, 20016.0ms, 16400.0ms, 5899.0ms, 4351.0ms...
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Window store path: processed/windows/lydia_10m_20250423_161755_windowed.zarr
+DEBUG:pipeline.t4A_query_v0_eye_neural:Window store path: processed/windows/lydia_10m_20250423_161755_windowed.zarr
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Window zarr store found at processed/windows/lydia_10m_20250423_161755_windowed.zarr
+DEBUG:pipeline.t4A_query_v0_eye_neural:Window zarr store found at processed/windows/lydia_10m_20250423_161755_windowed.zarr
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Window zarr array keys: ['real_fnirs_ts', 'fnirs_valid', 'fnirs', 'time', 'eeg_valid', 'dataset_idx', 'original_array_idx', 'eeg', 'real_eeg_ts']
+DEBUG:pipeline.t4A_query_v0_eye_neural:Window zarr array keys: ['real_fnirs_ts', 'fnirs_valid', 'fnirs', 'time', 'eeg_valid', 'dataset_idx', 'original_array_idx', 'eeg', 'real_eeg_ts']
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Time array shape: (1865,)
+DEBUG:pipeline.t4A_query_v0_eye_neural:Time array shape: (1865,)
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Session lydia_10m_20250423_161755_events.zarr: Element time ranges 1745450606332.0-1745450695454.0 vs Window timestamps 1745450284019.0-1745450675459.0 (length=1865)
+DEBUG:pipeline.t4A_query_v0_eye_neural:Session lydia_10m_20250423_161755_events.zarr: Element time ranges 1745450606332.0-1745450695454.0 vs Window timestamps 1745450284019.0-1745450675459.0 (length=1865)
+2025-05-19 00:21:52 - pipeline.t4A_query_v0_eye_neural - DEBUG - Generated 329 window indices, min=1535, max=1864
+DEBUG:pipeline.t4A_query_v0_eye_neural:Generated 329 window indices, min=1535, max=1864
+BEFORE PROCESSING: hits len=329, unique=329, sorted_ok=True, max_hit=1864, time_len=1865
+BEFORE PROCESSING: unique=329  total=329  sorted=True
+2025-05-19 00:21:54 - pipeline.t4A_query_v0_eye_neural - INFO - Appending results for session lydia_10m_20250423_161755_events.zarr to s3://conduit-data-dev/processed/queries/eye_neural.zarr
+INFO:pipeline.t4A_query_v0_eye_neural:Appending results for session lydia_10m_20250423_161755_events.zarr to s3://conduit-data-dev/processed/queries/eye_neural.zarr
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+2025-05-19 00:21:54 - pipeline.t4A_query_v0_eye_neural - INFO - Overwriting existing data for session lydia_10m_20250423_161755_events.zarr
+INFO:pipeline.t4A_query_v0_eye_neural:Overwriting existing data for session lydia_10m_20250423_161755_events.zarr
+2025-05-19 00:21:54 - pipeline.t4A_query_v0_eye_neural - ERROR - Error saving results for lydia_10m_20250423_161755_events.zarr: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+ERROR:pipeline.t4A_query_v0_eye_neural:Error saving results for lydia_10m_20250423_161755_events.zarr: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - INFO - Rollback completed successfully
+INFO:pipeline.t4A_query_v0_eye_neural:Rollback completed successfully
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - ERROR - Error processing query for lydia_10m_20250423_161755_events.zarr: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+Traceback (most recent call last):
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 727, in _getitem_consolidated
+    metadata = metadata.consolidated_metadata.metadata[indexer]
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+KeyError: 'lydia_10m_20250423_161755_events.zarr'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 959, in require_group
+    ) = await self.getitem(name)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 689, in getitem
+    return self._getitem_consolidated(store_path, key, prefix=self.name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 733, in _getitem_consolidated
+    raise KeyError(msg) from e
+KeyError: "'lydia_10m_20250423_161755_events.zarr' not found in consolidated metadata."
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 444, in process_session
+    self._save_session_result(result, out_key, sid, overwrite=overwrite)
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 355, in _save_session_result
+    raise e
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 317, in _save_session_result
+    self._save_session_to_subgroup(sessions_group, session_id, session_result)
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 222, in _save_session_to_subgroup
+    sg = sessions_group.require_group(sanitize_session_id(session_id))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 2336, in require_group
+    return Group(self._sync(self._async_group.require_group(name, **kwargs)))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 208, in _sync
+    return sync(
+           ^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 163, in sync
+    raise return_result
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 119, in _runner
+    return await coro
+           ^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 967, in require_group
+    grp = await self.create_group(name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 931, in create_group
+    return await type(self).from_store(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 457, in from_store
+    await ensure_no_existing_node(store_path, zarr_format=zarr_format)
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\storage\_common.py", line 367, in ensure_no_existing_node
+    raise ContainsGroupError(store_path.store, store_path.path)
+zarr.errors.ContainsGroupError: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+ERROR:pipeline.t4A_query_v0_eye_neural:Error processing query for lydia_10m_20250423_161755_events.zarr: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+Traceback (most recent call last):
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 727, in _getitem_consolidated
+    metadata = metadata.consolidated_metadata.metadata[indexer]
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+KeyError: 'lydia_10m_20250423_161755_events.zarr'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 959, in require_group
+    ) = await self.getitem(name)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 689, in getitem
+    return self._getitem_consolidated(store_path, key, prefix=self.name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 733, in _getitem_consolidated
+    raise KeyError(msg) from e
+KeyError: "'lydia_10m_20250423_161755_events.zarr' not found in consolidated metadata."
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 444, in process_session
+    self._save_session_result(result, out_key, sid, overwrite=overwrite)
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 355, in _save_session_result
+    raise e
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 317, in _save_session_result
+    self._save_session_to_subgroup(sessions_group, session_id, session_result)
+  File "C:\Users\riopo\data-pipeline\transforms\t4A_query_v0.py", line 222, in _save_session_to_subgroup
+    sg = sessions_group.require_group(sanitize_session_id(session_id))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 2336, in require_group
+    return Group(self._sync(self._async_group.require_group(name, **kwargs)))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 208, in _sync
+    return sync(
+           ^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 163, in sync
+    raise return_result
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\sync.py", line 119, in _runner
+    return await coro
+           ^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 967, in require_group
+    grp = await self.create_group(name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 931, in create_group
+    return await type(self).from_store(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\core\group.py", line 457, in from_store
+    await ensure_no_existing_node(store_path, zarr_format=zarr_format)
+  File "C:\Users\riopo\anaconda3\Lib\site-packages\zarr\storage\_common.py", line 367, in ensure_no_existing_node
+    raise ContainsGroupError(store_path.store, store_path.path)
+zarr.errors.ContainsGroupError: A group exists in store <FsspecStore(S3FileSystem, conduit-data-dev/processed/queries/eye_neural.zarr)> at path 'sessions/lydia_10m_20250423_161755_events.zarr'.
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - INFO - After process_session call, keep_local = False
+INFO:pipeline.t4A_query_v0_eye_neural:After process_session call, keep_local = False
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - DEBUG - Storing record for lydia_10m_20250423_161755_events.zarr with status 'failed'
+DEBUG:pipeline.t4A_query_v0_eye_neural:Storing record for lydia_10m_20250423_161755_events.zarr with status 'failed'
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - INFO - keep_local before cleanup decision: False
+INFO:pipeline.t4A_query_v0_eye_neural:keep_local before cleanup decision: False
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - INFO - Cleaning up temp files since keep_local = False
+INFO:pipeline.t4A_query_v0_eye_neural:Cleaning up temp files since keep_local = False
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - DEBUG - Cleaned up C:\Users\riopo\data-pipeline\transform_workdir\t4A_query_v0_eye_neural_20250519_002147_lydia_10m_20250423_161755_events.zarr
+DEBUG:pipeline.t4A_query_v0_eye_neural:Cleaned up C:\Users\riopo\data-pipeline\transform_workdir\t4A_query_v0_eye_neural_20250519_002147_lydia_10m_20250423_161755_events.zarr
+2025-05-19 00:21:56 - pipeline.t4A_query_v0_eye_neural - INFO - Batch statistics: {'processed': 1, 'success': 0, 'failed': 1, 'skipped': 0}
+INFO:pipeline.t4A_query_v0_eye_neural:Batch statistics: {'processed': 1, 'success': 0, 'failed': 1, 'skipped': 0}
+ERROR:asyncio:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002036CD45760>
+ERROR:asyncio:Unclosed connector
+connections: ['[(<aiohttp.client_proto.ResponseHandler object at 0x000002036DA9AB70>, 1595.609), (<aiohttp.client_proto.ResponseHandler object at 0x000002036DA9AE10>, 1595.609), (<aiohttp.client_proto.ResponseHandler object at 0x000002036DA9B950>, 1597.234)]']
+connector: <aiohttp.connector.TCPConnector object at 0x000002036CEB1AC0>

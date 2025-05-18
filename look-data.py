@@ -1,43 +1,43 @@
 import zarr, numpy as np
-from collections import Counter
+from collections import defaultdict, Counter
 
-ZARR_URI = "s3://conduit-data-dev/processed/queries/eye_neural.zarr"
+# ---------- config ----------
+ZARR_URI  = "s3://conduit-data-dev/processed/queries/eye_neural.zarr"
 LABEL_MAP = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
 INV_LABEL = {v: k for k, v in LABEL_MAP.items()}
+N_EXAMPLES = 5            # how many element_ids to show per label
+# ----------------------------
 
-root   = zarr.open_group(ZARR_URI, mode="r", storage_options={"anon": False})
-sess   = next(iter(root["sessions"]))
-sg     = root["sessions"][sess]
+root = zarr.open_group(ZARR_URI, mode="r", storage_options={"anon": False})
+sg    = root["sessions"][next(iter(root["sessions"]))]
 
-print(f"\n=== Session: {sess} ===")
-for key in ("eeg", "fnirs", "time", "labels", "element_ids"):
-    if key in sg:
-        print(f"{key:<12s} shape={sg[key].shape}, dtype={sg[key].dtype}")
-print()
+labels      = sg["labels"][:]
+element_ids = sg["element_ids"][:].astype(str)
+times       = sg["time"][:]
 
-# ---- label stats ----
-labels = sg["labels"][:]
+# convert byte labels → int ↔ str mapping agnostic
 if labels.dtype.kind in ("S", "a"):
-    labels = labels.astype(str)                 # string labels
-cnt, total = Counter(labels), len(labels)
+    labels = labels.astype(str)
 
-print(f"Total windows: {total}\nLabel distribution:")
-for lbl_id, n in cnt.items():
-    # translate if numeric, else keep as string
-    name = INV_LABEL.get(lbl_id, str(lbl_id))
-    print(f"  {name:<8s} ({lbl_id}): {n:4d}  ({n*100/total:4.1f}%)")
+cnt = Counter(labels)
+total = len(labels)
 
-# ---- quick peek at first 3 windows ----
-times = sg["time"][:3]
-eids  = sg["element_ids"][:3].astype(str)
-print("\nFirst 3 windows:")
-for i in range(3):
-    lbl = labels[i]
-    lbl_name = INV_LABEL.get(lbl, str(lbl))
-    print(f"  idx {i:<2d} ts={times[i]}  eid={eids[i]}  label={lbl_name}")
+print(f"\nTotal windows: {total}")
+print("Label breakdown (showing {N_EXAMPLES} unique element_ids each)\n")
 
-# ---- extra sanity check ----
-N = total
-assert all(sg[a].shape[0] == N for a in ("eeg", "fnirs", "time")), \
-       "window axis length mismatch!"
-print("\nDataset looks consistent ")
+# gather examples
+examples = defaultdict(set)
+time_span = defaultdict(lambda: [np.inf, -np.inf])
+
+for idx, (lbl, eid, ts) in enumerate(zip(labels, element_ids, times)):
+    examples[lbl].add(eid)
+    t0, t1 = time_span[lbl]
+    time_span[lbl] = [min(t0, ts), max(t1, ts)]
+
+for lbl, n in cnt.items():
+    name = INV_LABEL.get(lbl, str(lbl))
+    eids_sample = sorted(examples[lbl])[:N_EXAMPLES]
+    t0, t1 = time_span[lbl]
+    print(f"{name:<8s} ({lbl}): {n:4d}  ({n*100/total:4.1f}%)")
+    print(f"  first ts: {t0:.0f}   last ts: {t1:.0f}")
+    print(f"  sample eids: {', '.join(eids_sample)}\n")
