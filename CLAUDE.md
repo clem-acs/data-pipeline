@@ -1,6 +1,7 @@
 # CLAUDE.md
+THIS IS A NEW FILE
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This fi	le provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build and Run Commands
 - Run CLI: `python -m data_pipeline.cli [transform] [arguments]`
@@ -37,6 +38,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use utils.aws for S3 and DynamoDB client initialization
 - Script versioning handled by transform framework automatically
 
+we use zarr 3, we never use zarr 2, we never use xarray
+
 ## Creating New Transforms
 1. Create a new file in `transforms/` directory (e.g., `t3C_new_transform_v0.py`)
 2. Extend BaseTransform and set SOURCE_PREFIX and DEST_PREFIX
@@ -68,8 +71,10 @@ so that query should be able to run from here, just as a simpler element-only qu
 python cli.py qry --[normal cli args] --query_name 
 where query_name might be like --eye for the eye one, or --all-elements or others. i'll add lots
 
-now, it worked. i ran something, and saved in the s3 in processed/queries/eye_neural.zarr
-but then the label map i gave was slightly wrong, so i want to rerun it again, with my new label map. it didn't work, because there was already something there in the folder when it tried to write.
+that's working okay for now. i want to talk about a related issue. often, when new stuff is written to the zarr, like a session is processed in window t2A, events t2C, queries t4A the metadata (which we always store in zarr.json files, nothing else) is not consolidated, which causes issues when we query
+like this should be there more often?
+zarr.consolidate_metadata(root.store)
 
-i do want it not to rerun queries on a session if they've already been run on that session. but they should overrun - write over the result -- if i put the flag --include-processed or if the label map is different. they should write over the zarr store with the new info. analyze base transform, cli.py t4a, the other transforms to understand why this isn't happening correctly. what is the current flow, why is this not working. don't change anything yet, just report back ultrathink
-look in i11.txt, which you have full access to, to understand the error flow
+
+can you look through all the transforms, see if that is notably missing, look in cli.py and base transform, and see if we do call that automatically on everything, or if transforms have to add it themselves?
+think hard, ultrathink, report back, don't change anything yet though

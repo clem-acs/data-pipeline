@@ -3,7 +3,7 @@ from collections import defaultdict, Counter
 
 # ---------- config ----------
 ZARR_URI  = "s3://conduit-data-dev/processed/queries/eye_neural.zarr"
-LABEL_MAP = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
 INV_LABEL = {v: k for k, v in LABEL_MAP.items()}
 N_EXAMPLES = 5            # how many element_ids to show per label
 # ----------------------------
