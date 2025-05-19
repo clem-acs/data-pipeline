@@ -55,6 +55,7 @@ class QueryTransform(BaseTransform):
         "all_elements": "_query_all_elements",
         "eye_elements": "_query_eye_elements",
         "eye_neural": "_query_eye_neural_windows",
+        "lang_tokens": "_query_lang_tokens",  # Add lang query
         # Additional queries will be added here
     }
 
@@ -371,26 +372,52 @@ class QueryTransform(BaseTransform):
 
     def find_sessions(self) -> List[str]:
         """
-        Find sessions with event zarr stores.
+        Find sessions with zarr stores matching the query type.
         
         Returns:
-            List of session IDs with event data
+            List of session IDs with relevant data
         """
-        self.logger.info(f"Scanning {self.source_prefix} for *_events.zarr")
-        self.logger.info(f"SOURCE_PREFIX: {self.SOURCE_PREFIX}, source_prefix: {self.source_prefix}")
-        resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=self.source_prefix)
-        # Print all keys for debugging
-        self.logger.info(f"All keys found: {[obj['Key'] for obj in resp.get('Contents', [])]}")
+        # Select source prefix based on query type
+        prefix = self.source_prefix
+        
+        # Use lang prefix if it's a lang query
+        if self.query_name == "lang_tokens":
+            prefix = "processed/lang/"
+            self.logger.info(f"Scanning {prefix} for *_lang.zarr")
+            pattern = "_lang.zarr/zarr.json"
+            replacer = "_lang.zarr"
+        else:
+            # Default to event zarr files
+            self.logger.info(f"Scanning {prefix} for *_events.zarr")
+            pattern = "_events.zarr/zarr.json"
+            replacer = "_events.zarr"
+            
+        # List objects
+        resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=prefix)
+        
+        # Debug log
+        self.logger.debug(f"All keys found: {[obj['Key'] for obj in resp.get('Contents', [])]}")
         
         hits = set()
         for obj in resp.get("Contents", []):
             key = obj["Key"]
-            self.logger.info(f"Checking key: {key}")
-            if key.endswith("_events.zarr/zarr.json"):
+            self.logger.debug(f"Checking key: {key}")
+            
+            if key.endswith(pattern):
                 # Extract session ID from the key
-                session_id = key.split("/")[-2].replace("_events.zarr", "")
+                session_id = key.split("/")[-2].replace(replacer, "")
+                
+                # For lang stores, handle tokenizer in the name
+                if "_" in session_id and self.query_name == "lang_tokens":
+                    # Format is {session_id}_{tokenizer}_lang.zarr
+                    parts = session_id.split("_")
+                    if len(parts) > 1:
+                        # Use only the session ID part, not the tokenizer
+                        session_id = "_".join(parts[:-1])
+                
                 self.logger.info(f"Found session ID: {session_id}")
                 hits.add(session_id)
+                
         return sorted(hits)
 
     def process_session(self, session: Session) -> Dict[str, Any]:
@@ -406,20 +433,49 @@ class QueryTransform(BaseTransform):
         sid = session.session_id
         self.logger.info(f"Processing session with ID: {sid}")
         
-        zarr_key = (
-            f"{self.source_prefix}{sid}"
-            if sid.endswith("_events.zarr")
-            else f"{self.source_prefix}{sid}_events.zarr"
-        )
+        # Determine zarr store key based on query type
+        if self.query_name == "lang_tokens":
+            # Find all lang zarr stores for this session
+            # (may have multiple tokenizers)
+            prefix = f"processed/lang/{sid}_"
+            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=prefix)
+            
+            lang_zarrs = []
+            for obj in resp.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith("_lang.zarr/zarr.json"):
+                    # Extract store path
+                    zarr_path = key.replace("/zarr.json", "")
+                    lang_zarrs.append(zarr_path)
+            
+            if not lang_zarrs:
+                self.logger.error(f"No language zarr stores found for {sid}")
+                return {"status": "skipped", "metadata": {"reason": "no_lang_zarr"}}
+                
+            # Use the first lang zarr store found (could process all of them in the future)
+            zarr_key = lang_zarrs[0]
+            self.logger.info(f"Using lang zarr store: {zarr_key}")
+        else:
+            # Default to events zarr
+            zarr_key = (
+                f"{self.source_prefix}{sid}"
+                if sid.endswith("_events.zarr")
+                else f"{self.source_prefix}{sid}_events.zarr"
+            )
+            
         self.logger.info(f"Looking for zarr at key: {zarr_key}/zarr.json")
         
         try:
-            # Check if event zarr exists
+            # Check if zarr exists
             try:
                 self.s3.head_object(Bucket=self.s3_bucket, Key=f"{zarr_key}/zarr.json")
             except self.s3.exceptions.ClientError:
-                self.logger.error(f"No events zarr for {sid}")
-                return {"status": "skipped", "metadata": {"reason": "no_events_zarr"}}
+                if self.query_name == "lang_tokens":
+                    self.logger.error(f"No language zarr for {sid}")
+                    return {"status": "skipped", "metadata": {"reason": "no_lang_zarr"}}
+                else:
+                    self.logger.error(f"No events zarr for {sid}")
+                    return {"status": "skipped", "metadata": {"reason": "no_events_zarr"}}
             
             # Open zarr store
             zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{zarr_key}")
@@ -441,11 +497,19 @@ class QueryTransform(BaseTransform):
                 }
             
             # Calculate statistics
-            count = len(result.get("element_ids", []))
-            size_mb = sum(
-                v.nbytes for v in result.values() 
-                if isinstance(v, np.ndarray)
-            ) / 1_048_576
+            if self.query_name == "lang_tokens":
+                # For lang queries, count tokens
+                token_count = 0
+                for group_name in ['L', 'W', 'R', 'S', 'W_corrected']:
+                    if group_name in result and 'tokens' in result[group_name]:
+                        token_count += len(result[group_name]['tokens'])
+                count = token_count
+            else:
+                # For other queries, use element_ids
+                count = len(result.get("element_ids", []))
+                
+            # Calculate size (avoiding np.ndarray size calculation which might not work for all types)
+            size_mb = 0
             
             # Save results if not dry run
             if not self.dry_run:
@@ -460,7 +524,7 @@ class QueryTransform(BaseTransform):
                 "metadata": {
                     "session_id": sid,
                     "matches_found": count,
-                    "size_mb": size_mb,
+                    "query_type": self.query_name,
                 },
                 "zarr_stores": [f"{self.destination_prefix}{self.query_name}.zarr"],
             }
@@ -647,6 +711,39 @@ class QueryTransform(BaseTransform):
             filter_kwargs={"task_type": "eye"},
             label_map=self.label_map
         )
+        
+    def _query_lang_tokens(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, Any]]:
+        """
+        Extract language tokens from a session.
+        
+        Args:
+            zgroup: Zarr group containing language data
+            sid: Session ID
+            
+        Returns:
+            Dictionary with language token data
+        """
+        from transforms.query_helpers import extract_lang_tokens
+        
+        # Get tokenizer from the root attributes
+        tokenizer = zgroup.attrs.get('tokenizer', 'unknown')
+        
+        # Extract tokens from each language group
+        result = {
+            'session_id': sid,
+            'tokenizer': tokenizer
+        }
+        
+        # Extract language groups
+        for group_name in ['L', 'W', 'R', 'S', 'W_corrected']:
+            group_data = extract_lang_tokens(zgroup, group_name)
+            if group_data:
+                result[group_name] = group_data
+        
+        # Only return if we found any language data
+        if len(result) > 2:  # More than just session_id and tokenizer
+            return result
+        return None
 
     # ------------------------------------------------------------------ #
     #  PyTorch Dataset Conversion

@@ -1,5 +1,5 @@
 # CLAUDE.md
-THIS IS A NEW FILE
+This file involves the LANG transform
 
 This fi	le provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -52,64 +52,19 @@ Your task
 
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
+really look at t2A, t2B, t2C, t4A, t6A, the base transform, cli.py, query_helpers, lang_processing - all files in lang_processing and neural_processing
+i want to change the lang transform to do the following.
+for each session, and each tokenizer, i want it to return what it currently returns but as a zarr store instead of an h5. then it should save to s3 zarr with the base transforms infrastructure, but ensuring that root metadata is consolidated. it should create one store per session and per tokenizer. so there should be separate zarr stores for session X with tokenizer Y and session X with tokenizer Z, and session A with tokenizer Y and A with tokenizer Z
 
-really look at t4A and query helpers, base transform, etc
+so all information within the h5 should be retained, just now it should be in zarr instead, and the tokenizer becomes part of the metadata, or some kind of extra thing. 
 
-now, i want to work on t6B the classifier. look through that carefully, comb through each line. currently, I ran it and got an error, which you can see in e2 (which you have full access to
-The run blew up in two places:
+really read through how t2C does this, and also base transform. read through all of t2B now to see how it is currently doing it, and what must be changed (including within lang_processing, if anything there)
 
-| Problem                                                                      | Why it happens                                                                                                                                                                                                                     | Quick patch                                                                                                                        |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **`batch_size` shows as 0** in the hyper-param print-out.                    | After we deleted the duplicate flag, the transform now inherits **BaseTransform’s** global `--batch-size`, whose default is `0` (that flag was meant for “how many sessions to process in one CLI batch”, not ML mini-batch size). | Inside `ClassifyEEGTransform.from_args()` copy the value from `args.batch_size`, but fall back to the model default when it’s `0`. |
-| **`storage_options was provided but unused…`** comes from `zarr.open_group`. | We passed a plain relative path (`processed/queries/eye_neural.zarr`). Without the `s3://bucket/` prefix PyZarr treats it as a **directory store**, which rejects `storage_options`.                                               | Build the query path with the S3 scheme so zarr uses s3fs.                                                                         |
+then write a proposal for every single thing that needs to be changed, what code to change to what and where and why, for each thing, super precise. we never use xarray, only zarr 3. think about the simplest, easiest for future development way to do this, how to make it as clear and simple as possible. really look hard at t4A, how those queries work, because we'll want to easily be able to query the lang zarr just as we query the elements ones, for example.
 
-Below is a *minimal* diff you can paste over the current file; only the two small blocks are changed.
+write the proposal to simple-lang.txt
 
-```diff
-@@
-     def from_args(cls, args):
-         # collect h-params
-         hp = dict(DEFAULT_HPARAMS)
--        for k in hp.keys():
--            if hasattr(args, k.replace("-", "_")):
--                hp[k] = getattr(args, k.replace("-", "_"))
-+        for k in hp.keys():
-+            attr = k.replace("-", "_")
-+            if hasattr(args, attr):
-+                hp[k] = getattr(args, attr)
-+
-+        # mini-batch size comes from the pipeline-level --batch-size;
-+        # if the user didn’t override it (0) fall back to default.
-+        if getattr(args, "batch_size", 0) > 0:
-+            hp["batch_size"] = args.batch_size
- 
-         return cls(
-@@
-     def process_session(self, session: Session) -> Dict[str, Any]:
-         """Train and evaluate the classifier; upload artefacts."""
--        query_zarr  = f"{self.source_prefix}{session.session_id}.zarr"
-+        query_zarr  = f"s3://{self.s3_bucket}/{self.source_prefix}{session.session_id}.zarr"
-@@
-```
-
-#### After the patch
-
-```bash
-python cli.py classify ^
-   --query eye_neural ^
-   --epochs 25 --batch-size 64 2>&1 | tee e1.txt
-```
-
-* hyper-params will show `batch_size : 64`
-* the data loaders open `s3://conduit-data-dev/processed/queries/eye_neural.zarr`
-* training proceeds and finishes by uploading:
-
-```
-s3://conduit-data-dev/models/eye_neural_eeg_classifier.pth
-s3://conduit-data-dev/models/eye_neural_metrics.json
-```
-
-No more “storage\_options” warning or argparse conflicts.
+think deeply, really comb through the code, ultrathink
 
 
-can you evaluate those two proposed fixes and see if you think they will make it work? don't change it yet, just read carefully and report back ultrathink
+

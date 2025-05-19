@@ -90,7 +90,7 @@ class LangTransform(BaseTransform):
         1. Finds the curated H5 file for the session
         2. Extracts language data
         3. Tokenizes the text
-        4. Saves the tokenized data
+        4. Saves the tokenized data to a zarr store
 
         Args:
             session: Session object
@@ -115,7 +115,8 @@ class LangTransform(BaseTransform):
                 "error_details": f"No H5 file found for session {session_id}",
                 "metadata": {"session_id": session_id},
                 "files_to_copy": [],
-                "files_to_upload": []
+                "files_to_upload": [],
+                "zarr_stores": []
             }
 
         # Download the H5 file
@@ -132,7 +133,8 @@ class LangTransform(BaseTransform):
                     "status": "skipped",
                     "metadata": analysis,
                     "files_to_copy": [],
-                    "files_to_upload": []
+                    "files_to_upload": [],
+                    "zarr_stores": []
                 }
             
             # Process the file to extract and tokenize language data
@@ -147,40 +149,39 @@ class LangTransform(BaseTransform):
                 "tokenizer": self.tokenizer_name,
                 "has_L_data": analysis.get('has_L_data', False),
                 "has_W_data": analysis.get('has_W_data', False),
-                "has_R_data": analysis.get('has_R_data', False),  # Add R data flag
-                "has_S_data": analysis.get('has_S_data', False),  # Add S data flag
-                "has_W_corrected": analysis.get('has_W_data', False),  # Add this line
+                "has_R_data": analysis.get('has_R_data', False),
+                "has_S_data": analysis.get('has_S_data', False),
+                "has_W_corrected": analysis.get('has_W_data', False),
                 "L_chars_count": analysis.get('L_chars_count', 0),
                 "W_chars_count": analysis.get('W_chars_count', 0),
-                "R_words_count": analysis.get('R_words_count', 0),  # Add R words count
-                "S_words_count": analysis.get('S_words_count', 0),  # Add S words count
-                "W_corrected_token_count": result.get('details', {}).get('W_corrected_token_count', 0),  # Add this line
-                "W_correctness_score": result.get('details', {}).get('W_correctness_score', 0),  # Add this line
+                "R_words_count": analysis.get('R_words_count', 0),
+                "S_words_count": analysis.get('S_words_count', 0),
+                "W_corrected_token_count": result.get('details', {}).get('W_corrected_token_count', 0),
+                "W_correctness_score": result.get('details', {}).get('W_correctness_score', 0),
+                "storage_format": "zarr3",  # Add this line to indicate zarr format
                 "processing_details": result.get('details', {})
             }
             
-            # Create the tokenized file
-            tokenized_file_name = f"{session_id}_lang.h5"
-            local_tokenized_path = result.get('local_path')
+            # Get the store key from the result
+            store_key = result.get('store_key')
             
-            if not local_tokenized_path:
-                self.logger.warning(f"No tokenized file created for session {session_id}")
+            if not store_key:
+                self.logger.warning(f"No zarr store created for session {session_id}")
                 return {
                     "status": "failed",
-                    "error_details": "Failed to create tokenized file",
+                    "error_details": "Failed to create zarr store",
                     "metadata": metadata,
                     "files_to_copy": [],
-                    "files_to_upload": []
+                    "files_to_upload": [],
+                    "zarr_stores": []
                 }
-            
-            # Define the destination key
-            dest_key = f"{self.destination_prefix}{tokenized_file_name}"
             
             return {
                 "status": "success",
                 "metadata": metadata,
                 "files_to_copy": [],
-                "files_to_upload": [(local_tokenized_path, dest_key)]
+                "files_to_upload": [],
+                "zarr_stores": [store_key]
             }
             
         except Exception as e:
@@ -190,7 +191,8 @@ class LangTransform(BaseTransform):
                 "error_details": str(e),
                 "metadata": {"session_id": session_id},
                 "files_to_copy": [],
-                "files_to_upload": []
+                "files_to_upload": [],
+                "zarr_stores": []
             }
         finally:
             # Only cleanup if not keep_local
@@ -270,6 +272,78 @@ class LangTransform(BaseTransform):
             analysis['error'] = str(e)
         
         return analysis
+
+    def _convert_tokens_to_arrays(self, tokens_data, group_name):
+        """
+        Convert tokens list to structured numpy arrays.
+        
+        Args:
+            tokens_data: List of token dictionaries
+            group_name: Name of the language group (L, W, W_corrected, R, S)
+            
+        Returns:
+            Dict of arrays for each token attribute
+        """
+        import numpy as np
+        
+        # Common token attributes for all groups
+        token_arrays = {
+            'token': [],
+            'token_id': [],
+            'start_timestamp': [],
+            'end_timestamp': [],
+            'special_token': []
+        }
+        
+        # Add group-specific arrays
+        if group_name == 'W_corrected':
+            token_arrays['original_indices'] = []
+            token_arrays['unchanged'] = []
+        elif group_name == 'W':
+            token_arrays['keystroke_events'] = []
+            token_arrays['trigger_keystrokes'] = []
+            token_arrays['char_indices'] = []
+        
+        # Extract values from tokens
+        for token in tokens_data:
+            # Common attributes
+            token_arrays['token'].append(token.get('token', ''))
+            token_arrays['token_id'].append(token.get('token_id', 0))
+            token_arrays['start_timestamp'].append(token.get('start_timestamp', 0.0))
+            token_arrays['end_timestamp'].append(token.get('end_timestamp', 0.0))
+            token_arrays['special_token'].append(token.get('special_token', False))
+            
+            # Group-specific attributes
+            if group_name == 'W_corrected':
+                token_arrays['original_indices'].append(np.array(token.get('original_indices', []), dtype=np.int32))
+                token_arrays['unchanged'].append(token.get('unchanged', False))
+            elif group_name == 'W':
+                token_arrays['keystroke_events'].append(token.get('keystroke_events', json.dumps([])))
+                token_arrays['trigger_keystrokes'].append(token.get('trigger_keystrokes', json.dumps([])))
+                token_arrays['char_indices'].append(np.array(token.get('char_indices', []), dtype=np.int32))
+        
+        # Convert lists to numpy arrays
+        result = {}
+        for key, values in token_arrays.items():
+            # Handle special array types
+            if key in ['original_indices', 'char_indices']:
+                # These are already numpy arrays
+                result[key] = values
+            elif key in ['token', 'keystroke_events', 'trigger_keystrokes']:
+                # Convert to fixed-length strings
+                max_len = max(1, max(len(str(v)) for v in values))
+                result[key] = np.array(values, dtype=f'U{max_len}')
+            elif key == 'token_id':
+                # Integer arrays
+                result[key] = np.array(values, dtype=np.int32)
+            elif key in ['special_token', 'unchanged']:
+                # Boolean arrays
+                result[key] = np.array(values, dtype=bool)
+            else:
+                # Default to float64 for timestamps
+                result[key] = np.array(values, dtype=np.float64)
+        
+        return result
 
     def process_language_data(self, file_path: str, session: Session, analysis: Dict) -> Dict:
         """Process language data and create tokenized output.
@@ -381,114 +455,6 @@ class LangTransform(BaseTransform):
                 self.logger.warning(f"No language data processed for {session_id}")
                 return {"details": processing_details}
             
-            # Create output file
-            output_file_name = f"{session_id}_lang.h5"
-            output_path = session.create_upload_file(output_file_name)
-            
-            with h5py.File(output_path, 'w') as f_out:
-                lang_group = f_out.create_group('language')
-                lang_group.attrs['tokenizer'] = self.tokenizer_name
-                lang_group.attrs['session_id'] = session_id
-                
-                # Add metadata group
-                meta_group = lang_group.create_group('metadata')
-                meta_group.attrs['tokenizer'] = self.tokenizer_name
-                meta_group.attrs['tokenization_date'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                meta_group.attrs['has_L_data'] = analysis.get('has_L_data', False)
-                meta_group.attrs['has_W_data'] = analysis.get('has_W_data', False)
-                meta_group.attrs['has_R_data'] = analysis.get('has_R_data', False)
-                meta_group.attrs['has_S_data'] = analysis.get('has_S_data', False)
-                meta_group.attrs['has_W_corrected'] = analysis.get('has_W_data', False)
-                meta_group.attrs['L_chars_count'] = analysis.get('L_chars_count', 0)
-                meta_group.attrs['W_chars_count'] = analysis.get('W_chars_count', 0)
-                meta_group.attrs['R_words_count'] = analysis.get('R_words_count', 0)
-                meta_group.attrs['S_words_count'] = analysis.get('S_words_count', 0)
-                meta_group.attrs['W_correctness_score'] = result.get('details', {}).get('W_correctness_score', 0)
-                
-                # Add each tokenized group
-                for group_name, result in tokenization_results.items():
-                    # Create a group in the output file
-                    group = lang_group.create_group(group_name)
-                    
-                    # Store the text as an attribute
-                    group.attrs['text'] = result['text']
-                    
-                    # For W_corrected, also store original text
-                    if group_name == 'W_corrected':
-                        group.attrs['original_text'] = tokenization_results['W']['text']
-                        group.attrs['correctness_score'] = result['correctness_score']
-                    
-                    # Define the dataset type based on the group
-                    if group_name == 'W_corrected':
-                        # Extended dtype for corrected tokens with additional fields
-                        dt = np.dtype([
-                            ('token', h5py.special_dtype(vlen=str)),
-                            ('token_id', np.int32),
-                            ('start_timestamp', np.float64),
-                            ('end_timestamp', np.float64),
-                            ('special_token', np.bool_),
-                            ('original_indices', h5py.special_dtype(vlen=np.dtype('int32'))),
-                            ('unchanged', np.bool_)
-                        ])
-                    elif group_name == 'W':
-                        # Enhanced dtype for W tokens with keystroke data
-                        dt = np.dtype([
-                            ('token', h5py.special_dtype(vlen=str)),
-                            ('token_id', np.int32),
-                            ('start_timestamp', np.float64),
-                            ('end_timestamp', np.float64),
-                            ('special_token', np.bool_),
-                            ('keystroke_events', h5py.special_dtype(vlen=str)),  # JSON serialized keystroke events
-                            ('trigger_keystrokes', h5py.special_dtype(vlen=str)),  # JSON serialized trigger keystrokes
-                            ('char_indices', h5py.special_dtype(vlen=np.dtype('int32')))  # Original char indices
-                        ])
-                    else:
-                        # Standard dtype for other groups (L, R, S)
-                        dt = np.dtype([
-                            ('token', h5py.special_dtype(vlen=str)),
-                            ('token_id', np.int32),
-                            ('start_timestamp', np.float64),
-                            ('end_timestamp', np.float64),
-                            ('special_token', np.bool_)
-                        ])
-                    
-                    # Create and fill the dataset
-                    tokens_ds = group.create_dataset('tokens', (len(result['tokens']),), dtype=dt)
-                    
-                    for i, token in enumerate(result['tokens']):
-                        if group_name == 'W_corrected':
-                            # Store extended data for corrected tokens
-                            tokens_ds[i] = (
-                                token['token'],
-                                token['token_id'],
-                                token['start_timestamp'],
-                                token['end_timestamp'],
-                                token['special_token'],
-                                np.array(token.get('original_indices', []), dtype=np.int32),
-                                token.get('unchanged', False)
-                            )
-                        elif group_name == 'W':
-                            # Store W tokens with keystroke data as JSON strings
-                            tokens_ds[i] = (
-                                token['token'],
-                                token['token_id'],
-                                token['start_timestamp'],
-                                token['end_timestamp'],
-                                token['special_token'],
-                                token.get('keystroke_events', json.dumps([])),
-                                token.get('trigger_keystrokes', json.dumps([])),
-                                np.array(token.get('char_indices', []), dtype=np.int32)
-                            )
-                        else:
-                            # Store standard data for regular tokens
-                            tokens_ds[i] = (
-                                token['token'],
-                                token['token_id'],
-                                token['start_timestamp'],
-                                token['end_timestamp'],
-                                token['special_token']
-                            )
-            
             # Calculate total stats
             total_token_count = sum(len(r['tokens']) for r in tokenization_results.values())
             char_groups = {k: v for k, v in tokenization_results.items() if k in ['L', 'W']}
@@ -501,8 +467,71 @@ class LangTransform(BaseTransform):
             processing_details['total_char_count'] = total_char_count
             processing_details['total_word_count'] = total_word_count
             
+            # Build metadata dictionary
+            metadata = {
+                'tokenizer': self.tokenizer_name,
+                'tokenization_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                'has_L_data': analysis.get('has_L_data', False),
+                'has_W_data': analysis.get('has_W_data', False),
+                'has_R_data': analysis.get('has_R_data', False),
+                'has_S_data': analysis.get('has_S_data', False),
+                'has_W_corrected': analysis.get('has_W_data', False),
+                'L_chars_count': analysis.get('L_chars_count', 0),
+                'W_chars_count': analysis.get('W_chars_count', 0),
+                'R_words_count': analysis.get('R_words_count', 0),
+                'S_words_count': analysis.get('S_words_count', 0),
+                'W_correctness_score': processing_details.get('W_correctness_score', 0.0),
+                'session_id': session_id,
+                'storage_format': 'zarr3'
+            }
+            
+            # Build zarr tree structure
+            zarr_tree = {
+                'language': {},
+                'metadata': metadata
+            }
+            
+            # Process each language group
+            for group_name, result in tokenization_results.items():
+                # Skip empty groups
+                if not result or 'tokens' not in result or not result['tokens']:
+                    continue
+                
+                # Create array for tokens
+                token_arrays = self._convert_tokens_to_arrays(result['tokens'], group_name)
+                
+                # Add to zarr tree
+                zarr_tree['language'][group_name] = {
+                    **token_arrays,
+                    'text': result['text']
+                }
+                
+                # Add special attributes for W_corrected
+                if group_name == 'W_corrected':
+                    zarr_tree['language'][group_name]['original_text'] = tokenization_results['W']['text']
+                    zarr_tree['language'][group_name]['correctness_score'] = result.get('correctness_score', 0.0)
+            
+            # Define zarr store key with tokenizer name
+            store_key = f"{self.destination_prefix}{session_id}_{self.tokenizer_name}_lang.zarr"
+            
+            # Set root attributes
+            root_attrs = {
+                'session_id': session_id,
+                'tokenizer': self.tokenizer_name,
+                'transform': 'lang',
+                'version': '0.1',
+                'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()),
+                'storage_format': 'zarr3'
+            }
+            
+            # Create zarr store using the BaseTransform helper
+            if not self.dry_run:
+                self.save_zarr_dict_to_s3(store_key, zarr_tree, root_attrs)
+            else:
+                self.logger.info(f"[DRY RUN] Would create zarr store at {store_key}")
+            
             return {
-                "local_path": output_path,
+                "store_key": store_key,
                 "details": processing_details
             }
         

@@ -1,7 +1,7 @@
 import zarr, s3fs
 
 uri = "s3://conduit-data-dev/processed/windows/" \
-      "Mahnani Clay_20250430_192507_windowed.zarr"
+      "dagsen_20250501_155052_windowed.zarr"
 
 # open the store for read-write **without** the consolidated= kwarg
 root = zarr.open_group(

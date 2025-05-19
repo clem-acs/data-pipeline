@@ -888,6 +888,95 @@ class BaseTransform:
         # Create and return the full S3 URL
         return f"s3://{self.s3_bucket}/{store_key}"
 
+    def save_zarr_dict_to_s3(self, store_key: str, tree: Dict[str, Any], attrs: Dict[str, Any]) -> str:
+        """
+        Create/overwrite a Zarr v3 store directly on S3 from an in-memory tree.
+        
+        Args:
+            store_key: S3 key for the zarr store
+            tree: Dict mapping relative paths → numpy arrays | scalar attrs | dict subtrees
+            attrs: Dict of attributes to set on the root group
+            
+        Returns:
+            S3 URI to the zarr store
+            
+        Notes:
+            - Ensures fixed-width bytes via bytesify()
+            - Creates explicit chunks no larger than 2 GB
+            - Consolidates metadata for root + each group
+        """
+        import zarr
+        import numpy as np
+        
+        # Get S3 URI
+        s3_uri = self.create_s3_zarr_store(store_key)
+        self.logger.info(f"Creating Zarr v3 store at {s3_uri}")
+        
+        if self.dry_run:
+            self.logger.info(f"[DRY RUN] Would create zarr store at {s3_uri}")
+            return s3_uri
+        
+        try:
+            # Open root group
+            root = zarr.open_group(s3_uri, mode='w')
+            
+            # Set root attributes
+            for key, value in attrs.items():
+                root.attrs[key] = value
+            
+            # Define a recursive function to build the zarr structure
+            def build_zarr_structure(parent_group, tree_dict):
+                for key, value in tree_dict.items():
+                    if isinstance(value, dict):
+                        # Create new group and recurse, with overwrite=True
+                        group = parent_group.create_group(key, overwrite=True)
+                        build_zarr_structure(group, value)
+                    elif isinstance(value, np.ndarray):
+                        # Create dataset with appropriate chunking and dtype
+                        
+                        # Ensure proper dtype - avoid object dtype for zarr v3
+                        if value.dtype.kind in ('O', 'U'):
+                            from transforms.query_helpers import bytesify
+                            value = bytesify(value)
+                        
+                        # Determine chunking
+                        chunks = value.shape
+                        if value.nbytes > 2e9 and value.ndim > 1:
+                            # For large arrays, cap chunk size
+                            # For higher-dim arrays, cap only first dimension
+                            max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
+                            chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
+                        
+                        # Create the dataset with explicit shape, dtype, chunks, and overwrite=True
+                        parent_group.create_dataset(
+                            name=key,
+                            data=value,
+                            shape=value.shape,
+                            dtype=value.dtype,
+                            chunks=chunks,
+                            overwrite=True  # Allow overwriting existing arrays
+                        )
+                    else:
+                        # Store as attribute if scalar
+                        if isinstance(value, (str, int, float, bool)) or value is None:
+                            parent_group.attrs[key] = value
+                        else:
+                            # For other types, just store as string
+                            parent_group.attrs[key] = str(value)
+            
+            # Build the zarr structure
+            build_zarr_structure(root, tree)
+            
+            # Consolidate metadata
+            zarr.consolidate_metadata(root.store)
+            self.logger.info(f"Successfully created zarr store at {s3_uri}")
+            
+            return s3_uri
+            
+        except Exception as e:
+            self.logger.error(f"Error creating zarr store: {e}")
+            raise
+    
     def save_dataset_to_s3_zarr(self, dataset, store_key, chunks=None):
         """
         Save an xarray dataset directly to S3 as zarr without local files.

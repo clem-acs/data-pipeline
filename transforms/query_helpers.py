@@ -27,14 +27,15 @@ def bytesify(np_arr: np.ndarray) -> np.ndarray:
     if np_arr.dtype.kind not in ("O", "U"):
         return np_arr
     
-    # Convert to strings
-    as_str = np_arr.astype(str)
+    # Convert to strings and handle various Python types
+    str_array = np.array([str(x) for x in np_arr.flatten()]).reshape(np_arr.shape)
     
-    # Find the maximum string length in the array
-    max_len = max(1, max(len(s) for s in as_str))
+    # Find the maximum string length in bytes after UTF-8 encoding
+    max_len = max(1, max(len(s.encode('utf-8')) for s in str_array.flatten()))
     
-    # Convert to fixed-width bytes dtype with maximum length
-    return as_str.astype(f"S{max_len}")
+    # Create an array of the appropriate size for UTF-8 encoded strings
+    return np.array([s.encode('utf-8') for s in str_array.flatten()], 
+                   dtype=f'S{max_len}').reshape(np_arr.shape)
 
 
 def sanitize_session_id(session_id: str) -> str:
@@ -353,6 +354,97 @@ def collect_windows(
     return (np.asarray(windows), 
             np.asarray(labels), 
             np.asarray(elem_ids))
+
+
+def extract_lang_tokens(zgroup: zarr.Group, group_name: str) -> Optional[Dict[str, Any]]:
+    """
+    Extract token data from a language zarr group.
+    
+    Args:
+        zgroup: Zarr group containing language data
+        group_name: Language group name (L, W, R, S, W_corrected)
+        
+    Returns:
+        Dictionary with token data or None if group doesn't exist
+    """
+    # Check if language group exists
+    if 'language' not in zgroup:
+        return None
+        
+    # Check if specific language subgroup exists
+    if group_name not in zgroup['language']:
+        return None
+        
+    group = zgroup['language'][group_name]
+    result = {}
+    
+    # Extract text
+    if 'text' in group:
+        result['text'] = group['text'][()]
+    elif 'text' in group.attrs:
+        result['text'] = group.attrs.get('text', '')
+    else:
+        # Default to empty text if not found
+        result['text'] = ''
+    
+    # Extract token arrays
+    tokens = []
+    if 'token' not in group:
+        return result  # Return just the text if no tokens
+        
+    token_count = len(group['token'])
+    
+    for i in range(token_count):
+        token_data = {}
+        
+        # Add common attributes
+        for attr in ['token', 'token_id', 'start_timestamp', 'end_timestamp', 'special_token']:
+            if attr in group:
+                token_data[attr] = group[attr][i]
+        
+        # Add group-specific attributes
+        if group_name == 'W':
+            for attr in ['keystroke_events', 'trigger_keystrokes']:
+                if attr in group:
+                    token_data[attr] = group[attr][i]
+            
+            # Handle char_indices
+            if 'char_indices' in group and len(group['char_indices']) > i:
+                token_data['char_indices'] = list(group['char_indices'][i])
+            elif 'char_indices_arrays' in group and str(i) in group['char_indices_arrays']:
+                token_data['char_indices'] = list(group['char_indices_arrays'][str(i)][:])
+            else:
+                token_data['char_indices'] = []
+                
+        elif group_name == 'W_corrected':
+            if 'unchanged' in group:
+                token_data['unchanged'] = group['unchanged'][i]
+                
+            # Handle original_indices
+            if 'original_indices' in group and len(group['original_indices']) > i:
+                token_data['original_indices'] = list(group['original_indices'][i])
+            elif 'original_indices_arrays' in group and str(i) in group['original_indices_arrays']:
+                token_data['original_indices'] = list(group['original_indices_arrays'][str(i)][:])
+            else:
+                token_data['original_indices'] = []
+        
+        tokens.append(token_data)
+    
+    result['tokens'] = tokens
+    
+    # Add additional attributes for W_corrected
+    if group_name == 'W_corrected':
+        if 'correctness_score' in group:
+            result['correctness_score'] = group['correctness_score'][()]
+        elif 'correctness_score' in group.attrs:
+            result['correctness_score'] = group.attrs.get('correctness_score', 0.0)
+            
+        if 'original_text' in group:
+            result['original_text'] = group['original_text'][()]
+        elif 'original_text' in group.attrs:
+            result['original_text'] = group.attrs.get('original_text', '')
+    
+    return result
 
 
 def get_neural_windows_dataset(sessions_group: zarr.Group, 
