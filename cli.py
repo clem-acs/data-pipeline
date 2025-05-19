@@ -32,6 +32,8 @@ except ImportError:
     from transforms.t2E_analysis_v0 import AnalysisTransform
     from transforms.t2F_audio_v0 import AudioExtractTransform
     from transforms.t4A_query_v0 import QueryTransform
+    from transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
+
     from utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions
@@ -61,6 +63,8 @@ TRANSFORMS = {
     'audio': AudioExtractTransform,
     'event': EventTransform,
     'qry': QueryTransform,
+    'classify': ClassifyEEGTransform,
+
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
     # 'extract': FeatureExtractionTransform,
