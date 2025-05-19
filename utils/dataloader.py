@@ -57,8 +57,8 @@ class QueryDataset(Dataset):
         # Build flat index map for all windows across all sessions
         self._build_index_map()
         
-        logger.info(f"QueryDataset initialized with {len(self.index_map)} total windows across {len(self.session_ids)} sessions")
-        logger.info(f"Modalities: {self.modalities}")
+        print(f"QueryDataset initialized with {len(self.index_map)} total windows across {len(self.session_ids)} sessions")
+        print(f"Modalities: {self.modalities}")
 
     def _build_index_map(self):
         """
@@ -72,6 +72,7 @@ class QueryDataset(Dataset):
         self.modality_arrays = {}
         
         for session_id in self.session_ids:
+            print(f"QueryDataset: Processing session {session_id}")
             session_group = self.sessions_group[session_id]
             
             # Track arrays for each modality
@@ -81,14 +82,10 @@ class QueryDataset(Dataset):
             
             # Find arrays for requested modalities
             
-            # Check for standard EEG data (windows or eeg array)
-            if "eeg" in self.modalities:
-                if "windows" in session_group:
-                    eeg_array_name = "windows"
-                    window_count = session_group["windows"].shape[0]
-                elif "eeg" in session_group:
-                    eeg_array_name = "eeg"
-                    window_count = session_group["eeg"].shape[0]
+            # Check for EEG data - ONLY look at "eeg" array, NEVER at "windows"
+            if "eeg" in self.modalities and "eeg" in session_group:
+                eeg_array_name = "eeg"
+                window_count = session_group["eeg"].shape[0]
             
             # Check for fNIRS data
             if "fnirs" in self.modalities and "fnirs" in session_group:
@@ -104,7 +101,7 @@ class QueryDataset(Dataset):
                 fnirs_count = session_group[fnirs_array_name].shape[0]
                 
                 if eeg_count != fnirs_count:
-                    logger.warning(
+                    print(
                         f"Skipping session {session_id}: Mismatched counts - " 
                         f"EEG: {eeg_count}, fNIRS: {fnirs_count}"
                     )
@@ -112,21 +109,34 @@ class QueryDataset(Dataset):
             
             # Skip sessions with no matching data for requested modalities
             if window_count == 0:
-                logger.warning(f"Skipping session {session_id}: No data found for requested modalities {self.modalities}")
+                print(f"Skipping session {session_id}: No data found for requested modalities {self.modalities}")
                 continue
             
             # Check for labels (required)
             if "labels" not in session_group:
-                logger.warning(f"Skipping session {session_id}: No labels found")
+                print(f"Skipping session {session_id}: No labels found")
                 continue
             
             # Verify label count matches window count
             if session_group["labels"].shape[0] != window_count:
-                logger.warning(
+                print(
                     f"Skipping session {session_id}: Label count {session_group['labels'].shape[0]} "
                     f"doesn't match window count {window_count}"
                 )
                 continue
+            
+            # Check EEG shape once per session using array metadata
+            if "eeg" in self.modalities and eeg_array_name:
+                eeg_arr = session_group[eeg_array_name]
+                window_shape = eeg_arr.shape[1:]  # Skip first dimension (window count)
+                
+                if window_shape != (21, 105):
+                    print(
+                        f"{session_id}: skipping session with EEG shape "
+                        f"{window_shape} (expected (21, 105))."
+                    )
+                    # Skip entire session
+                    continue
             
             # Store metadata for this session
             self.session_lengths[session_id] = window_count
@@ -135,13 +145,26 @@ class QueryDataset(Dataset):
                 "fnirs": fnirs_array_name
             }
             
-            # Add (session_id, window_idx) pairs to index map
+            # Add all indices at once, now that we've verified the shape at session level
             for window_idx in range(window_count):
                 self.index_map.append((session_id, window_idx))
     
     def __len__(self) -> int:
         """Return the total number of windows in the dataset."""
         return len(self.index_map)
+    
+    def sessions(self) -> List[str]:
+        """Return the list of session-IDs in the same order
+        that indices appear in `index_map`."""
+        return self.session_ids.copy()
+
+    def indices_by_session(self) -> Dict[str, List[int]]:
+        """Map each session-ID to the list of dataset indices
+        that belong to it."""
+        out = {sid: [] for sid in self.session_ids}
+        for global_idx, (sid, _) in enumerate(self.index_map):
+            out[sid].append(global_idx)
+        return out
     
     def __getitem__(self, idx: int) -> Tuple[Union[Dict[str, torch.Tensor], torch.Tensor], torch.Tensor]:
         """
@@ -193,6 +216,12 @@ class QueryDataset(Dataset):
         
         # Extract label
         label_data = session_group["labels"][window_idx]
+        print(f"Raw label_data: {label_data}, type: {type(label_data)}, shape: {getattr(label_data, 'shape', None)}")
+        
+        # CRITICAL FIX: Handle 0-D numpy arrays by converting to scalar
+        if isinstance(label_data, np.ndarray) and label_data.shape == ():
+            print(f"Converting 0-D array to scalar: {label_data} -> {label_data.item()}")
+            label_data = label_data.item()
         
         # Get label map from root attributes if available
         label_map = None
@@ -224,12 +253,15 @@ class QueryDataset(Dataset):
         elif isinstance(label_data, (int, np.integer)):
             # Already an integer
             label_data = int(label_data)
+            print(f"Integer label: {label_data}")
         else:
             # Default fallback
+            print(f"WARNING: Unhandled label type {type(label_data)}, defaulting to 0")
             label_data = 0
         
         # Convert label to tensor
         label = torch.tensor(label_data, dtype=torch.long)
+        print(f"Final label tensor: {label}")
         
         # For single modality, return the tensor directly
         if len(self.modalities) == 1:
@@ -248,7 +280,8 @@ def create_data_loaders(
     test_ratio: float = 0.15,
     shuffle: bool = True,
     num_workers: int = 4,
-    seed: int = 42
+    seed: int = 42,
+    split_by_session: bool = False
 ) -> Tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
     """
     Create PyTorch DataLoaders from a query zarr store.
@@ -263,6 +296,8 @@ def create_data_loaders(
         shuffle: Whether to shuffle the data
         num_workers: Number of worker processes for DataLoader
         seed: Random seed for reproducible splits
+        split_by_session: If True, maintain session boundaries when splitting 
+                         (all windows from a session stay in the same split)
         
     Returns:
         Tuple of (train_loader, val_loader, test_loader)
@@ -274,7 +309,8 @@ def create_data_loaders(
         ...     modalities=["eeg"],
         ...     train_ratio=0.8,
         ...     val_ratio=0.2,
-        ...     test_ratio=0.0
+        ...     test_ratio=0.0,
+        ...     split_by_session=True  # Use session-level splitting
         ... )
     """
     # Create dataset
@@ -301,21 +337,54 @@ def create_data_loaders(
     # Set random seed for reproducibility
     torch.manual_seed(seed)
     
-    # Split dataset
-    if val_size == 0 and test_size == 0:
-        # Only training data
-        train_dataset = dataset
-        val_dataset = None
-        test_dataset = None
-    elif test_size == 0:
-        # Training and validation only
-        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-        test_dataset = None
+    if split_by_session:
+        # -------- session-level split --------------------------------
+        sess_map = dataset.indices_by_session()
+        sess_ids = list(sess_map)
+        rng = torch.Generator().manual_seed(seed)
+        sess_ids = [sess_ids[i] for i in torch.randperm(len(sess_ids), generator=rng).tolist()]
+        
+        n_sess = len(sess_ids)
+        n_train = max(1, int(train_ratio * n_sess))
+        n_val = max(0, int(val_ratio * n_sess))
+        n_test = n_sess - n_train - n_val
+        
+        # guarantee at least one session per split when possible
+        if n_test == 0 and test_ratio > 0: n_test, n_val = 1, max(0, n_val-1)
+        
+        train_sess = sess_ids[:n_train]
+        val_sess = sess_ids[n_train:n_train+n_val]
+        test_sess = sess_ids[n_train+n_val:]
+        
+        def subset(sids):
+            flat = [idx for sid in sids for idx in sess_map[sid]]
+            return torch.utils.data.Subset(dataset, flat)
+        
+        train_dataset = subset(train_sess)
+        val_dataset = subset(val_sess) if val_sess else None
+        test_dataset = subset(test_sess) if test_sess else None
+        
+        # Log session distribution
+        print(f"Session-level split: {n_train} train, {n_val} val, {n_test} test sessions")
+        print(f"Window counts: {len(train_dataset) if train_dataset else 0} train, "
+              f"{len(val_dataset) if val_dataset else 0} val, "
+              f"{len(test_dataset) if test_dataset else 0} test windows")
     else:
-        # Full split
-        train_dataset, val_dataset, test_dataset = random_split(
-            dataset, [train_size, val_size, test_size]
-        )
+        # -------- original window-level split ------------------------
+        if val_size == 0 and test_size == 0:
+            # Only training data
+            train_dataset = dataset
+            val_dataset = None
+            test_dataset = None
+        elif test_size == 0:
+            # Training and validation only
+            train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+            test_dataset = None
+        else:
+            # Full split
+            train_dataset, val_dataset, test_dataset = random_split(
+                dataset, [train_size, val_size, test_size]
+            )
     
     # Create data loaders
     train_loader = DataLoader(
