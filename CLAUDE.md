@@ -52,29 +52,14 @@ Your task
 
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
-look especially at the t2 transforms, the folders some of them use, and the outputs they produce (zarr, zarrays, hdf5s)
 
-I want to have a t4A which has various queries in it that we can run in the cli as arguments. for example, I want it to query like for all sessions, give me all element data, with session id as a new dimension
-so all this query would do is go through all the existing session by session zarr stores, and return one larger element zar store with dims session_id,element_id, and identical data to what it has currently within the data (so all of the stuff like start/end times, duration, task type, task id, audio mode, absolutely everything)
+really look at t4A and query helpers, base transform, etc
 
-this is one query; query results should each save with the results in a new zarr store
+I want to extract any torch stuff into a util dataloader in utils, that takes in a labeled zarr store of multiple sessions, and just returns the labeled dataset. so i can train on all the sessions in the dataset. i want to first train a classifier, so keep that in mind, although the dataloader should be very flexible.
 
-another query might be like across all sessions, return all elements with task type 'eye' just like session_id,element_id as ims, then just element id, start time, end time as the only data values
+then, i want to create a transform t6B_test_class.py
+that is a simple classifier trained on eyes open/closed data across all sessions. so it should load the data from the dataloader util, train a very simple classifier on those windows. look at the shape of the windows in t2A so you know the shape. then remember it should just load the data, and train on it, return the train loss and accuracy on the train/validation split
+first, create a proposal called simple-loader.txt that just proposes exactly what to put in the dataloader. currently, much of this is in t4A, but we want to take it out of t4A and out of query helpers, so separate those concerns.
 
-the transform t4A should first check if the query result already exists and has all sessions included. if it does, it should just tell the user it's already there (and where). if not, but the result does exist for some sessions, it should simply append the new sessions results. if it's not there, it should start from scratch. eventually, there'll be lots and lots of complex queries in here.
-for example, i might want to get all the windows of neural data that occurred across all sessions during elements where the task type is 'eye', and have them return a torch dataset to me in python where it's just the windows (so sliced out of each session) and a label 'closed' if the element_id includes the word 'closed' and an label 'open' if the element_id includes open and 'intro' if element id includes the word intro.
-so then it'll return to me a torch dataset of that labeled neural data for training a classifier
-so that query should be able to run from here, just as a simpler element-only query, which will save to another zarr store in s3
+write that proposal for now, super simple, ultrathink
 
- i'll want to run this transform like:
-
-python cli.py qry --[normal cli args] --query_name 
-where query_name might be like --eye for the eye one, or --all-elements or others. i'll add lots
-
-that's working okay for now. i want to talk about a related issue. often, when new stuff is written to the zarr, like a session is processed in window t2A, events t2C, queries t4A the metadata (which we always store in zarr.json files, nothing else) is not consolidated, which causes issues when we query
-like this should be there more often?
-zarr.consolidate_metadata(root.store)
-
-
-can you look through all the transforms, see if that is notably missing, look in cli.py and base transform, and see if we do call that automatically on everything, or if transforms have to add it themselves?
-think hard, ultrathink, report back, don't change anything yet though

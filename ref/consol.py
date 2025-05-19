@@ -1,7 +1,7 @@
 import zarr, s3fs
 
 uri = "s3://conduit-data-dev/processed/windows/" \
-      "niki_dupuis_20250503_152625_windowed.zarr"
+      "lydia_10m_20250423_161755_windowed.zarr"
 
 # open the store for read-write **without** the consolidated= kwarg
 root = zarr.open_group(
@@ -13,4 +13,4 @@ root = zarr.open_group(
 # rebuild the metadata blob so it lists 'time' (and everything else)
 zarr.consolidate_metadata(root.store)
 
-print("✓ consolidated metadata rebuilt")
+print("consolidated metadata rebuilt")
