@@ -55,22 +55,33 @@ class QueryTransform(BaseTransform):
         "all_elements": "_query_all_elements",
         "eye_elements": "_query_eye_elements",
         "eye_neural": "_query_eye_neural_windows",
-        "lang_tokens": "_query_lang_tokens",  # Add lang query
+        "lang_tokens": "_query_lang_tokens",
+        "neuro_lang": "_query_neuro_lang_windows",  # Neural-language windows query
         # Additional queries will be added here
     }
 
     def __init__(self, query_name: Optional[str] = None, 
-                 label_map: Optional[Dict[str, int]] = None, **kwargs):
+                 label_map: Optional[Dict[str, int]] = None,
+                 lang_group: str = "W",
+                 tokenizer: str = "gpt2",
+                 pre_window_seconds: float = 10.0,
+                 **kwargs):
         """
         Initialize the query transform.
         
         Args:
             query_name: Name of the query to run (must be in QUERY_REGISTRY)
             label_map: Optional mapping from element_id patterns to labels
+            lang_group: Language group to process (L, W, R, S, W_corrected)
+            tokenizer: Tokenizer used in language transform (e.g., gpt2)
+            pre_window_seconds: Seconds to include before token start
             **kwargs: Additional arguments for BaseTransform
         """
         self.query_name = query_name
         self.label_map = label_map or {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+        self.lang_group = lang_group
+        self.tokenizer = tokenizer
+        self.pre_window_seconds = pre_window_seconds
         
         # Set default transform info if not provided
         transform_id = kwargs.pop('transform_id', 't4A_query_v0')
@@ -89,7 +100,8 @@ class QueryTransform(BaseTransform):
         
         if self.query_name:
             self.logger.info(f"Initialized QueryTransform for query '{self.query_name}'")
-            if self.label_map:
+            # Only log label map for queries that actually use it (not neuro_lang)
+            if self.label_map and self.query_name != "neuro_lang":
                 self.logger.info(f"Using label map: {self.label_map}")
 
     @classmethod
@@ -115,6 +127,28 @@ class QueryTransform(BaseTransform):
             type=str,
             help="Label mapping in JSON format, e.g., '{\"closed\":0,\"open\":1,\"intro\":2}'"
         )
+        
+        # Add neural language query options
+        neuro_lang_group = parser.add_argument_group('neuro-lang options')
+        neuro_lang_group.add_argument(
+            "--lang-group", 
+            type=str, 
+            choices=["L", "R", "W", "S", "W_corrected"],
+            default="W", 
+            help="Language group to process"
+        )
+        neuro_lang_group.add_argument(
+            "--tokenizer", 
+            type=str, 
+            default="gpt2", 
+            help="Tokenizer used in language transform"
+        )
+        neuro_lang_group.add_argument(
+            "--pre-window-seconds", 
+            type=float, 
+            default=10.0, 
+            help="Seconds to include before token start"
+        )
 
     @classmethod
     def from_args(cls, args):
@@ -136,7 +170,11 @@ class QueryTransform(BaseTransform):
                 raise ValueError(f"Invalid JSON for label-map: {e}")
         
         # Create a query-specific transform_id to track each query type separately
-        transform_id = f"t4A_query_v0_{args.query_name}" if args.query_name else "t4A_query_v0"
+        if args.query_name == "neuro_lang":
+            # Include all parameters in transform_id for neuro_lang query
+            transform_id = f"t4A_query_v0_{args.query_name}_{args.lang_group}_{args.tokenizer}_{args.pre_window_seconds}s"
+        else:
+            transform_id = f"t4A_query_v0_{args.query_name}" if args.query_name else "t4A_query_v0"
                 
         return cls(
             query_name=args.query_name,
@@ -144,6 +182,9 @@ class QueryTransform(BaseTransform):
             transform_id=transform_id,  # Use query-specific transform_id
             source_prefix=getattr(args, "source_prefix", cls.SOURCE_PREFIX),
             destination_prefix=getattr(args, "dest_prefix", cls.DEST_PREFIX),
+            lang_group=getattr(args, "lang_group", "W"),
+            tokenizer=getattr(args, "tokenizer", "gpt2"),
+            pre_window_seconds=getattr(args, "pre_window_seconds", 10.0),
             s3_bucket=args.s3_bucket,
             verbose=args.verbose,
             log_file=args.log_file,
@@ -155,21 +196,101 @@ class QueryTransform(BaseTransform):
     #  Core I/O helpers
     # ------------------------------------------------------------------ #
 
-    def _open_zarr_safely(self, uri: str) -> zarr.Group:
+    def _open_zarr_safely(self, uri: str, *, mode: str = "r") -> zarr.Group:
         """
-        Open an S3-hosted Zarr store read-only.
+        Zarr-v3-only opener that guarantees fresh consolidated metadata.
+
+        Steps
+        -----
+        1. Try fast open (`use_consolidated=True`).
+        2. If that fails *or* returns an apparently empty group,
+           re-open without consolidated metadata,
+           regenerate the consolidated block right away,
+           then re-open again with `use_consolidated=True`.
         
         Args:
             uri: URI for the zarr store (e.g., s3://bucket/path/to/store.zarr)
+            mode: Access mode (default: "r" for read-only)
             
         Returns:
-            Open zarr.Group object
+            Open zarr.Group object with fresh consolidated metadata
         """
-        return zarr.open_group(
-            store=uri, 
-            mode="r", 
-            storage_options={"anon": False}
-        )
+        print(f"\n\n=== OPENING ZARR STORE: {uri} ===")
+        opts = {"anon": False}
+
+        # ----- 1 · fast path -------------------------------------------------
+        try:
+            print(f"Trying fast path with use_consolidated=True...")
+            g = zarr.open_group(
+                store=uri,
+                mode=mode,
+                storage_options=opts,
+                use_consolidated=True,      # <-- v3 keyword
+            )
+            arrays = list(g.array_keys())
+            groups = list(g.group_keys())
+            print(f"Fast path - arrays: {arrays}, groups: {groups}")
+            
+            # If the metadata is valid, arrays or sub-groups will be visible.
+            if arrays or groups:
+                print(f"Fast path SUCCESS - using consolidated metadata")
+                return g
+            # Otherwise the block is present but stale → fall through.
+            print(f"Fast path: consolidated metadata exists but empty, rebuilding...")
+        except KeyError as e:
+            # No consolidated block yet → fall through to rebuild.
+            print(f"Fast path FAILED with KeyError: {e}, rebuilding metadata...")
+        except Exception as e:
+            print(f"Fast path FAILED with unexpected error: {type(e).__name__}:{e}, rebuilding metadata...")
+
+        # ----- 2 · rebuild consolidated metadata ----------------------------
+        print(f"Opening in write mode to rebuild metadata...")
+        # Open with a slow tree-walk so we can see everything.
+        try:
+            g = zarr.open_group(
+                store=uri,
+                mode="a",               # need write access to store new metadata
+                storage_options=opts,
+                use_consolidated=False, # explicit to be clear
+            )
+            arrays = list(g.array_keys())
+            groups = list(g.group_keys())
+            print(f"Before consolidation - arrays: {arrays}, groups: {groups}")
+            print(f"Group directly contains 'elements'?: {'elements' in g}")
+            
+            if 'elements' in g:
+                print(f"Elements contents: {list(g['elements'].array_keys())}")
+
+            # Write (or overwrite) the inline "consolidated_metadata" section
+            # inside zarr.json.  For v3 this is a cheap local write; no full copy.
+            print(f"Consolidating metadata...")
+            zarr.consolidate_metadata(g.store)
+            print(f"Metadata consolidated, reopening...")
+        except Exception as e:
+            print(f"ERROR during metadata rebuild: {type(e).__name__}:{e}")
+            raise
+
+        # Re-open in read mode with the fresh metadata block.
+        try:
+            print(f"Final re-open with use_consolidated=True...")
+            g_final = zarr.open_group(
+                store=uri,
+                mode=mode,
+                storage_options=opts,
+                use_consolidated=True,
+            )
+            arrays = list(g_final.array_keys())
+            groups = list(g_final.group_keys())
+            print(f"Final result - arrays: {arrays}, groups: {groups}")
+            print(f"Final group directly contains 'elements'?: {'elements' in g_final}")
+            
+            if 'elements' in g_final:
+                print(f"Final elements contents: {list(g_final['elements'].array_keys())}")
+                
+            return g_final
+        except Exception as e:
+            print(f"ERROR during final re-open: {type(e).__name__}:{e}")
+            raise
 
     def _extract_elements_data(self, zgroup: zarr.Group, session_id: str) -> Optional[Dict[str, np.ndarray]]:
         """
@@ -182,6 +303,13 @@ class QueryTransform(BaseTransform):
         Returns:
             Dictionary of element data arrays or None if no elements found
         """
+        print(f"\n=== EXTRACT ELEMENTS: Session ID {session_id} ===")
+        print(f"zgroup type: {type(zgroup)}")
+        print(f"zgroup array keys: {list(zgroup.array_keys())}")
+        print(f"zgroup group keys: {list(zgroup.group_keys())}")
+        print(f"Direct 'elements' check: {'elements' in zgroup}")
+        print(f"Elements in group keys?: {'elements' in list(zgroup.group_keys())}")
+        
         if "elements" not in zgroup:
             self.logger.warning(f"No elements subgroup in {session_id}")
             return None
@@ -205,6 +333,81 @@ class QueryTransform(BaseTransform):
 
         return result
 
+    def _save_to_zarr(self, parent_group: zarr.Group, key: str, value: Any, indent: str = ""):
+        """
+        Recursively save any Python object to a zarr hierarchy.
+        
+        Args:
+            parent_group: Parent zarr group
+            key: Name for this item
+            value: Any Python object (dict, list, array, scalar)
+            indent: String for indentation in debug prints
+        """
+        # Sanitize key for zarr path safety
+        safe_key = str(key).replace("/", "_")
+        
+        print(f"{indent}Processing: {safe_key}, type: {type(value)}")
+        
+        try:
+            if isinstance(value, dict):
+                # Dictionary → zarr group with named items
+                print(f"{indent}Creating group: {safe_key} with {len(value)} items")
+                group = parent_group.create_group(safe_key, overwrite=True)
+                print(f"{indent}Group {safe_key} created successfully")
+                
+                # Process each item in the dictionary
+                for k, v in value.items():
+                    self._save_to_zarr(group, k, v, indent + "  ")
+                    
+            elif isinstance(value, list):
+                # List → zarr group with numbered items
+                print(f"{indent}Creating list group: {safe_key} with {len(value)} items")
+                group = parent_group.create_group(safe_key, overwrite=True)
+                print(f"{indent}List group {safe_key} created successfully")
+                
+                # Save each list item with its index as the key
+                for i, item in enumerate(value):
+                    self._save_to_zarr(group, str(i), item, indent + "  ")
+                    
+            elif isinstance(value, np.ndarray):
+                # Array → zarr dataset
+                value = bytesify(value)
+                
+                # Determine appropriate chunking for large arrays
+                chunks = value.shape
+                if value.nbytes > 2e9 and value.ndim > 1:
+                    if value.ndim == 1:
+                        chunks = (min(10_000, value.shape[0]),)
+                    else:
+                        max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
+                        chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
+                
+                print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}")
+                parent_group.create_dataset(
+                    name=safe_key,
+                    data=value,
+                    shape=value.shape,  # Add explicit shape parameter
+                    dtype=value.dtype,  # Also specify dtype explicitly
+                    chunks=chunks,
+                    overwrite=True
+                )
+                print(f"{indent}Dataset {safe_key} created successfully")
+                
+            elif isinstance(value, (str, int, float, bool, type(None))):
+                # Scalar → zarr attribute
+                parent_group.attrs[safe_key] = value
+                print(f"{indent}Added scalar attribute: {safe_key}={value}")
+                
+            else:
+                # Unsupported type → string representation as attribute
+                str_value = str(value)
+                parent_group.attrs[safe_key] = str_value
+                print(f"{indent}Converted to string attribute: {safe_key}={str_value[:30]}...")
+                
+        except Exception as e:
+            print(f"{indent}ERROR processing {safe_key}: {type(e).__name__}: {e}")
+            self.logger.warning(f"Error saving {safe_key}: {type(e).__name__}: {e}")
+
     def _save_session_to_subgroup(
         self,
         sessions_group: zarr.Group,
@@ -222,44 +425,26 @@ class QueryTransform(BaseTransform):
         # Get the sanitized session key
         session_key = sanitize_session_id(session_id)
         
-        # Always try to create the group - if it exists, zarr with overwrite=True will handle it
-        # This bypasses the need to check consolidated metadata which might be stale
-        sg = sessions_group.create_group(session_key, overwrite=True)
+        print(f"\n=== SAVE SESSION TO SUBGROUP: {session_key} ===")
+        print(f"Input data keys: {list(data.keys())}")
         
-        # Save each item
+        # Create the session group
+        try:
+            sg = sessions_group.create_group(session_key, overwrite=True)
+            print(f"Created session group: {session_key}")
+        except Exception as e:
+            print(f"ERROR creating session group: {type(e).__name__}: {e}")
+            raise
+        
+        # Handle session_id specially
+        if "session_id" in data:
+            sg.attrs["session_id"] = data["session_id"]
+            print(f"Added session_id to attrs: {data['session_id']}")
+        
+        # Save all other items using the recursive helper
         for key, val in data.items():
-            if key == "session_id":  # Skip, handled in metadata
-                sg.attrs["session_id"] = val
-                continue
-                
-            if isinstance(val, np.ndarray):
-                # Ensure bytes-safe dtype
-                val = bytesify(val)
-                
-                # Determine appropriate chunking for the array
-                # For multi-dimensional arrays > 2GB, cap chunk size
-                chunks = val.shape
-                if val.nbytes > 2e9 and val.ndim > 1:
-                    # For 1D array, cap at 10,000 elements per chunk
-                    if val.ndim == 1:
-                        chunks = (min(10_000, val.shape[0]),)
-                    # For higher-dim arrays, cap only first dimension
-                    else:
-                        max_chunk_0 = max(1, int(2e9 / (val.itemsize * np.prod(val.shape[1:]))))
-                        chunks = (min(max_chunk_0, val.shape[0]),) + val.shape[1:]
-                
-                # Create dataset with explicit shape, dtype, chunks
-                sg.create_dataset(
-                    name=key,
-                    data=val,
-                    shape=val.shape,
-                    dtype=val.dtype,
-                    chunks=chunks,
-                    overwrite=True  # Allow overwriting existing arrays
-                )
-            elif isinstance(val, (str, int, float, bool)):
-                # Store scalar values as attributes
-                sg.attrs[key] = val
+            if key != "session_id":  # Skip session_id as we already handled it
+                self._save_to_zarr(sg, key, val)
 
     def _save_session_result(
         self,
@@ -318,6 +503,16 @@ class QueryTransform(BaseTransform):
             }
             
             # Write session subgroup
+            print(f"\n=== SAVING SESSION {session_id} ===")
+            print(f"Session result keys: {list(session_result.keys())}")
+            print(f"Session result types: {[(k, type(v)) for k, v in session_result.items()]}")
+            if 'tokens_with_windows' in session_result:
+                print(f"Number of tokens with windows: {len(session_result['tokens_with_windows'])}")
+                for token_idx, token_data in list(session_result['tokens_with_windows'].items())[:2]:  # Print just first 2
+                    print(f"Token {token_idx} keys: {list(token_data.keys())}")
+                    if 'windows' in token_data:
+                        print(f"  Window keys: {list(token_data['windows'].keys())}")
+            
             self._save_session_to_subgroup(sessions_group, session_id, session_result)
             
             # Update root attrs
@@ -377,7 +572,50 @@ class QueryTransform(BaseTransform):
         Returns:
             List of session IDs with relevant data
         """
-        # Select source prefix based on query type
+        # For neuro_lang query, need both event and specific tokenizer language zarr stores
+        if self.query_name == "neuro_lang":
+            # Find sessions with event zarr stores
+            event_sessions = set()
+            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=self.source_prefix)
+            for obj in resp.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith("_events.zarr/zarr.json"):
+                    session_id = key.split("/")[-2].replace("_events.zarr", "")
+                    event_sessions.add(session_id)
+            
+            # Find sessions with specific tokenizer lang zarr stores
+            lang_prefix = "processed/lang/"
+            tokenizer_sessions = set()
+            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=lang_prefix)
+            for obj in resp.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith("_lang.zarr/zarr.json"):
+                    # Check if this has our specific tokenizer
+                    zarr_name = key.split("/")[-2]  # e.g., "session123_gpt2_lang.zarr"
+                    if f"_{self.tokenizer}_lang.zarr" in zarr_name:
+                        # Extract session ID from the tokenizer zarr name (without _events.zarr suffix)
+                        session_id = zarr_name.replace(f"_{self.tokenizer}_lang.zarr", "")
+                        # Add both clean ID and ID with _events.zarr suffix to handle both path formats
+                        tokenizer_sessions.add(session_id)
+                        # Also add with _events.zarr suffix to match event session IDs
+                        tokenizer_sessions.add(f"{session_id}_events.zarr")
+            
+            # Find sessions with window zarr stores
+            window_prefix = "processed/windows/"
+            window_sessions = set()
+            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=window_prefix)
+            for obj in resp.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith("_windowed.zarr/zarr.json"):
+                    session_id = key.split("/")[-2].replace("_windowed.zarr", "")
+                    window_sessions.add(session_id)
+            
+            # Return sessions with event, specific tokenizer lang, and window data
+            common_sessions = event_sessions.intersection(tokenizer_sessions).intersection(window_sessions)
+            self.logger.info(f"Found {len(common_sessions)} sessions with event zarr, {self.tokenizer} language zarr, and window zarr stores")
+            return sorted(common_sessions)
+        
+        # Select source prefix based on query type for other queries
         prefix = self.source_prefix
         
         # Use lang prefix if it's a lang query
@@ -745,52 +983,159 @@ class QueryTransform(BaseTransform):
             return result
         return None
 
+    def _query_neuro_lang_windows(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, Any]]:
+        """
+        Extract neural windows for language tokens.
+        
+        For each token of the specified language group within an element:
+        1. Get windows from N seconds before token start to token end
+        2. Associate these windows with the token and its element
+        
+        Args:
+            zgroup: Event zarr group with elements data
+            sid: Session ID
+            
+        Returns:
+            Dictionary with tokens and their associated neural windows
+        """
+        # Get elements data from event zarr
+        elements = self._extract_elements_data(zgroup, sid)
+        if elements is None:
+            self.logger.warning(f"No elements found for {sid}")
+            return None
+            
+        # Find and open the language zarr store with specific tokenizer
+        # Clean session ID by removing _events.zarr suffix if present
+        clean_sid = sid.replace("_events.zarr", "")
+        lang_zarr_key = f"processed/lang/{clean_sid}_{self.tokenizer}_lang.zarr"
+        try:
+            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{lang_zarr_key}/zarr.json")
+        except self.s3.exceptions.ClientError:
+            self.logger.warning(f"No language zarr for {clean_sid} with tokenizer {self.tokenizer}")
+            return None
+            
+        lang_zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{lang_zarr_key}")
+        
+        # Extract tokens for the specified language group
+        from transforms.query_helpers import extract_lang_tokens, find_element_for_timestamp
+        lang_data = extract_lang_tokens(lang_zgroup, self.lang_group)
+        if lang_data is None or 'tokens' not in lang_data or not lang_data['tokens']:
+            self.logger.warning(f"No {self.lang_group} tokens found for {sid}")
+            return None
+            
+        # Find and open the window zarr store
+        window_key = f"processed/windows/{sid.replace('_events.zarr', '')}_windowed.zarr"
+        try:
+            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
+        except self.s3.exceptions.ClientError:
+            self.logger.warning(f"No window store for {sid}")
+            return None
+            
+        window_zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}")
+        window_times = window_zgroup["time"][:]
+        
+        # Create sequence of tokens in chronological order
+        tokens = lang_data["tokens"]
+        token_sequence = list(range(len(tokens)))
+        
+        # Sort tokens by start timestamp if available
+        if tokens and "start_timestamp" in tokens[0]:
+            token_sequence = sorted(token_sequence, 
+                                   key=lambda i: tokens[i]["start_timestamp"])
+        
+        # Process each token and find its element and windows
+        tokens_with_windows = {}
+        for token_idx in token_sequence:
+            token = tokens[token_idx]
+            
+            # Get token timestamps
+            start_ts = token.get("start_timestamp", 0)
+            end_ts = token.get("end_timestamp", start_ts)
+            
+            # Find which element this token belongs to
+            element_id = find_element_for_timestamp(elements, start_ts)
+            if element_id is None:
+                continue  # Skip tokens not in any element
+                
+            # Calculate window start time (N seconds before token)
+            window_start = max(0, start_ts - (self.pre_window_seconds * 1000))  # Convert to ms
+            
+            # Get window indices within the time range
+            window_indices = np.where((window_times >= window_start) & 
+                                     (window_times <= end_ts))[0]
+            
+            if not window_indices.size:
+                continue  # Skip tokens with no windows
+                
+            # Use extract_full_windows to get all window data
+            from transforms.query_helpers import extract_full_windows
+            windows = extract_full_windows(window_zgroup, window_indices)
+            
+            # Store token with its element and windows
+            tokens_with_windows[str(token_idx)] = {
+                "token": token,
+                "element_id": element_id,
+                "window_indices": window_indices.tolist(),
+                "windows": windows
+            }
+        
+        if not tokens_with_windows:
+            self.logger.warning(f"No {self.lang_group} tokens with windows found for {sid}")
+            return None
+            
+        # Format final result
+        result = {
+            "session_id": sid,
+            "tokenizer": self.tokenizer,
+            "lang_group": self.lang_group,
+            "pre_window_seconds": self.pre_window_seconds,
+            "token_sequence": token_sequence,
+            "token_data": lang_data,  # Original token data
+            "tokens_with_windows": tokens_with_windows
+        }
+        
+        print(f"\n=== QUERY RESULT FOR {sid} ===")
+        print(f"Result keys: {list(result.keys())}")
+        print(f"tokens_with_windows count: {len(tokens_with_windows)}")
+        print(f"token_sequence length: {len(token_sequence)}")
+        if tokens_with_windows:
+            first_token = next(iter(tokens_with_windows.values()))
+            if 'windows' in first_token:
+                print(f"First token window keys: {list(first_token['windows'].keys())}")
+                for k, v in first_token['windows'].items():
+                    if isinstance(v, np.ndarray):
+                        print(f"  {k}: shape={v.shape}, dtype={v.dtype}")
+        
+        return result
+
     # ------------------------------------------------------------------ #
     #  PyTorch Dataset Conversion
     # ------------------------------------------------------------------ #
 
     def get_torch_dataset(self, query_result_path: str):
         """
-        Load a query result and convert it to a PyTorch dataset.
+        Load a query result using the QueryDataset from utils/dataloader.
+        
+        This method now uses the QueryDataset class from utils/dataloader.py
+        instead of importing torch directly.
         
         Args:
             query_result_path: Path to the query result zarr store
             
         Returns:
-            torch.utils.data.TensorDataset containing all data
+            QueryDataset instance or None if loading fails
         """
-        import torch
+        # Import QueryDataset from utils/dataloader
+        from utils.dataloader import QueryDataset
         
         # Open the zarr store
-        self.logger.info(f"Loading query result from {query_result_path}")
-        root = self._open_zarr_safely(query_result_path)
+        self.logger.info(f"Loading query result from {query_result_path} using QueryDataset")
         
-        # Check if this is a properly structured query result
-        if "sessions" not in root:
-            self.logger.error(f"Invalid query result format at {query_result_path}")
-            return None
-            
-        sessions_group = root["sessions"]
-        session_ids = list(sessions_group)
-        
-        if not session_ids:
-            self.logger.error(f"No sessions found in {query_result_path}")
-            return None
-            
-        self.logger.info(f"Found {len(session_ids)} sessions in query result")
-        
-        # Look at first session to determine query type
-        first_session = sessions_group[session_ids[0]]
-        
-        # Handle neural windows query
-        if "windows" in first_session and "labels" in first_session:
-            return get_neural_windows_dataset(sessions_group, session_ids)
-        # Handle elements query 
-        elif "element_ids" in first_session:
-            self.logger.error("Element queries are not yet supported for PyTorch conversion")
-            return None
-        else:
-            self.logger.error(f"Unknown query type at {query_result_path}")
+        try:
+            # Create and return QueryDataset
+            return QueryDataset(zarr_path=query_result_path)
+        except Exception as e:
+            self.logger.error(f"Error creating dataset from {query_result_path}: {e}")
             return None
 
 

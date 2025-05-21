@@ -356,6 +356,23 @@ def collect_windows(
             np.asarray(elem_ids))
 
 
+def find_element_for_timestamp(elements: Dict[str, np.ndarray], timestamp: float) -> Optional[Any]:
+    """
+    Find which element contains a specific timestamp.
+    
+    Args:
+        elements: Dictionary with element data (element_ids, start_time, end_time)
+        timestamp: Timestamp to find
+        
+    Returns:
+        Element ID containing the timestamp or None
+    """
+    for eid, start, end in zip(elements["element_ids"], elements["start_time"], elements["end_time"]):
+        if start <= timestamp <= end:
+            return eid
+    return None
+
+
 def extract_lang_tokens(zgroup: zarr.Group, group_name: str) -> Optional[Dict[str, Any]]:
     """
     Extract token data from a language zarr group.
@@ -392,7 +409,7 @@ def extract_lang_tokens(zgroup: zarr.Group, group_name: str) -> Optional[Dict[st
     if 'token' not in group:
         return result  # Return just the text if no tokens
         
-    token_count = len(group['token'])
+    token_count = group['token'].shape[0]  # Use shape attribute instead of len()
     
     for i in range(token_count):
         token_data = {}
@@ -453,15 +470,17 @@ def get_neural_windows_dataset(sessions_group: zarr.Group,
     """
     Extract neural windows data from all sessions and combine into one dataset.
     
+    Note: Torch functionality has been moved to utils/dataloader.py.
+    This function now returns numpy arrays instead of a TensorDataset.
+    
     Args:
         sessions_group: Zarr group containing session subgroups
         session_ids: List of session IDs to include
         label_map: Optional mapping from string labels to numeric indices
         
     Returns:
-        torch.utils.data.TensorDataset with windows and labels
+        Tuple of (windows_array, labels_array) as numpy arrays
     """
-    import torch
     import numpy as np
     
     # Default label mapping if none provided
@@ -503,11 +522,7 @@ def get_neural_windows_dataset(sessions_group: zarr.Group,
     
     # Convert string labels to numeric indices
     numeric_labels = np.array([label_map.get(label, label_map.get("unknown", 3)) 
-                               for label in labels_array])
+                              for label in labels_array])
     
-    # Convert to torch tensors
-    windows_tensor = torch.tensor(windows_array, dtype=torch.float32)
-    labels_tensor = torch.tensor(numeric_labels, dtype=torch.long)
-    
-    # Create the dataset
-    return torch.utils.data.TensorDataset(windows_tensor, labels_tensor)
+    # Return numpy arrays
+    return windows_array, numeric_labels

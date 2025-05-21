@@ -1,5 +1,5 @@
 # CLAUDE.md
-This file involves the LANG transform
+This file involves the QUERY transform
 
 This fi	le provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -53,18 +53,5 @@ Your task
 first comb through every file in the repo - all transforms, cli, base transform, every util, etc. look at the scripts in ref
 
 really look at t2A, t2B, t2C, t4A, t6A, the base transform, cli.py, query_helpers, lang_processing - all files in lang_processing and neural_processing
-i want to change the lang transform to do the following.
-for each session, and each tokenizer, i want it to return what it currently returns but as a zarr store instead of an h5. then it should save to s3 zarr with the base transforms infrastructure, but ensuring that root metadata is consolidated. it should create one store per session and per tokenizer. so there should be separate zarr stores for session X with tokenizer Y and session X with tokenizer Z, and session A with tokenizer Y and A with tokenizer Z
 
-so all information within the h5 should be retained, just now it should be in zarr instead, and the tokenizer becomes part of the metadata, or some kind of extra thing. 
-
-really read through how t2C does this, and also base transform. read through all of t2B now to see how it is currently doing it, and what must be changed (including within lang_processing, if anything there)
-
-then write a proposal for every single thing that needs to be changed, what code to change to what and where and why, for each thing, super precise. we never use xarray, only zarr 3. think about the simplest, easiest for future development way to do this, how to make it as clear and simple as possible. really look hard at t4A, how those queries work, because we'll want to easily be able to query the lang zarr just as we query the elements ones, for example.
-
-write the proposal to simple-lang.txt
-
-think deeply, really comb through the code, ultrathink
-
-
-
+I want to clean up and improve how we query things. first, we now handle torch stuff in utils/dataloader.py, so i don't see any need for torch in query helpers or in t4A is that wrong? ultrathink report back
