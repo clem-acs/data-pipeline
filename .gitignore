@@ -36,4 +36,4 @@ ref/s3h5fnirs/channel_distances.csv
 
 # Zarr dataset directories
 *.zarr/
-claude.md
+CLAUDE.md
