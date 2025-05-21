@@ -371,27 +371,40 @@ class QueryTransform(BaseTransform):
                     
             elif isinstance(value, np.ndarray):
                 # Array → zarr dataset
-                value = bytesify(value)
-                
-                # Determine appropriate chunking for large arrays
-                chunks = value.shape
-                if value.nbytes > 2e9 and value.ndim > 1:
-                    if value.ndim == 1:
-                        chunks = (min(10_000, value.shape[0]),)
-                    else:
-                        max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
-                        chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
-                
-                print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}")
-                parent_group.create_dataset(
-                    name=safe_key,
-                    data=value,
-                    shape=value.shape,  # Add explicit shape parameter
-                    dtype=value.dtype,  # Also specify dtype explicitly
-                    chunks=chunks,
-                    overwrite=True
-                )
-                print(f"{indent}Dataset {safe_key} created successfully")
+                if value.ndim == 0:
+                    # Special handling for scalar (0-dimensional) arrays
+                    print(f"{indent}Creating scalar dataset: {safe_key}, dtype={value.dtype}")
+                    parent_group.create_dataset(
+                        name=safe_key,
+                        data=value,  # Use value directly without indexing
+                        shape=(),    # Empty tuple for scalar shape
+                        dtype=value.dtype,
+                        overwrite=True
+                    )
+                    print(f"{indent}Scalar dataset {safe_key} created successfully")
+                else:
+                    # Regular multi-dimensional array handling
+                    value = bytesify(value)
+                    
+                    # Determine appropriate chunking for large arrays
+                    chunks = value.shape
+                    if value.nbytes > 2e9 and value.ndim > 1:
+                        if value.ndim == 1:
+                            chunks = (min(10_000, value.shape[0]),)
+                        else:
+                            max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
+                            chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
+                    
+                    print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}")
+                    parent_group.create_dataset(
+                        name=safe_key,
+                        data=value,
+                        shape=value.shape,
+                        dtype=value.dtype,
+                        chunks=chunks,
+                        overwrite=True
+                    )
+                    print(f"{indent}Dataset {safe_key} created successfully")
                 
             elif isinstance(value, (str, int, float, bool, type(None))):
                 # Scalar → zarr attribute
