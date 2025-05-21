@@ -5,9 +5,17 @@ Utilities for working with the QueryTransform, providing common operations
 for filtering elements, handling data types, and collecting windows.
 """
 
-from typing import Dict, List, Tuple, Any, Optional, Union
+from typing import Dict, List, Tuple, Any, Optional, Union, Callable
 import numpy as np
 import zarr
+import numcodecs
+import logging
+import time
+
+# Common constants and defaults
+DEFAULT_LABEL_MAP = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+
+# No default compression - let Zarr handle compression automatically
 
 
 def bytesify(np_arr: np.ndarray) -> np.ndarray:
@@ -95,62 +103,12 @@ def filter_elements(elements: Dict[str, np.ndarray],
     }
 
 
-def join_elements_tasks(elements: Dict[str, np.ndarray], 
-                         tasks: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-    """
-    Join element and task data based on task_id.
-    
-    Args:
-        elements: Dictionary of element arrays
-        tasks: Dictionary of task arrays
-        
-    Returns:
-        Combined dictionary with elements + associated task data
-    """
-    if "task_id" not in elements:
-        return elements
-    
-    # Create a copy of the elements dictionary
-    result = elements.copy()
-    
-    # Convert task_id to string for comparison if needed
-    element_task_ids = elements["task_id"]
-    if element_task_ids.dtype.kind in ("S", "a"):
-        element_task_ids = element_task_ids.astype(str)
-    
-    # Extract task IDs from tasks dictionary
-    if "task_id" not in tasks:
-        return elements
-    
-    task_ids = tasks["task_id"]
-    if task_ids.dtype.kind in ("S", "a"):
-        task_ids = task_ids.astype(str)
-    
-    # For each task variable, create corresponding element-mapped array
-    for task_var in tasks:
-        if task_var == "task_id" or task_var in result:
-            continue
-            
-        # Create array to hold task data for each element
-        task_data = np.zeros(elements["element_ids"].shape[0], dtype=tasks[task_var].dtype)
-        
-        # Map task data to elements
-        for i, element_task_id in enumerate(element_task_ids):
-            # Find matching task
-            matches = np.where(task_ids == element_task_id)[0]
-            if matches.size > 0:
-                # Use first match if multiple
-                task_data[i] = tasks[task_var][matches[0]]
-        
-        # Add to result
-        result[f"task_{task_var}"] = task_data
-    
-    return result
 
 
 def extract_full_windows(
     wgroup: zarr.Group,
-    hits: np.ndarray          # indices of the windows you want
+    hits: np.ndarray,          # indices of the windows you want
+    logger: Optional[logging.Logger] = None
 ) -> Dict[str, np.ndarray]:
     """
     Return every variable whose first dimension matches the time dimension.
@@ -165,18 +123,17 @@ def extract_full_windows(
         Dictionary with all arrays that have a matching first dimension
     """
     # Add debug print
-    import logging
-    logging.debug(f"extract_full_windows called with {len(hits)} indices: min={hits.min() if len(hits) > 0 else -1}, max={hits.max() if len(hits) > 0 else -1}")
+    log_debug = logger.debug if logger else logging.debug
+    log_debug(f"extract_full_windows called with {len(hits)} indices: min={hits.min() if len(hits) > 0 else -1}, max={hits.max() if len(hits) > 0 else -1}")
     
     out = {}
     time_arr_length = wgroup["time"].shape[0]
-    logging.debug(f"Time array length in wgroup: {time_arr_length}")
+    log_debug(f"Time array length in wgroup: {time_arr_length}")
     
     # Add debug print here
-    import logging
     for key in wgroup.array_keys():
         arr = wgroup[key]
-        logging.debug(f"Array {key} shape={arr.shape}, matches time?={arr.shape[0] == time_arr_length if arr.shape else False}")
+        log_debug(f"Array {key} shape={arr.shape}, matches time?={arr.shape[0] == time_arr_length if arr.shape else False}")
     
     # Debug prints about the hits array BEFORE processing any arrays
     # Use print directly to ensure it shows up in output
@@ -190,8 +147,7 @@ def extract_full_windows(
         arr = wgroup[key]
         if arr.shape and arr.shape[0] == time_arr_length:
             # Use vindex for efficient chunk-wise slicing
-            import logging
-            logging.debug(
+            log_debug(
                 f"Processing {key}: array shape={arr.shape[0]}, "
                 f"hit indices range {hits.min() if len(hits) > 0 else -1}-{hits.max() if len(hits) > 0 else -1}"
             )
@@ -213,8 +169,8 @@ def extract_full_windows(
             sel = (hits_to_use,) + tuple(slice(None) for _ in range(arr.ndim - 1))
             out[key] = arr.oindex[sel]
     
-    import logging
-    logging.info(f"Extracted {len(hits)} windows with {len(out)} matching arrays")
+    log_info = logger.info if logger else logging.info
+    log_info(f"Extracted {len(hits)} windows with {len(out)} matching arrays")
     return out
 
 
@@ -286,74 +242,21 @@ def build_eids(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarray
     return eids
 
 
-def collect_windows(
-    window_group: zarr.Group,
-    time_arr: np.ndarray,
-    intervals: List[Tuple[Any, Tuple[float, float]]],
-    data_var: str,
-    label_map: Optional[Dict[str, Any]] = None,
-    cap: int = 100_000
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+
+def window_indices_for_range(time_arr: np.ndarray, start: float, end: float) -> np.ndarray:
     """
-    Pull windows whose timestamp lies in any of the (start, end) intervals.
+    Find indices of windows whose timestamps fall within a given time range.
     
     Args:
-        window_group: Zarr group containing window data
         time_arr: Array of timestamps for each window
-        intervals: List of (element_id, (start_time, end_time)) tuples
-        data_var: Name of the variable containing the window data
-        label_map: Optional dict mapping element_id patterns to labels
-        cap: Maximum number of windows to extract
+        start: Start timestamp
+        end: End timestamp
         
     Returns:
-        Tuple of (windows, labels, element_ids) arrays
+        Array of indices matching the time range
     """
-    windows = []
-    labels = []
-    elem_ids = []
-    
-    # Default label mapping if none provided
-    if label_map is None:
-        label_map = {
-            "closed": "closed",
-            "open": "open", 
-            "intro": "intro"
-        }
-    
-    for element_id, (start, end) in intervals:
-        # Find windows where time falls within the interval
-        hits = np.where((time_arr >= start) & (time_arr <= end))[0]
-        if not hits.size:
-            continue
-        
-        for idx in hits:
-            if len(windows) >= cap:
-                return (np.asarray(windows), 
-                        np.asarray(labels), 
-                        np.asarray(elem_ids))
-            
-            # Extract window data
-            win = window_group[data_var][idx]
-            windows.append(win)
-            
-            # Handle element_id type conversion
-            eid_str = element_id
-            if isinstance(eid_str, (bytes, np.bytes_)):
-                eid_str = eid_str.decode("utf-8")
-            eid_str = str(eid_str)
-            elem_ids.append(eid_str)
-            
-            # Determine label based on element_id content
-            label = "unknown"
-            for pattern, label_value in label_map.items():
-                if pattern in eid_str:
-                    label = label_value
-                    break
-            labels.append(label)
-    
-    return (np.asarray(windows), 
-            np.asarray(labels), 
-            np.asarray(elem_ids))
+    return np.where((time_arr >= start) & (time_arr <= end))[0]
 
 
 def find_element_for_timestamp(elements: Dict[str, np.ndarray], timestamp: float) -> Optional[Any]:
@@ -464,65 +367,486 @@ def extract_lang_tokens(zgroup: zarr.Group, group_name: str) -> Optional[Dict[st
     return result
 
 
-def get_neural_windows_dataset(sessions_group: zarr.Group, 
-                               session_ids: List[str],
-                               label_map: Optional[Dict[str, int]] = None):
+
+
+# =============================================================================
+# Zarr Management Functions
+# =============================================================================
+
+def open_zarr_safely(uri: str, *, mode: str = "r", logger: Optional[logging.Logger] = None, storage_options: Optional[Dict[str, Any]] = None) -> zarr.Group:
     """
-    Extract neural windows data from all sessions and combine into one dataset.
-    
-    Note: Torch functionality has been moved to utils/dataloader.py.
-    This function now returns numpy arrays instead of a TensorDataset.
+    Zarr-v3-only opener that guarantees fresh consolidated metadata.
+
+    Steps:
+    1. Try fast open (`use_consolidated=True`).
+    2. If that fails *or* returns an apparently empty group,
+       re-open without consolidated metadata,
+       regenerate the consolidated block right away,
+       then re-open again with `use_consolidated=True`.
     
     Args:
-        sessions_group: Zarr group containing session subgroups
-        session_ids: List of session IDs to include
-        label_map: Optional mapping from string labels to numeric indices
+        uri: URI for the zarr store (e.g., s3://bucket/path/to/store.zarr)
+        mode: Access mode (default: "r" for read-only)
+        logger: Optional logger (uses print statements if None)
         
     Returns:
-        Tuple of (windows_array, labels_array) as numpy arrays
+        Open zarr.Group object with fresh consolidated metadata
     """
-    import numpy as np
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    error = logger.error if logger else print
     
-    # Default label mapping if none provided
-    if label_map is None:
-        label_map = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
-    
-    # Collect windows and labels from all sessions
-    all_windows = []
-    all_labels = []
-    window_count = 0
-    
-    # Process each session
-    for session_id in session_ids:
-        session_group = sessions_group[sanitize_session_id(session_id)]
+    log(f"Opening zarr store: {uri}")
+    opts = storage_options or {"anon": False}
+
+    # ----- 1 · fast path -------------------------------------------------
+    try:
+        debug(f"Trying fast path with use_consolidated=True...")
+        g = zarr.open_group(
+            store=uri,
+            mode=mode,
+            storage_options=opts,
+            use_consolidated=True,      # <-- v3 keyword
+        )
+        arrays = list(g.array_keys())
+        groups = list(g.group_keys())
+        debug(f"Fast path - arrays: {arrays}, groups: {groups}")
         
-        # Check if this session has window data
-        if "windows" not in session_group or "labels" not in session_group:
-            continue
+        # If the metadata is valid, arrays or sub-groups will be visible.
+        if arrays or groups:
+            debug(f"Fast path SUCCESS - using consolidated metadata")
+            return g
+        # Otherwise the block is present but stale → fall through.
+        debug(f"Fast path: consolidated metadata exists but empty, rebuilding...")
+    except KeyError as e:
+        # No consolidated block yet → fall through to rebuild.
+        debug(f"Fast path FAILED with KeyError: {e}, rebuilding metadata...")
+    except Exception as e:
+        debug(f"Fast path FAILED with unexpected error: {type(e).__name__}:{e}, rebuilding metadata...")
+
+    # ----- 2 · rebuild consolidated metadata ----------------------------
+    debug(f"Opening in write mode to rebuild metadata...")
+    # Open with a slow tree-walk so we can see everything.
+    try:
+        g = zarr.open_group(
+            store=uri,
+            mode="a",               # need write access to store new metadata
+            storage_options=opts,
+            use_consolidated=False, # explicit to be clear
+        )
+        arrays = list(g.array_keys())
+        groups = list(g.group_keys())
+        debug(f"Before consolidation - arrays: {arrays}, groups: {groups}")
+        debug(f"Group directly contains 'elements'?: {'elements' in g}")
+        
+        if 'elements' in g:
+            debug(f"Elements contents: {list(g['elements'].array_keys())}")
+
+        # Write (or overwrite) the inline "consolidated_metadata" section
+        # inside zarr.json.  For v3 this is a cheap local write; no full copy.
+        debug(f"Consolidating metadata...")
+        zarr.consolidate_metadata(g.store)
+        debug(f"Metadata consolidated, reopening...")
+    except Exception as e:
+        error(f"ERROR during metadata rebuild: {type(e).__name__}:{e}")
+        raise
+
+    # Re-open in read mode with the fresh metadata block.
+    try:
+        debug(f"Final re-open with use_consolidated=True...")
+        g_final = zarr.open_group(
+            store=uri,
+            mode=mode,
+            storage_options=opts,
+            use_consolidated=True,
+        )
+        arrays = list(g_final.array_keys())
+        groups = list(g_final.group_keys())
+        debug(f"Final result - arrays: {arrays}, groups: {groups}")
+        debug(f"Final group directly contains 'elements'?: {'elements' in g_final}")
+        
+        if 'elements' in g_final:
+            debug(f"Final elements contents: {list(g_final['elements'].array_keys())}")
             
-        # Read windows and labels
-        windows = session_group["windows"][:]
-        labels = session_group["labels"][:]
-        
-        # Convert labels to strings if they're bytes
-        if labels.dtype.kind in ("S", "a"):
-            labels = labels.astype(str)
-        
-        # Append to our collections
-        all_windows.append(windows)
-        all_labels.append(labels)
-        window_count += len(windows)
+        return g_final
+    except Exception as e:
+        error(f"ERROR during final re-open: {type(e).__name__}:{e}")
+        raise
+
+
+def save_obj_to_zarr(parent_group: zarr.Group, key: str, value: Any, 
+                    logger: Optional[logging.Logger] = None, indent: str = ""):
+    """
+    Recursively save any Python object to a zarr hierarchy.
     
-    if not all_windows:
+    Args:
+        parent_group: Parent zarr group
+        key: Name for this item
+        value: Any Python object (dict, list, array, scalar)
+        logger: Optional logger (uses print statements if None)
+        indent: String for indentation in debug prints
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    warning = logger.warning if logger else print
+    
+    # Sanitize key for zarr path safety
+    safe_key = str(key).replace("/", "_")
+    
+    debug(f"{indent}Processing: {safe_key}, type: {type(value)}")
+    
+    try:
+        if isinstance(value, dict):
+            # Dictionary → zarr group with named items
+            debug(f"{indent}Creating group: {safe_key} with {len(value)} items")
+            group = parent_group.create_group(safe_key, overwrite=True)
+            debug(f"{indent}Group {safe_key} created successfully")
+            
+            # Process each item in the dictionary
+            for k, v in value.items():
+                save_obj_to_zarr(group, k, v, logger, indent + "  ")
+                
+        elif isinstance(value, list):
+            # List → zarr group with numbered items
+            debug(f"{indent}Creating list group: {safe_key} with {len(value)} items")
+            group = parent_group.create_group(safe_key, overwrite=True)
+            debug(f"{indent}List group {safe_key} created successfully")
+            
+            # Save each list item with its index as the key
+            for i, item in enumerate(value):
+                save_obj_to_zarr(group, str(i), item, logger, indent + "  ")
+                
+        elif isinstance(value, np.ndarray):
+            # Array → zarr dataset
+            if value.ndim == 0:
+                # Store scalar arrays as attributes to avoid v3 0-D bug
+                scalar_value = value.item()
+                debug(f"{indent}Storing scalar array as attribute: {safe_key}={scalar_value}")
+                parent_group.attrs[safe_key] = scalar_value
+                debug(f"{indent}Scalar attribute {safe_key} created successfully")
+                return  # Skip the rest of the processing
+            else:
+                # Regular multi-dimensional array handling
+                value = bytesify(value)
+                
+                # ---- Zarr 3 "boring-safe" defaults ----
+                auto_chunk = True  # let Zarr decide
+                
+                # Build kwargs dictionary for create_dataset - no compression specified
+                kwargs = dict(
+                    name=safe_key,
+                    shape=value.shape,
+                    dtype=value.dtype,
+                    data=value,
+                    chunks=auto_chunk,
+                    overwrite=True,
+                )
+                
+                debug(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}, auto_chunking=True")
+                debug(f"{indent}{safe_key}: dtype={value.dtype}, kind={value.dtype.kind}")
+                
+                parent_group.create_dataset(**kwargs)
+                debug(f"{indent}Dataset {safe_key} created successfully")
+            
+        elif isinstance(value, (str, int, float, bool, type(None))):
+            # Scalar → zarr attribute
+            parent_group.attrs[safe_key] = value
+            debug(f"{indent}Added scalar attribute: {safe_key}={value}")
+            
+        else:
+            # Unsupported type → string representation as attribute
+            str_value = str(value)
+            parent_group.attrs[safe_key] = str_value
+            debug(f"{indent}Converted to string attribute: {safe_key}={str_value[:30]}...")
+            
+    except Exception as e:
+        debug(f"{indent}ERROR processing {safe_key}: {type(e).__name__}: {e}")
+        warning(f"Error saving {safe_key}: {type(e).__name__}: {e}")
+
+
+def save_session_to_subgroup(sessions_group: zarr.Group, session_id: str, 
+                            data: Dict[str, Any], logger: Optional[logging.Logger] = None,
+                            overwrite: bool = False):
+    """
+    Save session data to a session-specific subgroup.
+    
+    Args:
+        sessions_group: Parent zarr group for all sessions
+        session_id: Session ID being processed
+        data: Dictionary with query results
+        logger: Optional logger (uses print statements if None)
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    
+    # Get the sanitized session key
+    session_key = sanitize_session_id(session_id)
+    
+    debug(f"Saving session to subgroup: {session_key}")
+    debug(f"Input data keys: {list(data.keys())}")
+    
+    # Create the session group
+    try:
+        sg = sessions_group.create_group(session_key, overwrite=overwrite)
+        debug(f"Created session group: {session_key}")
+    except Exception as e:
+        debug(f"ERROR creating session group: {type(e).__name__}: {e}")
+        raise
+    
+    # Handle session_id specially
+    if "session_id" in data:
+        sg.attrs["session_id"] = data["session_id"]
+        debug(f"Added session_id to attrs: {data['session_id']}")
+    
+    # Save all other items using the recursive helper
+    for key, val in data.items():
+        if key != "session_id":  # Skip session_id as we already handled it
+            save_obj_to_zarr(sg, key, val, logger)
+
+
+def init_or_open_result_store(s3_client: Any, s3_bucket: str, result_key: str, query_name: str, 
+                             label_map: Optional[Dict[str, int]] = None,
+                             logger: Optional[logging.Logger] = None) -> Tuple[zarr.Group, zarr.Group, bool]:
+    """
+    Initialize a new query result store or open an existing one.
+    
+    This function handles all aspects of store initialization:
+    1. Checks if the store already exists in S3
+    2. Creates a new store with proper attributes if it doesn't exist
+    3. Opens and returns an existing store if it does exist
+    
+    Args:
+        s3_client: Boto3 S3 client
+        s3_bucket: S3 bucket name
+        result_key: S3 key for the zarr store
+        query_name: Name of the query
+        label_map: Optional mapping for labels (None if query doesn't use labels)
+        logger: Optional logger instance
+        
+    Returns:
+        Tuple of (root_group, sessions_group, is_first_session)
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    
+    uri = f"s3://{s3_bucket}/{result_key}"
+    debug(f"Checking for zarr store at: {uri}")
+    
+    # Check if this is the first session by looking for zarr.json
+    is_first_session = False
+    try:
+        s3_client.head_object(Bucket=s3_bucket, Key=f"{result_key}/zarr.json")
+        debug(f"Found existing zarr store at: {uri}")
+        is_first_session = False
+    except s3_client.exceptions.ClientError:
+        debug(f"No existing zarr store found at: {uri}, will initialize new store")
+        is_first_session = True
+    
+    if is_first_session:
+        # Initialize the zarr store
+        debug(f"Creating new zarr store at: {uri}")
+        try:
+            root = open_zarr_safely(uri, mode="w", logger=logger)
+            
+            # Set attributes
+            root.attrs.update(
+                query_name=query_name,
+                created_at=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                version="0.2",
+                session_count=0,
+                session_ids=[],
+            )
+            
+            # Only include label_map if provided
+            if label_map is not None:
+                debug(f"Adding label_map to store attributes: {label_map}")
+                root.attrs["label_map"] = label_map
+            
+            # Create sessions group
+            debug("Creating sessions group")
+            sessions_group = root.require_group("sessions")
+            
+        except Exception as e:
+            log(f"Error creating zarr store: {type(e).__name__}: {e}")
+            raise
+            
+    else:
+        # Open existing store
+        debug(f"Opening existing zarr store at: {uri}")
+        try:
+            root = open_zarr_safely(uri, mode="a", logger=logger)
+            # Get existing sessions group
+            sessions_group = root["sessions"]
+            
+        except Exception as e:
+            log(f"Error opening zarr store: {type(e).__name__}: {e}")
+            raise
+    
+    return root, sessions_group, is_first_session
+
+
+def write_session_result(root: zarr.Group, session_result: Dict[str, Any], 
+                        session_id: str, logger: Optional[logging.Logger] = None):
+    """
+    Update the root group's attributes after adding a session.
+    
+    Args:
+        root: Root zarr group
+        session_result: Session data that was added
+        session_id: Session ID
+        logger: Optional logger instance
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    
+    import time
+    
+    # Update root attrs
+    ids = set(root.attrs.get("session_ids", []))
+    ids.add(session_id)
+    root.attrs["session_ids"] = sorted(ids)
+    root.attrs["session_count"] = len(ids)
+    root.attrs["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    
+    # Consolidate metadata
+    zarr.consolidate_metadata(root.store)
+
+
+def extract_elements_data(zgroup: zarr.Group, session_id: str, 
+                         logger: Optional[logging.Logger] = None) -> Optional[Dict[str, np.ndarray]]:
+    """
+    Extract elements data from zarr group.
+    
+    Args:
+        zgroup: Zarr group containing elements data
+        session_id: Session ID being processed
+        logger: Optional logger instance
+        
+    Returns:
+        Dictionary of element data arrays or None if no elements found
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    warning = logger.warning if logger else print
+    
+    debug(f"Extracting elements for session: {session_id}")
+    debug(f"zgroup type: {type(zgroup)}")
+    debug(f"zgroup array keys: {list(zgroup.array_keys())}")
+    debug(f"zgroup group keys: {list(zgroup.group_keys())}")
+    debug(f"Direct 'elements' check: {'elements' in zgroup}")
+    debug(f"Elements in group keys?: {'elements' in list(zgroup.group_keys())}")
+    
+    if "elements" not in zgroup:
+        warning(f"No elements subgroup in {session_id}")
+        return None
+
+    eg = zgroup["elements"]
+    result: Dict[str, np.ndarray] = {"session_id": session_id}
+
+    # Get element IDs first
+    if "element_id" in eg:
+        ids = bytesify(eg["element_id"][:])
+    else:
+        # Create default numeric IDs if not available
+        ids = np.arange(eg[list(eg.array_keys())[0]].shape[0])
+    result["element_ids"] = ids
+
+    # Extract all element variables
+    for name in eg.array_keys():
+        # Get data and convert object/unicode to bytes
+        value = eg[name][:]
+        result[name] = bytesify(value)
+
+    return result
+
+
+def extract_elements_neural_windows(
+    event_group: zarr.Group, 
+    window_group: zarr.Group,
+    session_id: str, 
+    filter_kwargs: Dict[str, Any],
+    label_map: Optional[Dict[str, int]] = None,
+    logger: Optional[logging.Logger] = None
+) -> Optional[Dict[str, np.ndarray]]:
+    """
+    Extract neural windows during elements that match specified filters.
+    
+    Args:
+        event_group: Zarr group containing elements data
+        window_group: Zarr group containing window data
+        session_id: Session ID
+        filter_kwargs: Dictionary of keyword arguments for filter_elements
+        label_map: Optional mapping from element_id patterns to numeric labels
+        logger: Optional logger instance
+        
+    Returns:
+        Dictionary with windows and metadata
+    """
+    log = logger.info if logger else print
+    debug = logger.debug if logger else print
+    
+    # Get filtered elements
+    all_elems = extract_elements_data(event_group, session_id, logger)
+    if all_elems is None:
+        return None
+        
+    filtered_elems = filter_elements(all_elems, **filter_kwargs)
+    if filtered_elems is None:
         return None
     
-    # Concatenate data from all sessions
-    windows_array = np.concatenate(all_windows, axis=0)
-    labels_array = np.concatenate(all_labels, axis=0)
+    log(f"Found {len(filtered_elems['element_ids'])} matching elements for session {session_id}")
     
-    # Convert string labels to numeric indices
-    numeric_labels = np.array([label_map.get(label, label_map.get("unknown", 3)) 
-                              for label in labels_array])
+    # Add debug print for element durations
+    debug(
+        f"Found matching elements with durations: " + 
+        ", ".join([f"{end-start}ms" for start, end in zip(filtered_elems['start_time'], filtered_elems['end_time'])])[:100] + 
+        "..."
+    )
     
-    # Return numpy arrays
-    return windows_array, numeric_labels
+    # Use default label map if none provided
+    if label_map is None:
+        label_map = DEFAULT_LABEL_MAP
+    
+    # Get timestamps array
+    t = window_group["time"][:]
+    debug(f"Time array shape: {window_group['time'].shape}")
+    
+    # Add debug print for time ranges
+    debug(
+        f"Session {session_id}: Element time ranges {filtered_elems['start_time'].min()}-{filtered_elems['end_time'].max()} vs "
+        f"Window timestamps {t.min()}-{t.max()} (length={len(t)})"
+    )
+    
+    # Find all hits within the element time ranges
+    hits = []
+    for eid, (start, end) in zip(filtered_elems["element_ids"],
+                               zip(filtered_elems["start_time"], filtered_elems["end_time"])):
+        window_indices = window_indices_for_range(t, start, end)
+        if window_indices.size > 0:
+            hits.extend(window_indices)
+    
+    if not hits:
+        debug(f"No window hits found for the filtered elements")
+        return None
+        
+    # Sort for chronological order
+    hits = np.sort(np.array(hits))
+    
+    # Add debug print
+    debug(f"Generated {len(hits)} window indices, min={min(hits)}, max={max(hits)}")
+    if len(hits) > 1000:
+        debug(f"Large number of hits - first 5: {hits[:5]}, last 5: {hits[-5:]}")
+    
+    log(f"Found {len(hits)} windows across {len(filtered_elems['element_ids'])} elements for session {session_id}")
+    
+    # Use extract_full_windows to get all variables for the hits
+    result = extract_full_windows(window_group, hits)
+    
+    # Add session_id and generate labels and element_ids
+    result.update({
+        "session_id": session_id,
+        "labels": bytesify(build_labels(filtered_elems, hits, t, label_map)),
+        "element_ids": bytesify(build_eids(filtered_elems, hits, t))
+    })
+    
+    return result

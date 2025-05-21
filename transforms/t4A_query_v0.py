@@ -29,15 +29,26 @@ from base_transform import BaseTransform, Session
 
 # Import helpers
 from transforms.query_helpers import (
+    # Constants
+    DEFAULT_LABEL_MAP,
+    
+    # Helper functions
     bytesify, 
     sanitize_session_id, 
     filter_elements, 
-    join_elements_tasks,
-    collect_windows,
     extract_full_windows,
     build_labels,
     build_eids,
-    get_neural_windows_dataset
+    window_indices_for_range,
+    
+    # Extracted functions
+    open_zarr_safely,
+    save_obj_to_zarr,
+    save_session_to_subgroup,
+    init_or_open_result_store,
+    write_session_result,
+    extract_elements_data,
+    extract_elements_neural_windows
 )
 
 # Module logger
@@ -59,6 +70,9 @@ class QueryTransform(BaseTransform):
         "neuro_lang": "_query_neuro_lang_windows",  # Neural-language windows query
         # Additional queries will be added here
     }
+    
+    # List of queries that need label maps
+    QUERIES_WITH_LABELS = {"eye_neural"}
 
     def __init__(self, query_name: Optional[str] = None, 
                  label_map: Optional[Dict[str, int]] = None,
@@ -78,7 +92,12 @@ class QueryTransform(BaseTransform):
             **kwargs: Additional arguments for BaseTransform
         """
         self.query_name = query_name
-        self.label_map = label_map or {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+        
+        # Only set label_map if this query type uses labels
+        self.label_map = None
+        if query_name in self.QUERIES_WITH_LABELS:
+            self.label_map = label_map or DEFAULT_LABEL_MAP
+            
         self.lang_group = lang_group
         self.tokenizer = tokenizer
         self.pre_window_seconds = pre_window_seconds
@@ -100,8 +119,8 @@ class QueryTransform(BaseTransform):
         
         if self.query_name:
             self.logger.info(f"Initialized QueryTransform for query '{self.query_name}'")
-            # Only log label map for queries that actually use it (not neuro_lang)
-            if self.label_map and self.query_name != "neuro_lang":
+            # Only log label map for queries that actually use it
+            if self.label_map:
                 self.logger.info(f"Using label map: {self.label_map}")
 
     @classmethod
@@ -193,386 +212,13 @@ class QueryTransform(BaseTransform):
         )
 
     # ------------------------------------------------------------------ #
-    #  Core I/O helpers
+    #  Core I/O helpers - All implementation moved to query_helpers.py
     # ------------------------------------------------------------------ #
 
-    def _open_zarr_safely(self, uri: str, *, mode: str = "r") -> zarr.Group:
-        """
-        Zarr-v3-only opener that guarantees fresh consolidated metadata.
+    # Note: _open_zarr_safely, _extract_elements_data, _save_to_zarr, and _save_session_to_subgroup
+    # have been replaced with imported helpers from query_helpers.py
 
-        Steps
-        -----
-        1. Try fast open (`use_consolidated=True`).
-        2. If that fails *or* returns an apparently empty group,
-           re-open without consolidated metadata,
-           regenerate the consolidated block right away,
-           then re-open again with `use_consolidated=True`.
-        
-        Args:
-            uri: URI for the zarr store (e.g., s3://bucket/path/to/store.zarr)
-            mode: Access mode (default: "r" for read-only)
-            
-        Returns:
-            Open zarr.Group object with fresh consolidated metadata
-        """
-        print(f"\n\n=== OPENING ZARR STORE: {uri} ===")
-        opts = {"anon": False}
-
-        # ----- 1 · fast path -------------------------------------------------
-        try:
-            print(f"Trying fast path with use_consolidated=True...")
-            g = zarr.open_group(
-                store=uri,
-                mode=mode,
-                storage_options=opts,
-                use_consolidated=True,      # <-- v3 keyword
-            )
-            arrays = list(g.array_keys())
-            groups = list(g.group_keys())
-            print(f"Fast path - arrays: {arrays}, groups: {groups}")
-            
-            # If the metadata is valid, arrays or sub-groups will be visible.
-            if arrays or groups:
-                print(f"Fast path SUCCESS - using consolidated metadata")
-                return g
-            # Otherwise the block is present but stale → fall through.
-            print(f"Fast path: consolidated metadata exists but empty, rebuilding...")
-        except KeyError as e:
-            # No consolidated block yet → fall through to rebuild.
-            print(f"Fast path FAILED with KeyError: {e}, rebuilding metadata...")
-        except Exception as e:
-            print(f"Fast path FAILED with unexpected error: {type(e).__name__}:{e}, rebuilding metadata...")
-
-        # ----- 2 · rebuild consolidated metadata ----------------------------
-        print(f"Opening in write mode to rebuild metadata...")
-        # Open with a slow tree-walk so we can see everything.
-        try:
-            g = zarr.open_group(
-                store=uri,
-                mode="a",               # need write access to store new metadata
-                storage_options=opts,
-                use_consolidated=False, # explicit to be clear
-            )
-            arrays = list(g.array_keys())
-            groups = list(g.group_keys())
-            print(f"Before consolidation - arrays: {arrays}, groups: {groups}")
-            print(f"Group directly contains 'elements'?: {'elements' in g}")
-            
-            if 'elements' in g:
-                print(f"Elements contents: {list(g['elements'].array_keys())}")
-
-            # Write (or overwrite) the inline "consolidated_metadata" section
-            # inside zarr.json.  For v3 this is a cheap local write; no full copy.
-            print(f"Consolidating metadata...")
-            zarr.consolidate_metadata(g.store)
-            print(f"Metadata consolidated, reopening...")
-        except Exception as e:
-            print(f"ERROR during metadata rebuild: {type(e).__name__}:{e}")
-            raise
-
-        # Re-open in read mode with the fresh metadata block.
-        try:
-            print(f"Final re-open with use_consolidated=True...")
-            g_final = zarr.open_group(
-                store=uri,
-                mode=mode,
-                storage_options=opts,
-                use_consolidated=True,
-            )
-            arrays = list(g_final.array_keys())
-            groups = list(g_final.group_keys())
-            print(f"Final result - arrays: {arrays}, groups: {groups}")
-            print(f"Final group directly contains 'elements'?: {'elements' in g_final}")
-            
-            if 'elements' in g_final:
-                print(f"Final elements contents: {list(g_final['elements'].array_keys())}")
-                
-            return g_final
-        except Exception as e:
-            print(f"ERROR during final re-open: {type(e).__name__}:{e}")
-            raise
-
-    def _extract_elements_data(self, zgroup: zarr.Group, session_id: str) -> Optional[Dict[str, np.ndarray]]:
-        """
-        Extract elements data from zarr group.
-        
-        Args:
-            zgroup: Zarr group containing elements data
-            session_id: Session ID being processed
-            
-        Returns:
-            Dictionary of element data arrays or None if no elements found
-        """
-        print(f"\n=== EXTRACT ELEMENTS: Session ID {session_id} ===")
-        print(f"zgroup type: {type(zgroup)}")
-        print(f"zgroup array keys: {list(zgroup.array_keys())}")
-        print(f"zgroup group keys: {list(zgroup.group_keys())}")
-        print(f"Direct 'elements' check: {'elements' in zgroup}")
-        print(f"Elements in group keys?: {'elements' in list(zgroup.group_keys())}")
-        
-        if "elements" not in zgroup:
-            self.logger.warning(f"No elements subgroup in {session_id}")
-            return None
-
-        eg = zgroup["elements"]
-        result: Dict[str, np.ndarray] = {"session_id": session_id}
-
-        # Get element IDs first
-        if "element_id" in zgroup:
-            ids = bytesify(zgroup["element_id"][:])
-        else:
-            # Create default numeric IDs if not available
-            ids = np.arange(eg[list(eg.array_keys())[0]].shape[0])
-        result["element_ids"] = ids
-
-        # Extract all element variables
-        for name in eg.array_keys():
-            # Get data and convert object/unicode to bytes
-            value = eg[name][:]
-            result[name] = bytesify(value)
-
-        return result
-
-    def _save_to_zarr(self, parent_group: zarr.Group, key: str, value: Any, indent: str = ""):
-        """
-        Recursively save any Python object to a zarr hierarchy.
-        
-        Args:
-            parent_group: Parent zarr group
-            key: Name for this item
-            value: Any Python object (dict, list, array, scalar)
-            indent: String for indentation in debug prints
-        """
-        # Sanitize key for zarr path safety
-        safe_key = str(key).replace("/", "_")
-        
-        print(f"{indent}Processing: {safe_key}, type: {type(value)}")
-        
-        try:
-            if isinstance(value, dict):
-                # Dictionary → zarr group with named items
-                print(f"{indent}Creating group: {safe_key} with {len(value)} items")
-                group = parent_group.create_group(safe_key, overwrite=True)
-                print(f"{indent}Group {safe_key} created successfully")
-                
-                # Process each item in the dictionary
-                for k, v in value.items():
-                    self._save_to_zarr(group, k, v, indent + "  ")
-                    
-            elif isinstance(value, list):
-                # List → zarr group with numbered items
-                print(f"{indent}Creating list group: {safe_key} with {len(value)} items")
-                group = parent_group.create_group(safe_key, overwrite=True)
-                print(f"{indent}List group {safe_key} created successfully")
-                
-                # Save each list item with its index as the key
-                for i, item in enumerate(value):
-                    self._save_to_zarr(group, str(i), item, indent + "  ")
-                    
-            elif isinstance(value, np.ndarray):
-                # Array → zarr dataset
-                if value.ndim == 0:
-                    # Store scalar arrays as attributes to avoid v3 0-D bug
-                    scalar_value = value.item()
-                    print(f"{indent}Storing scalar array as attribute: {safe_key}={scalar_value}")
-                    parent_group.attrs[safe_key] = scalar_value
-                    print(f"{indent}Scalar attribute {safe_key} created successfully")
-                    return  # Skip the rest of the processing
-                else:
-                    # Regular multi-dimensional array handling
-                    value = bytesify(value)
-                    
-                    # Determine appropriate chunking for arrays
-                    if value.ndim == 1:
-                        # 1D arrays: chunk in blocks of up to 1024 elements
-                        chunks = (min(1024, value.shape[0]),)
-                    else:
-                        # Multi-dimensional arrays: chunk along first dimension
-                        chunks = (min(1024, value.shape[0]),) + value.shape[1:]
-                        
-                        # Special case for very large arrays
-                        if value.nbytes > 2e9:
-                            max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
-                            chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
-                    
-                    print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}, chunks={chunks}")
-                    parent_group.create_dataset(
-                        name=safe_key,
-                        data=value,
-                        shape=value.shape,
-                        dtype=value.dtype,
-                        chunks=chunks,
-                        overwrite=True
-                    )
-                    print(f"{indent}Dataset {safe_key} created successfully")
-                
-            elif isinstance(value, (str, int, float, bool, type(None))):
-                # Scalar → zarr attribute
-                parent_group.attrs[safe_key] = value
-                print(f"{indent}Added scalar attribute: {safe_key}={value}")
-                
-            else:
-                # Unsupported type → string representation as attribute
-                str_value = str(value)
-                parent_group.attrs[safe_key] = str_value
-                print(f"{indent}Converted to string attribute: {safe_key}={str_value[:30]}...")
-                
-        except Exception as e:
-            print(f"{indent}ERROR processing {safe_key}: {type(e).__name__}: {e}")
-            self.logger.warning(f"Error saving {safe_key}: {type(e).__name__}: {e}")
-
-    def _save_session_to_subgroup(
-        self,
-        sessions_group: zarr.Group,
-        session_id: str,
-        data: Dict[str, Any],
-    ):
-        """
-        Save session data to a session-specific subgroup.
-        
-        Args:
-            sessions_group: Parent zarr group for all sessions
-            session_id: Session ID being processed
-            data: Dictionary with query results
-        """
-        # Get the sanitized session key
-        session_key = sanitize_session_id(session_id)
-        
-        print(f"\n=== SAVE SESSION TO SUBGROUP: {session_key} ===")
-        print(f"Input data keys: {list(data.keys())}")
-        
-        # Create the session group
-        try:
-            sg = sessions_group.create_group(session_key, overwrite=True)
-            print(f"Created session group: {session_key}")
-        except Exception as e:
-            print(f"ERROR creating session group: {type(e).__name__}: {e}")
-            raise
-        
-        # Handle session_id specially
-        if "session_id" in data:
-            sg.attrs["session_id"] = data["session_id"]
-            print(f"Added session_id to attrs: {data['session_id']}")
-        
-        # Save all other items using the recursive helper
-        for key, val in data.items():
-            if key != "session_id":  # Skip session_id as we already handled it
-                self._save_to_zarr(sg, key, val)
-
-    def _save_session_result(
-        self,
-        session_result: Dict[str, Any],
-        result_key: str,
-        session_id: str,
-        overwrite: bool = False,
-    ):
-        """
-        Save a session's result to the zarr store.
-        
-        Handles first-session initialization and metadata management.
-        
-        Args:
-            session_result: Dictionary with this session's query results
-            result_key: S3 key for the zarr store
-            session_id: Session ID being processed
-            overwrite: Whether to overwrite existing session data
-        """
-        uri = f"s3://{self.s3_bucket}/{result_key}"
-        
-        # Is this the first session? Check for zarr.json file
-        try:
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{result_key}/zarr.json")
-            first = False
-            self.logger.info(f"Appending results for session {session_id} to {uri}")
-        except self.s3.exceptions.ClientError:
-            first = True
-            self.logger.info(f"Initializing new zarr store at {uri}")
-
-        try:
-            if first:
-                # Initialize the zarr store
-                root = zarr.group(store=uri, storage_options={"anon": False})
-                root.attrs.update(
-                    query_name=self.query_name,
-                    created_at=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-                    version="0.2",
-                    session_count=0,
-                    session_ids=[],
-                    label_map=self.label_map,  # Store label map in metadata
-                )
-                sessions_group = root.require_group("sessions")
-            else:
-                # Open existing store
-                root = zarr.open_group(store=uri, mode="a", storage_options={"anon": False})
-                sessions_group = root["sessions"]
-                
-                # Log if we're overwriting
-                if overwrite:
-                    self.logger.info(f"Overwriting existing data for session {session_id} if present")
-            
-            # Create backup of critical metadata for transaction-like safety
-            backup = {
-                'attrs': dict(root.attrs)
-            }
-            
-            # Write session subgroup
-            print(f"\n=== SAVING SESSION {session_id} ===")
-            print(f"Session result keys: {list(session_result.keys())}")
-            print(f"Session result types: {[(k, type(v)) for k, v in session_result.items()]}")
-            if 'tokens_with_windows' in session_result:
-                print(f"Number of tokens with windows: {len(session_result['tokens_with_windows'])}")
-                for token_idx, token_data in list(session_result['tokens_with_windows'].items())[:2]:  # Print just first 2
-                    print(f"Token {token_idx} keys: {list(token_data.keys())}")
-                    if 'windows' in token_data:
-                        print(f"  Window keys: {list(token_data['windows'].keys())}")
-            
-            self._save_session_to_subgroup(sessions_group, session_id, session_result)
-            
-            # Update root attrs
-            ids = set(root.attrs.get("session_ids", []))
-            ids.add(session_id)
-            root.attrs["session_ids"] = sorted(ids)
-            root.attrs["session_count"] = len(ids)
-            root.attrs["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            root.attrs["label_map"] = self.label_map  # Update label map in metadata
-            
-            # Consolidate metadata
-            zarr.consolidate_metadata(root.store)
-            
-        except Exception as e:
-            self.logger.error(f"Error saving results for {session_id}: {e}")
-            
-            # Attempt to rollback changes on failure
-            if not first:
-                try:
-                    # Restore attributes if backup exists
-                    if 'backup' in locals():
-                        root = zarr.open_group(store=uri, mode="a", storage_options={"anon": False})
-                        sessions_group = root["sessions"]
-                        
-                        # Restore attributes
-                        for k, v in backup['attrs'].items():
-                            root.attrs[k] = v
-                        
-                        # Remove session subgroup if it was created
-                        session_key = sanitize_session_id(session_id)
-                        if session_key in sessions_group:
-                            del sessions_group[session_key]
-                            
-                        self.logger.info("Rollback completed successfully")
-                except Exception as rollback_error:
-                    self.logger.error(f"Error during rollback: {rollback_error}")
-            
-            # Re-raise the original exception
-            raise e
-        finally:
-            # Consolidate metadata again after all writes are complete
-            try:
-                if 'root' in locals() and root is not None:
-                    zarr.consolidate_metadata(root.store)
-                    root = None  # Help aiohttp close handles
-            except Exception as cons_error:
-                self.logger.warning(f"Error during final metadata consolidation: {cons_error}")
+    # Note: _save_session_result removed - replaced with direct calls to helper functions
 
     # ------------------------------------------------------------------ #
     #  BaseTransform hooks
@@ -729,7 +375,7 @@ class QueryTransform(BaseTransform):
                     return {"status": "skipped", "metadata": {"reason": "no_events_zarr"}}
             
             # Open zarr store
-            zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{zarr_key}")
+            zgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{zarr_key}", logger=self.logger)
             
             # Execute query based on registry
             method_name = self.QUERY_REGISTRY.get(self.query_name)
@@ -759,15 +405,29 @@ class QueryTransform(BaseTransform):
                 # For other queries, use element_ids
                 count = len(result.get("element_ids", []))
                 
-            # Calculate size (avoiding np.ndarray size calculation which might not work for all types)
-            size_mb = 0
+            # Size calculation removed (unused)
             
             # Save results if not dry run
             if not self.dry_run:
                 out_key = f"{self.destination_prefix}{self.query_name}.zarr"
                 # Use include_processed from BaseTransform to determine overwrite behavior
                 overwrite = getattr(self, 'include_processed', False)
-                self._save_session_result(result, out_key, sid, overwrite=overwrite)
+                # Use helper functions to save the session result
+                uri = f"s3://{self.s3_bucket}/{out_key}"
+                
+                # Initialize or open the result store using the helper function
+                root, sessions_group, is_first_session = init_or_open_result_store(
+                    s3_client=self.s3,
+                    s3_bucket=self.s3_bucket,
+                    result_key=out_key,
+                    query_name=self.query_name,
+                    label_map=self.label_map if self.query_name in self.QUERIES_WITH_LABELS else None,
+                    logger=self.logger
+                )
+                
+                # Save session and update store
+                save_session_to_subgroup(sessions_group, sid, result, logger=self.logger, overwrite=overwrite)
+                write_session_result(root, result, sid, logger=self.logger)
             
             # Return success
             return {
@@ -803,7 +463,7 @@ class QueryTransform(BaseTransform):
         Returns:
             Dictionary with all element data
         """
-        return self._extract_elements_data(zgroup, sid)
+        return extract_elements_data(zgroup, sid, logger=self.logger)
 
     def _query_eye_elements(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, np.ndarray]]:
         """
@@ -816,7 +476,7 @@ class QueryTransform(BaseTransform):
         Returns:
             Dictionary with filtered element data
         """
-        elems = self._extract_elements_data(zgroup, sid)
+        elems = extract_elements_data(zgroup, sid, logger=self.logger)
         if not elems:
             return None
             
@@ -834,116 +494,6 @@ class QueryTransform(BaseTransform):
             
         return filtered_elems
 
-    def _query_elements_neural_windows(
-        self, 
-        zgroup: zarr.Group, 
-        sid: str, 
-        filter_kwargs: Dict[str, Any],
-        label_map: Optional[Dict[str, int]] = None
-    ) -> Optional[Dict[str, np.ndarray]]:
-        """
-        Extract neural windows during elements that match specified filters.
-        
-        Args:
-            zgroup: Zarr group containing elements data
-            sid: Session ID
-            filter_kwargs: Dictionary of keyword arguments for filter_elements
-            label_map: Optional mapping from element_id patterns to numeric labels
-            
-        Returns:
-            Dictionary with windows and metadata
-        """
-        # Get filtered elements
-        all_elems = self._extract_elements_data(zgroup, sid)
-        if all_elems is None:
-            return None
-            
-        filtered_elems = filter_elements(all_elems, **filter_kwargs)
-        if filtered_elems is None:
-            return None
-        
-        logging.info(f"Found {len(filtered_elems['element_ids'])} matching elements for session {sid}")
-        
-        # Add debug print for element durations
-        self.logger.debug(
-            f"Found {len(filtered_elems['element_ids'])} matching eye elements with durations: " + 
-            ", ".join([f"{end-start}ms" for start, end in zip(filtered_elems['start_time'], filtered_elems['end_time'])])[:100] + 
-            "..."
-        )
-
-        # Use label map from instance if not provided
-        if label_map is None:
-            label_map = self.label_map
-
-        # Clean session ID for window store path (remove _events.zarr suffix if present)
-        clean_sid = sid
-        if clean_sid.endswith("_events.zarr"):
-            clean_sid = clean_sid.replace("_events.zarr", "")
-        
-        # Open the window store for this session
-        window_key = f"processed/windows/{clean_sid}_windowed.zarr"
-        logging.info(f"Looking for window store at: {window_key}")
-        
-        # Add debug print
-        self.logger.debug(f"Window store path: {window_key}")
-        try:
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
-            self.logger.debug(f"Window zarr store found at {window_key}")
-        except self.s3.exceptions.ClientError as e:
-            self.logger.debug(f"Window zarr store NOT found: {e}")
-            self.logger.warning(f"No window store for {sid}")
-            return None
-        
-        # Open window zarr store
-        wgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}")
-        
-        # Add debug print
-        self.logger.debug(f"Window zarr array keys: {list(wgroup.array_keys())}")
-        
-        # Get timestamps array
-        t = wgroup["time"][:]
-        self.logger.debug(f"Time array shape: {wgroup['time'].shape}")
-        
-        # Add debug print for time ranges
-        self.logger.debug(
-            f"Session {sid}: Element time ranges {filtered_elems['start_time'].min()}-{filtered_elems['end_time'].max()} vs "
-            f"Window timestamps {t.min()}-{t.max()} (length={len(t)})"
-        )
-        
-        # Find all hits within the element time ranges
-        hits = []
-        for eid, (start, end) in zip(filtered_elems["element_ids"],
-                                   zip(filtered_elems["start_time"], filtered_elems["end_time"])):
-            window_indices = np.where((t >= start) & (t <= end))[0]
-            if window_indices.size > 0:
-                hits.extend(window_indices)
-        
-        if not hits:
-            self.logger.debug(f"No window hits found for eye elements")
-            return None
-            
-        # Sort for chronological order
-        hits = np.sort(np.array(hits))
-        
-        # Add debug print
-        self.logger.debug(f"Generated {len(hits)} window indices, min={min(hits)}, max={max(hits)}")
-        if len(hits) > 1000:
-            self.logger.debug(f"Large number of hits - first 5: {hits[:5]}, last 5: {hits[-5:]}")
-        
-        logging.info(f"Found {len(hits)} windows across {len(filtered_elems['element_ids'])} elements for session {sid}")
-        
-        # Use extract_full_windows to get all variables for the hits
-        result = extract_full_windows(wgroup, hits)
-        
-        # Add session_id and generate labels and element_ids
-        result.update({
-            "session_id": sid,
-            "labels": bytesify(build_labels(filtered_elems, hits, t, label_map)),
-            "element_ids": bytesify(build_eids(filtered_elems, hits, t))
-        })
-        
-        return result
-        
     def _query_eye_neural_windows(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, np.ndarray]]:
         """
         Extract neural data windows during 'eye' task elements.
@@ -955,12 +505,31 @@ class QueryTransform(BaseTransform):
         Returns:
             Dictionary with windows, labels, and element_ids
         """
-        # Use the generic method with task_type="eye" filter
-        return self._query_elements_neural_windows(
-            zgroup=zgroup,
-            sid=sid,
+        # Clean session ID for window store path (remove _events.zarr suffix if present)
+        clean_sid = sid
+        if clean_sid.endswith("_events.zarr"):
+            clean_sid = clean_sid.replace("_events.zarr", "")
+        
+        # Open the window store for this session
+        window_key = f"processed/windows/{clean_sid}_windowed.zarr"
+        
+        try:
+            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
+        except self.s3.exceptions.ClientError:
+            self.logger.warning(f"No window store for {sid}")
+            return None
+        
+        # Open window zarr store
+        wgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}", logger=self.logger)
+        
+        # Use the extracted helper function with task_type="eye" filter
+        return extract_elements_neural_windows(
+            event_group=zgroup,
+            window_group=wgroup,
+            session_id=sid,
             filter_kwargs={"task_type": "eye"},
-            label_map=self.label_map
+            label_map=self.label_map if self.query_name in self.QUERIES_WITH_LABELS else None,
+            logger=self.logger
         )
         
     def _query_lang_tokens(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, Any]]:
@@ -1012,7 +581,7 @@ class QueryTransform(BaseTransform):
             Dictionary with tokens and their associated neural windows
         """
         # Get elements data from event zarr
-        elements = self._extract_elements_data(zgroup, sid)
+        elements = extract_elements_data(zgroup, sid, logger=self.logger)
         if elements is None:
             self.logger.warning(f"No elements found for {sid}")
             return None
@@ -1027,7 +596,7 @@ class QueryTransform(BaseTransform):
             self.logger.warning(f"No language zarr for {clean_sid} with tokenizer {self.tokenizer}")
             return None
             
-        lang_zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{lang_zarr_key}")
+        lang_zgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{lang_zarr_key}", logger=self.logger)
         
         # Extract tokens for the specified language group
         from transforms.query_helpers import extract_lang_tokens, find_element_for_timestamp
@@ -1044,7 +613,7 @@ class QueryTransform(BaseTransform):
             self.logger.warning(f"No window store for {sid}")
             return None
             
-        window_zgroup = self._open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}")
+        window_zgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}", logger=self.logger)
         window_times = window_zgroup["time"][:]
         
         # Create sequence of tokens in chronological order
@@ -1089,8 +658,7 @@ class QueryTransform(BaseTransform):
             window_start = max(0, start_ts - (self.pre_window_seconds * 1000))  # Convert to ms
             
             # Get window indices within the time range
-            win_idx_array = np.where((window_times >= window_start) & 
-                                     (window_times <= end_ts))[0]
+            win_idx_array = window_indices_for_range(window_times, window_start, end_ts)
             
             if not win_idx_array.size:
                 continue  # Skip tokens with no windows
@@ -1189,35 +757,6 @@ class QueryTransform(BaseTransform):
         
         return result
 
-    # ------------------------------------------------------------------ #
-    #  PyTorch Dataset Conversion
-    # ------------------------------------------------------------------ #
-
-    def get_torch_dataset(self, query_result_path: str):
-        """
-        Load a query result using the QueryDataset from utils/dataloader.
-        
-        This method now uses the QueryDataset class from utils/dataloader.py
-        instead of importing torch directly.
-        
-        Args:
-            query_result_path: Path to the query result zarr store
-            
-        Returns:
-            QueryDataset instance or None if loading fails
-        """
-        # Import QueryDataset from utils/dataloader
-        from utils.dataloader import QueryDataset
-        
-        # Open the zarr store
-        self.logger.info(f"Loading query result from {query_result_path} using QueryDataset")
-        
-        try:
-            # Create and return QueryDataset
-            return QueryDataset(zarr_path=query_result_path)
-        except Exception as e:
-            self.logger.error(f"Error creating dataset from {query_result_path}: {e}")
-            return None
 
 
 # -------------------------------------------------------------------------- #
