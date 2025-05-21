@@ -372,30 +372,30 @@ class QueryTransform(BaseTransform):
             elif isinstance(value, np.ndarray):
                 # Array → zarr dataset
                 if value.ndim == 0:
-                    # Special handling for scalar (0-dimensional) arrays
-                    print(f"{indent}Creating scalar dataset: {safe_key}, dtype={value.dtype}")
-                    parent_group.create_dataset(
-                        name=safe_key,
-                        data=value,  # Use value directly without indexing
-                        shape=(),    # Empty tuple for scalar shape
-                        dtype=value.dtype,
-                        overwrite=True
-                    )
-                    print(f"{indent}Scalar dataset {safe_key} created successfully")
+                    # Store scalar arrays as attributes to avoid v3 0-D bug
+                    scalar_value = value.item()
+                    print(f"{indent}Storing scalar array as attribute: {safe_key}={scalar_value}")
+                    parent_group.attrs[safe_key] = scalar_value
+                    print(f"{indent}Scalar attribute {safe_key} created successfully")
+                    return  # Skip the rest of the processing
                 else:
                     # Regular multi-dimensional array handling
                     value = bytesify(value)
                     
-                    # Determine appropriate chunking for large arrays
-                    chunks = value.shape
-                    if value.nbytes > 2e9 and value.ndim > 1:
-                        if value.ndim == 1:
-                            chunks = (min(10_000, value.shape[0]),)
-                        else:
+                    # Determine appropriate chunking for arrays
+                    if value.ndim == 1:
+                        # 1D arrays: chunk in blocks of up to 1024 elements
+                        chunks = (min(1024, value.shape[0]),)
+                    else:
+                        # Multi-dimensional arrays: chunk along first dimension
+                        chunks = (min(1024, value.shape[0]),) + value.shape[1:]
+                        
+                        # Special case for very large arrays
+                        if value.nbytes > 2e9:
                             max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
                             chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
                     
-                    print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}")
+                    print(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}, chunks={chunks}")
                     parent_group.create_dataset(
                         name=safe_key,
                         data=value,
@@ -1056,9 +1056,24 @@ class QueryTransform(BaseTransform):
             token_sequence = sorted(token_sequence, 
                                    key=lambda i: tokens[i]["start_timestamp"])
         
+        # Initialize arrays for vectorized token data
+        all_token_text = []
+        all_token_ids = []
+        all_start_times = []
+        all_end_times = []
+        all_special_flags = []
+        all_element_ids = []  # Which element each token belongs to
+
+        # Initialize window storage
+        all_windows = {}  # Map of window_idx -> window data (for deduplication)
+        
+        # Initialize token-window mapping
+        token_indices = []  # Token indices in our arrays
+        window_indices = []  # Window indices
+
         # Process each token and find its element and windows
-        tokens_with_windows = {}
-        for token_idx in token_sequence:
+        tokens_with_windows_count = 0
+        for idx, token_idx in enumerate(token_sequence):
             token = tokens[token_idx]
             
             # Get token timestamps
@@ -1074,27 +1089,69 @@ class QueryTransform(BaseTransform):
             window_start = max(0, start_ts - (self.pre_window_seconds * 1000))  # Convert to ms
             
             # Get window indices within the time range
-            window_indices = np.where((window_times >= window_start) & 
+            win_idx_array = np.where((window_times >= window_start) & 
                                      (window_times <= end_ts))[0]
             
-            if not window_indices.size:
+            if not win_idx_array.size:
                 continue  # Skip tokens with no windows
                 
-            # Use extract_full_windows to get all window data
-            from transforms.query_helpers import extract_full_windows
-            windows = extract_full_windows(window_zgroup, window_indices)
+            # Add token data to arrays
+            all_token_text.append(token.get("token", ""))
+            all_token_ids.append(token.get("token_id", 0))
+            all_start_times.append(start_ts)
+            all_end_times.append(end_ts)
+            all_special_flags.append(token.get("special_token", False))
+            all_element_ids.append(element_id)
             
-            # Store token with its element and windows
-            tokens_with_windows[str(token_idx)] = {
-                "token": token,
-                "element_id": element_id,
-                "window_indices": window_indices.tolist(),
-                "windows": windows
-            }
+            # Map this token to its windows
+            curr_token_idx = len(all_token_text) - 1  # Index in our arrays
+            for window_idx in win_idx_array:
+                token_indices.append(curr_token_idx)
+                window_indices.append(int(window_idx))
+                
+                # Store unique window data if not already stored
+                if window_idx not in all_windows:
+                    # Get window data for this single index
+                    from transforms.query_helpers import extract_full_windows
+                    # Convert to NumPy array to avoid 'list' object has no attribute 'min' error
+                    window_data = extract_full_windows(window_zgroup, np.array([window_idx]))
+                    
+                    # Store at the integer index for consistent retrieval
+                    all_windows[int(window_idx)] = {
+                        k: v[0] if isinstance(v, np.ndarray) and v.shape[0] == 1 else v
+                        for k, v in window_data.items()
+                    }
+            
+            tokens_with_windows_count += 1
         
-        if not tokens_with_windows:
+        if tokens_with_windows_count == 0:
             self.logger.warning(f"No {self.lang_group} tokens with windows found for {sid}")
             return None
+        
+        # Convert window dict to vectorized arrays
+        window_keys = sorted(all_windows.keys())
+        window_arrays = {}
+        
+        # Get all keys in the window data
+        first_window = next(iter(all_windows.values()))
+        for key in first_window.keys():
+            # Collect all values for this key into an array
+            values = [all_windows[idx][key] for idx in window_keys]
+            
+            # Convert to numpy array
+            if all(isinstance(v, np.ndarray) for v in values):
+                # Stack arrays along a new first dimension
+                stacked = np.stack(values)
+                window_arrays[key] = stacked
+                # Note: We're not setting chunks directly here because it will be handled
+                # by the improved chunking logic in _save_to_zarr
+            else:
+                # Simple array conversion
+                window_arrays[key] = np.array(values)
+        
+        # Map window indices to positions in our arrays
+        window_idx_map = {idx: pos for pos, idx in enumerate(window_keys)}
+        remapped_window_indices = [window_idx_map[idx] for idx in window_indices]
             
         # Format final result
         result = {
@@ -1102,22 +1159,33 @@ class QueryTransform(BaseTransform):
             "tokenizer": self.tokenizer,
             "lang_group": self.lang_group,
             "pre_window_seconds": self.pre_window_seconds,
-            "token_sequence": token_sequence,
-            "token_data": lang_data,  # Original token data
-            "tokens_with_windows": tokens_with_windows
+            "tokens": {
+                "text": np.array(all_token_text),
+                "ids": np.array(all_token_ids),
+                "start_times": np.array(all_start_times),
+                "end_times": np.array(all_end_times),
+                "special": np.array(all_special_flags),
+                "element_ids": np.array(all_element_ids)
+            },
+            "windows": window_arrays,
+            "token_window_map": {
+                "token_idx": np.array(token_indices),
+                "window_idx": np.array(remapped_window_indices)
+            }
         }
         
         print(f"\n=== QUERY RESULT FOR {sid} ===")
         print(f"Result keys: {list(result.keys())}")
-        print(f"tokens_with_windows count: {len(tokens_with_windows)}")
-        print(f"token_sequence length: {len(token_sequence)}")
-        if tokens_with_windows:
-            first_token = next(iter(tokens_with_windows.values()))
-            if 'windows' in first_token:
-                print(f"First token window keys: {list(first_token['windows'].keys())}")
-                for k, v in first_token['windows'].items():
-                    if isinstance(v, np.ndarray):
-                        print(f"  {k}: shape={v.shape}, dtype={v.dtype}")
+        print(f"tokens count: {len(result['tokens']['text'])}")
+        print(f"window count: {len(window_keys)}")
+        print(f"token-window mapping count: {len(token_indices)}")
+        
+        # Print window data info
+        if window_arrays:
+            print(f"Window array keys: {list(window_arrays.keys())}")
+            for k, v in window_arrays.items():
+                if isinstance(v, np.ndarray):
+                    print(f"  {k}: shape={v.shape}, dtype={v.dtype}")
         
         return result
 
