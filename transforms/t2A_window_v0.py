@@ -320,9 +320,20 @@ class WindowTransform(BaseTransform):
                 # Apply chunking (will be used by save_dataset_to_s3_zarr)
                 ds = ds.chunk(chunks)
 
-                # Save directly to S3
-                self.save_dataset_to_s3_zarr(ds, zarr_key)
-                self.logger.info(f"Successfully saved dataset directly to S3")
+                # Convert xarray Dataset to dictionary structure for Zarr 3
+                zarr_tree = {}
+                attrs = dict(ds.attrs)
+                
+                # Add storage format attribute
+                attrs['storage_format'] = 'zarr3'
+                
+                # Process data variables and coordinates
+                for name, array in {**ds.data_vars, **ds.coords}.items():
+                    zarr_tree[name] = array.values
+                
+                # Save using Zarr 3 method
+                self.save_zarr_dict_to_s3(zarr_key, zarr_tree, attrs)
+                self.logger.info(f"Successfully saved dataset directly to S3 using Zarr 3 format")
                 
                 # Add zarr store to results for proper handling
                 zarr_stores = [zarr_key]

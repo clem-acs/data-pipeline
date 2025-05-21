@@ -54,4 +54,5 @@ first comb through every file in the repo - all transforms, cli, base transform,
 
 really look at t2A, t2B, t2C, t4A, t6A, the base transform, cli.py, query_helpers, lang_processing - all files in lang_processing and neural_processing
 
-I want to clean up and improve how we query things. first, we now handle torch stuff in utils/dataloader.py, so i don't see any need for torch in query helpers or in t4A is that wrong? ultrathink report back
+i ant to clean up how window works. right now, it is in zarr 2, even though everything else is in zarr 3, and it has .zmetadata while everything else uses zarr.json
+what would the simplest way to fix this be? don't change stuff yet, just report back ultrathink
