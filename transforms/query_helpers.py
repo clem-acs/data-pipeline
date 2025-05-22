@@ -474,6 +474,20 @@ def open_zarr_safely(uri: str, *, mode: str = "r", logger: Optional[logging.Logg
         raise
 
 
+def capped_chunks(shape, cap=100):
+    """
+    Return a tuple such that each chunk size is min(cap, dim_size).
+    
+    Args:
+        shape: Array shape (tuple or shape-like object)
+        cap: Maximum size for any dimension in a chunk
+        
+    Returns:
+        Tuple with same length as shape, with each value capped
+    """
+    return tuple(min(cap, d) for d in shape)
+
+
 def save_obj_to_zarr(parent_group: zarr.Group, key: str, value: Any, 
                     logger: Optional[logging.Logger] = None, indent: str = ""):
     """
@@ -529,8 +543,8 @@ def save_obj_to_zarr(parent_group: zarr.Group, key: str, value: Any,
                 # Regular multi-dimensional array handling
                 value = bytesify(value)
                 
-                # ---- Zarr 3 "boring-safe" defaults ----
-                auto_chunk = True  # let Zarr decide
+                # Create properly dimensioned chunks for any array shape
+                chunk_spec = capped_chunks(value.shape)
                 
                 # Build kwargs dictionary for create_dataset - no compression specified
                 kwargs = dict(
@@ -538,11 +552,11 @@ def save_obj_to_zarr(parent_group: zarr.Group, key: str, value: Any,
                     shape=value.shape,
                     dtype=value.dtype,
                     data=value,
-                    chunks=auto_chunk,
+                    chunks=chunk_spec,
                     overwrite=True,
                 )
                 
-                debug(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}, auto_chunking=True")
+                debug(f"{indent}Creating dataset: {safe_key}, shape={value.shape}, dtype={value.dtype}, chunks={chunk_spec}")
                 debug(f"{indent}{safe_key}: dtype={value.dtype}, kind={value.dtype.kind}")
                 
                 parent_group.create_dataset(**kwargs)

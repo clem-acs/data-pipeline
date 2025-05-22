@@ -349,7 +349,7 @@ def get_session_ids(args):
         # filtered_sessions at this point contains sessions that match the name filter and duration criteria.
         timestamp_sorted_sessions = sorted(
             filtered_sessions.items(),
-            key=lambda x: _extract_timestamp_from_name(x[1]['name']),
+            key=lambda x: extract_timestamp_from_name(x[1]['name']),
             reverse=True  # True for newest first
         )
 
