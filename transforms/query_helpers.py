@@ -12,9 +12,6 @@ import numcodecs
 import logging
 import time
 
-# Common constants and defaults
-DEFAULT_LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
-
 # No default compression - let Zarr handle compression automatically
 
 
@@ -189,10 +186,10 @@ def build_labels(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarr
         Array of labels for each hit
     """
     if label_map is None:
-        # Return numeric labels directly for more efficient processing
-        label_map = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+        # Generic fallback with single unknown label
+        label_map = {"unknown": 100}
     
-    labels = np.full(len(hits), label_map.get("unknown", 3), dtype=np.int32)
+    labels = np.full(len(hits), label_map.get("unknown", 100), dtype=np.int32)
     
     for i, hit_idx in enumerate(hits):
         hit_time = times[hit_idx]

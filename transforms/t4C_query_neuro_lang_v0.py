@@ -263,6 +263,7 @@ class NeuroLangTransform(BaseTransform):
         tok_text, tok_ids, t_start, t_end, t_special, t_eids = [], [], [], [], [], []
         token_idx_map, window_idx_map = [], []
         windows_cache: Dict[int, Dict[str, np.ndarray]] = {}
+        new_windows_needed: Set[int] = set()
 
         for idx in order:
             tk = tokens[idx]
@@ -290,11 +291,20 @@ class NeuroLangTransform(BaseTransform):
                 token_idx_map.append(this_tok_idx)
                 window_idx_map.append(int(w_idx))
                 if w_idx not in windows_cache:
-                    wd = extract_full_windows(wg, np.array([w_idx]), logger=self.logger)
-                    windows_cache[int(w_idx)] = {
-                        k: v[0] if isinstance(v, np.ndarray) and v.shape[0] == 1 else v
-                        for k, v in wd.items()
-                    }
+                    new_windows_needed.add(int(w_idx))
+
+        # Batch extraction of all new windows after the token loop
+        if new_windows_needed:
+            all_hits = np.sort(np.fromiter(new_windows_needed, dtype=np.int64))
+            self.logger.info(f"Batch extracting {len(all_hits)} unique windows")
+            big = extract_full_windows(wg, all_hits, logger=self.logger)
+
+            # Fill the cache with results
+            for i, w_idx in enumerate(all_hits):
+                windows_cache[int(w_idx)] = {
+                    k: v[i] if (isinstance(v, np.ndarray) and v.shape[0] == len(all_hits)) else v
+                    for k, v in big.items()
+                }
 
         if not tok_text:
             return {"status": "skipped", "metadata": {"reason": "no_matches", "session_id": sid}}

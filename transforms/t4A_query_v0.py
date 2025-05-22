@@ -11,8 +11,11 @@ Key features:
     • Object/Unicode dtypes converted to fixed-width bytes
     • Helper utilities (bytesify, filter_elements, extract_full_windows, etc.)
     • Metadata consolidation with root.store
-    • Generic query registry system
-    • Element-based neural window extraction with configurable labels
+    • Generic query registry system for basic element and token queries
+
+Note: For neural-related queries:
+    • Use t4B_query_eye_neural_v0.py for eye neural window extraction
+    • Use t4C_query_neuro_lang_v0.py for language-neural window extraction
 """
 
 import json
@@ -29,9 +32,6 @@ from base_transform import BaseTransform, Session
 
 # Import helpers
 from transforms.query_helpers import (
-    # Constants
-    DEFAULT_LABEL_MAP,
-    
     # Helper functions
     bytesify, 
     sanitize_session_id, 
@@ -51,12 +51,21 @@ from transforms.query_helpers import (
     extract_elements_neural_windows
 )
 
+# Define default label map for eye task elements
+DEFAULT_EYE_LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
+
 # Module logger
 logger = logging.getLogger(__name__)
 
 
 class QueryTransform(BaseTransform):
-    """Query / aggregation stage operating on event Zarr stores."""
+    """
+    Query / aggregation stage operating on event Zarr stores.
+    
+    Note: For neural-related queries:
+    - Use t4B_query_eye_neural_v0.py for eye neural window extraction
+    - Use t4C_query_neuro_lang_v0.py for language-neural window extraction
+    """
 
     SOURCE_PREFIX = "processed/event/"
     DEST_PREFIX = "processed/queries/"
@@ -65,20 +74,15 @@ class QueryTransform(BaseTransform):
     QUERY_REGISTRY = {
         "all_elements": "_query_all_elements",
         "eye_elements": "_query_eye_elements",
-        "eye_neural": "_query_eye_neural_windows",
         "lang_tokens": "_query_lang_tokens",
-        "neuro_lang": "_query_neuro_lang_windows",  # Neural-language windows query
         # Additional queries will be added here
     }
     
     # List of queries that need label maps
-    QUERIES_WITH_LABELS = {"eye_neural"}
+    QUERIES_WITH_LABELS = {}
 
     def __init__(self, query_name: Optional[str] = None, 
                  label_map: Optional[Dict[str, int]] = None,
-                 lang_group: str = "W",
-                 tokenizer: str = "gpt2",
-                 pre_window_seconds: float = 10.0,
                  **kwargs):
         """
         Initialize the query transform.
@@ -86,9 +90,6 @@ class QueryTransform(BaseTransform):
         Args:
             query_name: Name of the query to run (must be in QUERY_REGISTRY)
             label_map: Optional mapping from element_id patterns to labels
-            lang_group: Language group to process (L, W, R, S, W_corrected)
-            tokenizer: Tokenizer used in language transform (e.g., gpt2)
-            pre_window_seconds: Seconds to include before token start
             **kwargs: Additional arguments for BaseTransform
         """
         self.query_name = query_name
@@ -96,11 +97,7 @@ class QueryTransform(BaseTransform):
         # Only set label_map if this query type uses labels
         self.label_map = None
         if query_name in self.QUERIES_WITH_LABELS:
-            self.label_map = label_map or DEFAULT_LABEL_MAP
-            
-        self.lang_group = lang_group
-        self.tokenizer = tokenizer
-        self.pre_window_seconds = pre_window_seconds
+            self.label_map = label_map or DEFAULT_EYE_LABEL_MAP
         
         # Set default transform info if not provided
         transform_id = kwargs.pop('transform_id', 't4A_query_v0')
@@ -146,28 +143,6 @@ class QueryTransform(BaseTransform):
             type=str,
             help="Label mapping in JSON format, e.g., '{\"closed\":0,\"open\":1,\"intro\":2}'"
         )
-        
-        # Add neural language query options
-        neuro_lang_group = parser.add_argument_group('neuro-lang options')
-        neuro_lang_group.add_argument(
-            "--lang-group", 
-            type=str, 
-            choices=["L", "R", "W", "S", "W_corrected"],
-            default="W", 
-            help="Language group to process"
-        )
-        neuro_lang_group.add_argument(
-            "--tokenizer", 
-            type=str, 
-            default="gpt2", 
-            help="Tokenizer used in language transform"
-        )
-        neuro_lang_group.add_argument(
-            "--pre-window-seconds", 
-            type=float, 
-            default=10.0, 
-            help="Seconds to include before token start"
-        )
 
     @classmethod
     def from_args(cls, args):
@@ -189,11 +164,7 @@ class QueryTransform(BaseTransform):
                 raise ValueError(f"Invalid JSON for label-map: {e}")
         
         # Create a query-specific transform_id to track each query type separately
-        if args.query_name == "neuro_lang":
-            # Include all parameters in transform_id for neuro_lang query
-            transform_id = f"t4A_query_v0_{args.query_name}_{args.lang_group}_{args.tokenizer}_{args.pre_window_seconds}s"
-        else:
-            transform_id = f"t4A_query_v0_{args.query_name}" if args.query_name else "t4A_query_v0"
+        transform_id = f"t4A_query_v0_{args.query_name}" if args.query_name else "t4A_query_v0"
                 
         return cls(
             query_name=args.query_name,
@@ -201,9 +172,6 @@ class QueryTransform(BaseTransform):
             transform_id=transform_id,  # Use query-specific transform_id
             source_prefix=getattr(args, "source_prefix", cls.SOURCE_PREFIX),
             destination_prefix=getattr(args, "dest_prefix", cls.DEST_PREFIX),
-            lang_group=getattr(args, "lang_group", "W"),
-            tokenizer=getattr(args, "tokenizer", "gpt2"),
-            pre_window_seconds=getattr(args, "pre_window_seconds", 10.0),
             s3_bucket=args.s3_bucket,
             verbose=args.verbose,
             log_file=args.log_file,
@@ -231,50 +199,7 @@ class QueryTransform(BaseTransform):
         Returns:
             List of session IDs with relevant data
         """
-        # For neuro_lang query, need both event and specific tokenizer language zarr stores
-        if self.query_name == "neuro_lang":
-            # Find sessions with event zarr stores
-            event_sessions = set()
-            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=self.source_prefix)
-            for obj in resp.get("Contents", []):
-                key = obj["Key"]
-                if key.endswith("_events.zarr/zarr.json"):
-                    session_id = key.split("/")[-2].replace("_events.zarr", "")
-                    event_sessions.add(session_id)
-            
-            # Find sessions with specific tokenizer lang zarr stores
-            lang_prefix = "processed/lang/"
-            tokenizer_sessions = set()
-            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=lang_prefix)
-            for obj in resp.get("Contents", []):
-                key = obj["Key"]
-                if key.endswith("_lang.zarr/zarr.json"):
-                    # Check if this has our specific tokenizer
-                    zarr_name = key.split("/")[-2]  # e.g., "session123_gpt2_lang.zarr"
-                    if f"_{self.tokenizer}_lang.zarr" in zarr_name:
-                        # Extract session ID from the tokenizer zarr name (without _events.zarr suffix)
-                        session_id = zarr_name.replace(f"_{self.tokenizer}_lang.zarr", "")
-                        # Add both clean ID and ID with _events.zarr suffix to handle both path formats
-                        tokenizer_sessions.add(session_id)
-                        # Also add with _events.zarr suffix to match event session IDs
-                        tokenizer_sessions.add(f"{session_id}_events.zarr")
-            
-            # Find sessions with window zarr stores
-            window_prefix = "processed/windows/"
-            window_sessions = set()
-            resp = self.s3.list_objects_v2(Bucket=self.s3_bucket, Prefix=window_prefix)
-            for obj in resp.get("Contents", []):
-                key = obj["Key"]
-                if key.endswith("_windowed.zarr/zarr.json"):
-                    session_id = key.split("/")[-2].replace("_windowed.zarr", "")
-                    window_sessions.add(session_id)
-            
-            # Return sessions with event, specific tokenizer lang, and window data
-            common_sessions = event_sessions.intersection(tokenizer_sessions).intersection(window_sessions)
-            self.logger.info(f"Found {len(common_sessions)} sessions with event zarr, {self.tokenizer} language zarr, and window zarr stores")
-            return sorted(common_sessions)
-        
-        # Select source prefix based on query type for other queries
+        # Select source prefix based on query type
         prefix = self.source_prefix
         
         # Use lang prefix if it's a lang query
@@ -494,43 +419,6 @@ class QueryTransform(BaseTransform):
             
         return filtered_elems
 
-    def _query_eye_neural_windows(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, np.ndarray]]:
-        """
-        Extract neural data windows during 'eye' task elements.
-        
-        Args:
-            zgroup: Zarr group containing elements data
-            sid: Session ID
-            
-        Returns:
-            Dictionary with windows, labels, and element_ids
-        """
-        # Clean session ID for window store path (remove _events.zarr suffix if present)
-        clean_sid = sid
-        if clean_sid.endswith("_events.zarr"):
-            clean_sid = clean_sid.replace("_events.zarr", "")
-        
-        # Open the window store for this session
-        window_key = f"processed/windows/{clean_sid}_windowed.zarr"
-        
-        try:
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
-        except self.s3.exceptions.ClientError:
-            self.logger.warning(f"No window store for {sid}")
-            return None
-        
-        # Open window zarr store
-        wgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}", logger=self.logger)
-        
-        # Use the extracted helper function with task_type="eye" filter
-        return extract_elements_neural_windows(
-            event_group=zgroup,
-            window_group=wgroup,
-            session_id=sid,
-            filter_kwargs={"task_type": "eye"},
-            label_map=self.label_map if self.query_name in self.QUERIES_WITH_LABELS else None,
-            logger=self.logger
-        )
         
     def _query_lang_tokens(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, Any]]:
         """
@@ -565,197 +453,6 @@ class QueryTransform(BaseTransform):
             return result
         return None
 
-    def _query_neuro_lang_windows(self, zgroup: zarr.Group, sid: str) -> Optional[Dict[str, Any]]:
-        """
-        Extract neural windows for language tokens.
-        
-        For each token of the specified language group within an element:
-        1. Get windows from N seconds before token start to token end
-        2. Associate these windows with the token and its element
-        
-        Args:
-            zgroup: Event zarr group with elements data
-            sid: Session ID
-            
-        Returns:
-            Dictionary with tokens and their associated neural windows
-        """
-        # Get elements data from event zarr
-        elements = extract_elements_data(zgroup, sid, logger=self.logger)
-        if elements is None:
-            self.logger.warning(f"No elements found for {sid}")
-            return None
-            
-        # Find and open the language zarr store with specific tokenizer
-        # Clean session ID by removing _events.zarr suffix if present
-        clean_sid = sid.replace("_events.zarr", "")
-        lang_zarr_key = f"processed/lang/{clean_sid}_{self.tokenizer}_lang.zarr"
-        try:
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{lang_zarr_key}/zarr.json")
-        except self.s3.exceptions.ClientError:
-            self.logger.warning(f"No language zarr for {clean_sid} with tokenizer {self.tokenizer}")
-            return None
-            
-        lang_zgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{lang_zarr_key}", logger=self.logger)
-        
-        # Extract tokens for the specified language group
-        from transforms.query_helpers import extract_lang_tokens, find_element_for_timestamp
-        lang_data = extract_lang_tokens(lang_zgroup, self.lang_group)
-        if lang_data is None or 'tokens' not in lang_data or not lang_data['tokens']:
-            self.logger.warning(f"No {self.lang_group} tokens found for {sid}")
-            return None
-            
-        # Find and open the window zarr store
-        window_key = f"processed/windows/{sid.replace('_events.zarr', '')}_windowed.zarr"
-        try:
-            self.s3.head_object(Bucket=self.s3_bucket, Key=f"{window_key}/zarr.json")
-        except self.s3.exceptions.ClientError:
-            self.logger.warning(f"No window store for {sid}")
-            return None
-            
-        window_zgroup = open_zarr_safely(f"s3://{self.s3_bucket}/{window_key}", logger=self.logger)
-        window_times = window_zgroup["time"][:]
-        
-        # Create sequence of tokens in chronological order
-        tokens = lang_data["tokens"]
-        token_sequence = list(range(len(tokens)))
-        
-        # Sort tokens by start timestamp if available
-        if tokens and "start_timestamp" in tokens[0]:
-            token_sequence = sorted(token_sequence, 
-                                   key=lambda i: tokens[i]["start_timestamp"])
-        
-        # Initialize arrays for vectorized token data
-        all_token_text = []
-        all_token_ids = []
-        all_start_times = []
-        all_end_times = []
-        all_special_flags = []
-        all_element_ids = []  # Which element each token belongs to
-
-        # Initialize window storage
-        all_windows = {}  # Map of window_idx -> window data (for deduplication)
-        
-        # Initialize token-window mapping
-        token_indices = []  # Token indices in our arrays
-        window_indices = []  # Window indices
-
-        # Process each token and find its element and windows
-        tokens_with_windows_count = 0
-        for idx, token_idx in enumerate(token_sequence):
-            token = tokens[token_idx]
-            
-            # Get token timestamps
-            start_ts = token.get("start_timestamp", 0)
-            end_ts = token.get("end_timestamp", start_ts)
-            
-            # Find which element this token belongs to
-            element_id = find_element_for_timestamp(elements, start_ts)
-            if element_id is None:
-                continue  # Skip tokens not in any element
-                
-            # Calculate window start time (N seconds before token)
-            window_start = max(0, start_ts - (self.pre_window_seconds * 1000))  # Convert to ms
-            
-            # Get window indices within the time range
-            win_idx_array = window_indices_for_range(window_times, window_start, end_ts)
-            
-            if not win_idx_array.size:
-                continue  # Skip tokens with no windows
-                
-            # Add token data to arrays
-            all_token_text.append(token.get("token", ""))
-            all_token_ids.append(token.get("token_id", 0))
-            all_start_times.append(start_ts)
-            all_end_times.append(end_ts)
-            all_special_flags.append(token.get("special_token", False))
-            all_element_ids.append(element_id)
-            
-            # Map this token to its windows
-            curr_token_idx = len(all_token_text) - 1  # Index in our arrays
-            for window_idx in win_idx_array:
-                token_indices.append(curr_token_idx)
-                window_indices.append(int(window_idx))
-                
-                # Store unique window data if not already stored
-                if window_idx not in all_windows:
-                    # Get window data for this single index
-                    from transforms.query_helpers import extract_full_windows
-                    # Convert to NumPy array to avoid 'list' object has no attribute 'min' error
-                    window_data = extract_full_windows(window_zgroup, np.array([window_idx]))
-                    
-                    # Store at the integer index for consistent retrieval
-                    all_windows[int(window_idx)] = {
-                        k: v[0] if isinstance(v, np.ndarray) and v.shape[0] == 1 else v
-                        for k, v in window_data.items()
-                    }
-            
-            tokens_with_windows_count += 1
-        
-        if tokens_with_windows_count == 0:
-            self.logger.warning(f"No {self.lang_group} tokens with windows found for {sid}")
-            return None
-        
-        # Convert window dict to vectorized arrays
-        window_keys = sorted(all_windows.keys())
-        window_arrays = {}
-        
-        # Get all keys in the window data
-        first_window = next(iter(all_windows.values()))
-        for key in first_window.keys():
-            # Collect all values for this key into an array
-            values = [all_windows[idx][key] for idx in window_keys]
-            
-            # Convert to numpy array
-            if all(isinstance(v, np.ndarray) for v in values):
-                # Stack arrays along a new first dimension
-                stacked = np.stack(values)
-                window_arrays[key] = stacked
-                # Note: We're not setting chunks directly here because it will be handled
-                # by the improved chunking logic in _save_to_zarr
-            else:
-                # Simple array conversion
-                window_arrays[key] = np.array(values)
-        
-        # Map window indices to positions in our arrays
-        window_idx_map = {idx: pos for pos, idx in enumerate(window_keys)}
-        remapped_window_indices = [window_idx_map[idx] for idx in window_indices]
-            
-        # Format final result
-        result = {
-            "session_id": sid,
-            "tokenizer": self.tokenizer,
-            "lang_group": self.lang_group,
-            "pre_window_seconds": self.pre_window_seconds,
-            "tokens": {
-                "text": np.array(all_token_text),
-                "ids": np.array(all_token_ids),
-                "start_times": np.array(all_start_times),
-                "end_times": np.array(all_end_times),
-                "special": np.array(all_special_flags),
-                "element_ids": np.array(all_element_ids)
-            },
-            "windows": window_arrays,
-            "token_window_map": {
-                "token_idx": np.array(token_indices),
-                "window_idx": np.array(remapped_window_indices)
-            }
-        }
-        
-        print(f"\n=== QUERY RESULT FOR {sid} ===")
-        print(f"Result keys: {list(result.keys())}")
-        print(f"tokens count: {len(result['tokens']['text'])}")
-        print(f"window count: {len(window_keys)}")
-        print(f"token-window mapping count: {len(token_indices)}")
-        
-        # Print window data info
-        if window_arrays:
-            print(f"Window array keys: {list(window_arrays.keys())}")
-            for k, v in window_arrays.items():
-                if isinstance(v, np.ndarray):
-                    print(f"  {k}: shape={v.shape}, dtype={v.dtype}")
-        
-        return result
 
 
 
