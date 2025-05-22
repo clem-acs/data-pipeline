@@ -21,7 +21,8 @@ def create_windows(
     fnirs_data: Optional[np.ndarray] = None,
     eeg_timestamps: Optional[np.ndarray] = None,
     fnirs_timestamps: Optional[np.ndarray] = None,
-    return_torch_tensors: bool = False
+    return_torch_tensors: bool = False,
+    metadata: Optional[dict] = None
 ):
     """
     Creates time-aligned windows from EEG and fNIRS data using a fNIRS-driven rhythm,
@@ -157,6 +158,7 @@ def create_windows(
         fnirs_is_actual_list.append(True)
 
     fnirs_ts_ms = np.array(fnirs_ts_ms_processed_list)
+    logger.info(f"About to stack fnirs_data_processed_list. Length: {len(fnirs_data_processed_list)}, Shape of first element: {fnirs_data_processed_list[0].shape if fnirs_data_processed_list else 'N/A'}, Dtype: {fnirs_data_processed_list[0].dtype if fnirs_data_processed_list else 'N/A'}")
     fnirs_data_processed = np.stack(fnirs_data_processed_list)
     fnirs_is_actual_frame = np.array(fnirs_is_actual_list)
     num_total_fnirs_frames_processed = len(fnirs_ts_ms)
@@ -602,6 +604,10 @@ def create_windows(
         'fnirs_master_span_in_input_arrays': (fnirs_start_idx, fnirs_end_idx),
         'both_master_span_in_input_arrays': (both_start_idx, both_end_idx)
     }
+    
+    # Pass through retained_fnirs_indices if they exist in metadata
+    if metadata and 'retained_fnirs_indices' in metadata:
+        summary_metadata['retained_fnirs_indices'] = metadata['retained_fnirs_indices']
 
     dataset_instance: Optional[WindowDataset] = None
     if total_windows == 0 : # If master timeline was empty
@@ -649,7 +655,8 @@ def create_windows_eeg_only(
     return_torch_tensors: bool = False,
     # TODO: Consider making these parameters or module-level constants
     eeg_frames_per_window: int = 7,
-    ideal_period_ms: float = 210.0  # Using fnirs_ideal_period_ms as a base for window rate
+    ideal_period_ms: float = 210.0,  # Using fnirs_ideal_period_ms as a base for window rate
+    metadata: Optional[dict] = None
 ):
     """
     Creates time-aligned windows from EEG data only.
@@ -886,7 +893,8 @@ def create_windows_fnirs_only(
     fnirs_ideal_period_ms: float = 210.0,
     drift_chunk_size_frames: int = 20,
     min_actual_frame_density_for_truncation: float = 0.80,
-    min_frames_for_late_offset_calc: int = 20
+    min_frames_for_late_offset_calc: int = 20,
+    metadata: Optional[dict] = None
 ):
     """
     Creates time-aligned windows from fNIRS data only.
@@ -918,6 +926,104 @@ def create_windows_fnirs_only(
         return None, {"error": f"fNIRS timestamp extraction error: {e}"}
     
     logger.info(f"Successfully extracted {len(fnirs_ts_ms_orig)} fNIRS timestamps.")
+    logger.info(f"Input fnirs_data - Shape: {fnirs_data.shape}, Dtype: {fnirs_data.dtype}, Memory: {fnirs_data.nbytes / (1024*1024):.2f} MB")
+
+    # Attempt to interpolate 0.0 timestamps
+    # The 'fnirs_ideal_period_ms' is available in this function's scope.
+    initial_ts_len_for_interp = len(fnirs_ts_ms_orig)
+    initial_data_len_for_interp = fnirs_data.shape[0]
+    
+    zero_ts_indices = np.where(fnirs_ts_ms_orig == 0.0)[0]
+    
+    if len(zero_ts_indices) > 0:
+        logger.warning(f"Found {len(zero_ts_indices)} fNIRS frames with 0.0 timestamps. Attempting interpolation.")
+        
+        for idx in zero_ts_indices:
+            # Log data means around the 0.0 timestamp (using finite values)
+            if initial_data_len_for_interp > idx:
+                current_frame_raw = fnirs_data[idx]
+                current_frame_finite = current_frame_raw[np.isfinite(current_frame_raw)]
+                mean_current = np.mean(current_frame_finite) if current_frame_finite.size > 0 else np.nan
+            else:
+                mean_current = np.nan
+            log_msg_parts = [f"Frame idx {idx} (original ts=0.0): mean_data={mean_current:.4f}"]
+
+            prev_ts_val = np.nan
+            if idx > 0:
+                prev_ts_val = fnirs_ts_ms_orig[idx-1]
+                if initial_data_len_for_interp > (idx-1):
+                    prev_frame_raw = fnirs_data[idx-1]
+                    prev_frame_finite = prev_frame_raw[np.isfinite(prev_frame_raw)]
+                    mean_prev = np.mean(prev_frame_finite) if prev_frame_finite.size > 0 else np.nan
+                else: mean_prev = np.nan
+                log_msg_parts.append(f"mean_prev_frame({idx-1})={mean_prev:.4f} (ts={prev_ts_val:.2f})")
+            else: log_msg_parts.append("no_prev_frame")
+
+            next_ts_val = np.nan
+            if idx < initial_ts_len_for_interp - 1:
+                next_ts_val = fnirs_ts_ms_orig[idx+1]
+                if initial_data_len_for_interp > (idx+1):
+                    next_frame_raw = fnirs_data[idx+1]
+                    next_frame_finite = next_frame_raw[np.isfinite(next_frame_raw)]
+                    mean_next = np.mean(next_frame_finite) if next_frame_finite.size > 0 else np.nan
+                else: mean_next = np.nan
+                log_msg_parts.append(f"mean_next_frame({idx+1})={mean_next:.4f} (ts={next_ts_val:.2f})")
+            else: log_msg_parts.append("no_next_frame")
+            logger.info(f"DEBUG: ZeroTS Info (pre-interpolation): " + ", ".join(log_msg_parts))
+
+            # Attempt interpolation
+            interpolated_ts = np.nan
+            if idx > 0 and prev_ts_val != 0.0 and not np.isnan(prev_ts_val): # Need a valid previous non-zero timestamp
+                # Primary strategy: previous_ts + ideal_period
+                candidate_ts = prev_ts_val + fnirs_ideal_period_ms
+                
+                # Sanity check: ensure candidate_ts is less than the *next actual non-zero* timestamp
+                next_actual_ts = np.nan
+                for next_i in range(idx + 1, initial_ts_len_for_interp):
+                    if fnirs_ts_ms_orig[next_i] != 0.0: # Check against original values before they are changed in this loop
+                        next_actual_ts = fnirs_ts_ms_orig[next_i]
+                        break
+                
+                if np.isnan(next_actual_ts) or candidate_ts < next_actual_ts: # If no next actual or candidate is safe
+                    interpolated_ts = candidate_ts
+                    logger.info(f"Interpolated ts for idx {idx} using prev_ts + ideal_period: {prev_ts_val:.2f} + {fnirs_ideal_period_ms:.2f} = {interpolated_ts:.2f}")
+                else:
+                    # Secondary strategy: Midpoint, if next_actual_ts is valid and different from prev_ts_val
+                    if not np.isnan(next_actual_ts) and prev_ts_val < next_actual_ts :
+                        interpolated_ts = (prev_ts_val + next_actual_ts) / 2.0
+                        logger.info(f"Interpolated ts for idx {idx} using midpoint (prev_ts={prev_ts_val:.2f}, next_actual_ts={next_actual_ts:.2f}): {interpolated_ts:.2f}")
+                    else:
+                        logger.warning(f"Could not interpolate ts for idx {idx}: candidate_ts ({candidate_ts:.2f}) >= next_actual_ts ({next_actual_ts:.2f}) or next_actual_ts is invalid or prev_ts_val >= next_actual_ts. Midpoint also not viable.")
+            elif idx == 0 and initial_ts_len_for_interp > 1: # First frame has 0.0 ts, try to use next frame
+                next_actual_ts_for_first = np.nan
+                if fnirs_ts_ms_orig[idx+1] != 0.0:
+                    next_actual_ts_for_first = fnirs_ts_ms_orig[idx+1]
+                
+                if not np.isnan(next_actual_ts_for_first):
+                    interpolated_ts = next_actual_ts_for_first - fnirs_ideal_period_ms
+                    if interpolated_ts > 0: # Ensure interpolated ts is positive
+                         logger.info(f"Interpolated ts for first frame idx {idx} using next_ts - ideal_period: {next_actual_ts_for_first:.2f} - {fnirs_ideal_period_ms:.2f} = {interpolated_ts:.2f}")
+                    else:
+                        interpolated_ts = np.nan # Revert if it became non-positive
+                        logger.warning(f"Could not interpolate ts for first frame idx {idx}: next_ts - ideal_period resulted in non-positive value.")
+                else:
+                    logger.warning(f"Could not interpolate ts for first frame idx {idx}: next timestamp is also 0.0 or invalid.")
+            else: # Handles case where idx is 0 and there's no next frame, or prev_ts_val was 0.0/nan
+                logger.warning(f"Could not interpolate ts for idx {idx}: no valid previous non-zero timestamp (or it's the first frame with no valid next for back-interpolation).")
+
+            if not np.isnan(interpolated_ts):
+                fnirs_ts_ms_orig[idx] = interpolated_ts # Modify in place
+            else:
+                logger.warning(f"Timestamp for idx {idx} remains 0.0 as interpolation failed.")
+        
+        # Log count of remaining 0.0 timestamps if any failed interpolation
+        remaining_zero_ts_count = np.sum(fnirs_ts_ms_orig == 0.0)
+        if remaining_zero_ts_count > 0:
+            logger.warning(f"{remaining_zero_ts_count} timestamps still 0.0 after interpolation attempts.")
+        # Frame data (fnirs_data) is NOT filtered/removed here, only timestamps are modified.
+    
+    # Log shape of fnirs_data *after* this potential timestamp interpolation, before gap processing
+    logger.info(f"Post-0.0ts-processing (interpolation attempted): fnirs_data - Shape: {fnirs_data.shape}, Dtype: {fnirs_data.dtype}, Memory: {fnirs_data.nbytes / (1024*1024):.2f} MB. Timestamps count: {len(fnirs_ts_ms_orig)}")
 
     # --- 1.7. fNIRS Gap Filling and Preprocessing (Adapted from original) ---
     logger.info("Phase 1.7: Processing fNIRS data for gaps...")
@@ -945,6 +1051,7 @@ def create_windows_fnirs_only(
         num_expected_periods = int(round(time_diff / fnirs_ideal_period_ms))
         if num_expected_periods > 1:
             num_gaps_to_fill = num_expected_periods - 1
+
             last_added_ts_to_processed_list = fnirs_ts_ms_processed_list[-1]
             for k in range(num_gaps_to_fill):
                 placeholder_ts = last_added_ts_to_processed_list + fnirs_ideal_period_ms
@@ -1164,6 +1271,10 @@ def create_windows_fnirs_only(
         'fnirs_master_span_in_input_arrays': (fnirs_start_idx, fnirs_end_idx),
         'both_master_span_in_input_arrays': (both_start_idx, both_end_idx) # 'both' is fNIRS here
     }
+    
+    # Pass through retained_fnirs_indices if they exist in metadata
+    if metadata and 'retained_fnirs_indices' in metadata:
+        summary_metadata['retained_fnirs_indices'] = metadata['retained_fnirs_indices']
     logger.info(f"NumPy array creation complete for fNIRS-only. Total master windows: {total_windows}")
     logger.info(f"fNIRS: {np.sum(fnirs_validity_mask_arr)} valid windows. Span: {fnirs_start_idx}-{fnirs_end_idx}.")
 

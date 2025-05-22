@@ -36,7 +36,6 @@ NEURAL_PROCESSING_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 from neural_processing.eeg_preprocessing import preprocess_eeg
 from neural_processing.fnirs_preprocessing import preprocess_fnirs
 from neural_processing.windowing import create_windows, create_windows_eeg_only, create_windows_fnirs_only
-from neural_processing.normalize import normalize_window_dataset
 
 
 class WindowTransform(BaseTransform):
@@ -166,21 +165,29 @@ class WindowTransform(BaseTransform):
                     fnirs_data=processed_fnirs,
                     eeg_timestamps=eeg_timestamps,
                     fnirs_timestamps=fnirs_timestamps,
-                    return_torch_tensors=False # We want NumPy arrays for HDF5 saving
+                    return_torch_tensors=False, # We want NumPy arrays for HDF5 saving
+                    metadata=metadata
                 )
+
+                # Log summary_meta after create_windows
+                if 'retained_fnirs_indices' in summary_meta:
+                    self.logger.info(f"INDICES-DEBUG: After create_windows, summary_meta has {len(summary_meta['retained_fnirs_indices'])} indices")
+                    self.logger.info(f"INDICES-DEBUG: First few from summary_meta: {summary_meta['retained_fnirs_indices'][:5]}")
             elif current_has_eeg:
                 self.logger.info("Calling create_windows_eeg_only...")
                 dataset_instance, summary_meta = create_windows_eeg_only(
                     eeg_data=processed_eeg,
                     eeg_timestamps=eeg_timestamps,
-                    return_torch_tensors=False
+                    return_torch_tensors=False,
+                    metadata=metadata
                 )
             elif current_has_fnirs:
                 self.logger.info("Calling create_windows_fnirs_only...")
                 dataset_instance, summary_meta = create_windows_fnirs_only(
                     fnirs_data=processed_fnirs,
                     fnirs_timestamps=fnirs_timestamps,
-                    return_torch_tensors=False
+                    return_torch_tensors=False,
+                    metadata=metadata
                 )
             else:
                 self.logger.warning("No EEG or fNIRS data available after preprocessing for windowing. Skipping window creation.")
@@ -215,31 +222,82 @@ class WindowTransform(BaseTransform):
                  }
 
             # 5. Normalize data using the normalize_window_dataset function
-            retained_fnirs_indices = None
+            retained_fnirs_indices = metadata.get('retained_fnirs_indices')
+            retained_channel_validity_mask = metadata.get('retained_channel_validity_mask')
+
+            # Add logging for retained_channel_validity_mask
+            if retained_channel_validity_mask is not None and hasattr(retained_channel_validity_mask, '__len__'):
+                self.logger.info(f"VALIDITY-DEBUG: Found retained_channel_validity_mask with {len(retained_channel_validity_mask)} elements.")
+                if len(retained_channel_validity_mask) > 0:
+                    # Assuming numpy is imported as np at the top of the file
+                    num_valid_channels = np.sum(retained_channel_validity_mask)
+                    num_invalid_channels = len(retained_channel_validity_mask) - num_valid_channels
+                    self.logger.info(f"VALIDITY-DEBUG: Mask - Valid (True): {num_valid_channels}, Invalid (False): {num_invalid_channels}")
+                    if len(retained_channel_validity_mask) > 20: # Log sample if long
+                        self.logger.info(f"VALIDITY-DEBUG: First 10 mask values: {retained_channel_validity_mask[:10]}")
+                        self.logger.info(f"VALIDITY-DEBUG: Last 10 mask values: {retained_channel_validity_mask[-10:]}")
+                    else: # Log all if short
+                        self.logger.info(f"VALIDITY-DEBUG: Mask values: {retained_channel_validity_mask}")
+                else:
+                    self.logger.info("VALIDITY-DEBUG: retained_channel_validity_mask is empty.")
+            elif retained_channel_validity_mask is not None: # It's not None but not a sequence (e.g. a single bool, though unlikely for a mask)
+                 self.logger.warning(f"VALIDITY-DEBUG: retained_channel_validity_mask is not a sequence: {type(retained_channel_validity_mask)}")
+            else:
+                self.logger.warning("VALIDITY-DEBUG: No retained_channel_validity_mask found in metadata (it's None).")
+
+            # Ensure validity mask is in summary_meta for downstream processing
+            if retained_channel_validity_mask is not None and isinstance(summary_meta, dict) and hasattr(retained_channel_validity_mask, 'shape'): # Check for shape for numpy arrays
+                summary_meta['retained_channel_validity_mask'] = retained_channel_validity_mask
+                self.logger.info(f"VALIDITY-DEBUG: Added retained_channel_validity_mask (length {len(retained_channel_validity_mask)}) to summary_meta.")
+            elif isinstance(summary_meta, dict) and 'retained_channel_validity_mask' in summary_meta: # If mask is None or not suitable, remove from summary_meta if present
+                summary_meta.pop('retained_channel_validity_mask')
+                self.logger.info("VALIDITY-DEBUG: Removed 'retained_channel_validity_mask' from summary_meta as it was None or unsuitable.")
+
             normalization_success = False
 
-            if isinstance(summary_meta, dict) and 'retained_fnirs_indices' in summary_meta:
-                retained_fnirs_indices = summary_meta.get('retained_fnirs_indices')
-                self.logger.info(f"Found retained_fnirs_indices in summary_meta with {len(retained_fnirs_indices) if retained_fnirs_indices else 0} indices")
+            if dataset_instance is not None and len(dataset_instance) > 0:
+                self.logger.info("Applying direct log transformation to fNIRS data in windows...")
+                try:
+                    for i in range(len(dataset_instance)):
+                        window_item = dataset_instance[i] # Expects a list of dicts
 
-            if dataset_instance is not None:
-                self.logger.info("Normalizing window dataset...")
-                # No exception handling - let errors propagate up to fail the transform
-                normalized_dataset = normalize_window_dataset(dataset_instance, retained_fnirs_indices)
-                self.logger.info("Window dataset normalized successfully")
-                dataset_instance = normalized_dataset
-                normalization_success = True
-            else:
-                self.logger.info("Skipping normalization as dataset_instance is None")
+                        if 'fnirs' in window_item and \
+                           isinstance(window_item['fnirs'], np.ndarray) and \
+                           window_item['fnirs'].size > 0:
+
+                            # Ensure data is float for np.nan and perform calculations
+                            fnirs_data_for_log = window_item['fnirs'].astype(float, copy=True)
+
+                            # Suppress warnings for log(0) or log(negative)
+                            with np.errstate(divide='ignore', invalid='ignore'):
+                                logged_fnirs_data = np.log(fnirs_data_for_log)
+
+                            # Set to np.nan where original data was non-positive
+                            logged_fnirs_data[fnirs_data_for_log <= 0] = np.nan
+
+                            window_item['fnirs'] = logged_fnirs_data
+
+                    self.logger.info("Direct log transformation to fNIRS data complete.")
+                    normalization_success = True # Mark as successful if loop completes
+                except Exception as e:
+                    self.logger.error(f"Error during direct log transformation of fNIRS data: {e}", exc_info=True)
+                    # normalization_success remains False if an error occurred
+                    pass # Propagate or handle as per broader strategy
+            elif dataset_instance is not None: # This means len(dataset_instance) == 0
+                 self.logger.info("Dataset instance is empty, skipping fNIRS log transformation.")
+                 # normalization_success remains False as no transformation was applied.
+            else: # dataset_instance is None
+                self.logger.info("Skipping fNIRS log transformation as dataset_instance is None.")
+                # normalization_success remains False
 
             num_dataset_windows = len(dataset_instance) if dataset_instance is not None else 0
 
             # 6. & 7. Create and save xarray dataset directly to S3
             zarr_key = f"{self.destination_prefix}{session_id}_windowed.zarr"
-            
+
             if dataset_instance is not None:
                 self.logger.info(f"Creating xarray dataset and saving directly to S3")
-                
+
                 # Create data arrays
                 n_windows = len(dataset_instance)
                 timestamps = np.zeros(n_windows, dtype=np.float64)
@@ -249,32 +307,32 @@ class WindowTransform(BaseTransform):
                 real_fnirs_ts = np.zeros(n_windows, dtype=np.float64)
                 original_array_idx = np.zeros(n_windows, dtype=np.int32)
                 dataset_idx = np.zeros(n_windows, dtype=np.int32)
-                
+
                 # Get shapes
                 first_window = dataset_instance[0]
                 eeg_shape = first_window['eeg'].shape
                 fnirs_shape = first_window['fnirs'].shape
-                
+
                 # Initialize data arrays
                 eeg_data = np.zeros((n_windows, *eeg_shape), dtype=np.float32)
                 fnirs_data = np.zeros((n_windows, *fnirs_shape), dtype=np.float32)
-                
+
                 # Fill arrays
                 for i in range(n_windows):
                     window = dataset_instance[i]
                     metadata = window['metadata']
-                    
+
                     timestamps[i] = metadata['main_clock_ts']
                     eeg_data[i] = window['eeg']
                     fnirs_data[i] = window['fnirs']
-                    
+
                     eeg_valid[i] = metadata['eeg_valid']
                     fnirs_valid[i] = metadata['fnirs_valid']
                     real_eeg_ts[i] = metadata['real_eeg_start_ts']
                     real_fnirs_ts[i] = metadata['real_fnirs_start_ts']
                     original_array_idx[i] = metadata['original_array_idx']
                     dataset_idx[i] = metadata['dataset_idx']
-                
+
                 # Extract master indices
                 master_eeg_start = getattr(dataset_instance, 'master_eeg_start_idx', -1)
                 master_fnirs_start = getattr(dataset_instance, 'master_fnirs_start_idx', -1)
@@ -286,10 +344,12 @@ class WindowTransform(BaseTransform):
                 # Squeeze the singleton dimension from fnirs_data if present
                 fnirs_data = np.squeeze(fnirs_data, axis=-1)
 
+                self.logger.info(f"Memory of final arrays for Xarray: EEG: {eeg_data.nbytes / (1024*1024):.2f} MB, fNIRS: {fnirs_data.nbytes / (1024*1024):.2f} MB")
+
                 # Create xarray Dataset with proper dimensions
                 eeg_dims = ['time', 'eeg_channel', 'eeg_sample']
                 fnirs_dims = ['time', 'fnirs_channel']
-                
+
                 ds = xr.Dataset(
                     data_vars={
                         'eeg': (eeg_dims, eeg_data),
@@ -313,17 +373,28 @@ class WindowTransform(BaseTransform):
                         'slice_end': slice_end
                     }
                 )
-                
+
                 # Set chunking (100 windows per chunk)
                 chunks = {'time': min(100, n_windows)}
-                
+
                 # Apply chunking (will be used by save_dataset_to_s3_zarr)
                 ds = ds.chunk(chunks)
 
-                # Save directly to S3
-                self.save_dataset_to_s3_zarr(ds, zarr_key)
-                self.logger.info(f"Successfully saved dataset directly to S3")
-                
+                # Convert xarray Dataset to dictionary structure for Zarr 3
+                zarr_tree = {}
+                attrs = dict(ds.attrs)
+
+                # Add storage format attribute
+                attrs['storage_format'] = 'zarr3'
+
+                # Process data variables and coordinates
+                for name, array in {**ds.data_vars, **ds.coords}.items():
+                    zarr_tree[name] = array.values
+
+                # Save using Zarr 3 method
+                self.save_zarr_dict_to_s3(zarr_key, zarr_tree, attrs)
+                self.logger.info(f"Successfully saved dataset directly to S3 using Zarr 3 format")
+
                 # Add zarr store to results for proper handling
                 zarr_stores = [zarr_key]
             else:
@@ -570,6 +641,17 @@ class WindowTransform(BaseTransform):
                 max_distance_mm=60
             )
 
+            # Log information about retained indices from preprocessing
+            if 'retained_fnirs_indices' in fnirs_preprocessing_metadata:
+                indices = fnirs_preprocessing_metadata['retained_fnirs_indices']
+                self.logger.info(f"INDICES-DEBUG: preprocess_fnirs returned {len(indices)} indices")
+                if indices:
+                    self.logger.info(f"INDICES-DEBUG: Index range min={min(indices)}, max={max(indices)}")
+                    self.logger.info(f"INDICES-DEBUG: First 10 indices: {indices[:10]}")
+                    self.logger.info(f"INDICES-DEBUG: Last 10 indices: {indices[-10:]}")
+            else:
+                self.logger.warning("INDICES-DEBUG: No retained_fnirs_indices in fnirs_preprocessing_metadata")
+
             metadata.update(fnirs_preprocessing_metadata)
 
             # Log enhanced channel statistics
@@ -621,8 +703,8 @@ class WindowTransform(BaseTransform):
             'source_prefix': source_prefix,
             'destination_prefix': dest_prefix,
             's3_bucket': args.s3_bucket,
-            'verbose': args.verbose,
-            'log_file': args.log_file,
+            # 'verbose': args.verbose, # Handled by global logging setup in cli.py
+            # 'log_file': args.log_file, # Handled by global logging setup in cli.py
             'dry_run': args.dry_run
         }
 

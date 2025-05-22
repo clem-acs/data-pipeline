@@ -1,321 +1,270 @@
-# data-pipeline/neural_processing/normalize.py
-import numpy as np
 import logging
-import os
-import json
-from typing import Any, Iterable, List, Optional, Dict, Tuple
+import numpy as np
+from typing import List, Dict, Tuple, Optional, Any
+from collections import defaultdict
 
-# Import the distance calculation function from the sibling module
-try:
-    from .fnirs_preprocessing import calculate_source_detector_distance
-except ImportError:
-    # Fallback for direct execution or different project structures
-    try:
-        from fnirs_preprocessing import calculate_source_detector_distance
-    except ImportError:
-        calculate_source_detector_distance = None
-        logging.getLogger(__name__).warning(
-            "Could not import calculate_source_detector_distance from fnirs_preprocessing."
-        )
-
-logger = logging.getLogger(__name__)
-
-# Constants for fNIRS index decoding
-NUM_DETECTOR_IDS_PER_MODULE = 6
-NUM_SOURCE_IDS_PER_MODULE = 3
-NUM_MODULES = 48
+# --- Constants ---
 NUM_MOMENTS = 3
 NUM_WAVELENGTHS = 2
+# Constants for fNIRS index decoding (restored based on original logic)
+NUM_DETECTOR_IDS_PER_MODULE = 6
+NUM_SOURCE_IDS_PER_MODULE = 3
+NUM_MODULES = 48 # This was used for source_module_zb and detector_module_zb decoding
 
-def _decode_fnirs_index(original_channel_index: int) -> Optional[Dict[str, int]]:
+# --- Logger Setup ---
+logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO) # Default level
+
+# --- Core Decoding Function (Restored Original Logic) ---
+def _decode_fnirs_index(original_global_idx: int) -> Optional[Dict[str, int]]:
     """
     Decode an fNIRS channel index into its component parts.
-    
+    This version is restored based on the encoding from
+    data-pipeline/transforms/neural_processing/fnirs_preprocessing.py:
+    index = ((((wavelength_idx * NUM_MOMENTS + moment_idx) * NUM_MODULES +
+                (source_module-1)) * NUM_SOURCE_IDS_PER_MODULE + (source_id-1)) * NUM_MODULES +
+               (detector_module-1)) * NUM_DETECTOR_IDS_PER_MODULE + (detector_id-1)
+
     Args:
-        original_channel_index: The raw channel index to decode
-        
+        original_global_idx: The raw channel index to decode
+
     Returns:
         Dictionary with decoded components or None if decoding fails
     """
-    try:
-        detector_id_minus_1 = original_channel_index % NUM_DETECTOR_IDS_PER_MODULE
-        temp = original_channel_index // NUM_DETECTOR_IDS_PER_MODULE
-        detector_module_minus_1 = temp % NUM_MODULES
-        temp = temp // NUM_MODULES
-        source_id_minus_1 = temp % NUM_SOURCE_IDS_PER_MODULE
-        temp = temp // NUM_MODULES
-        source_module_minus_1 = temp % NUM_MODULES
-        temp = temp // NUM_MODULES
-        moment_idx = temp % NUM_MOMENTS
-        wavelength_idx = temp // NUM_WAVELENGTHS
+    temp_val = original_global_idx
 
-        if not (0 <= wavelength_idx < NUM_WAVELENGTHS and \
-                0 <= moment_idx < NUM_MOMENTS and \
-                0 <= source_module_minus_1 < NUM_MODULES and \
-                0 <= source_id_minus_1 < NUM_SOURCE_IDS_PER_MODULE and \
-                0 <= detector_module_minus_1 < NUM_MODULES and \
-                0 <= detector_id_minus_1 < NUM_DETECTOR_IDS_PER_MODULE):
-            logger.error(f"Decoded index component out of bounds for index {original_channel_index}.")
-            return None
-        return {
-            'wavelength_idx': wavelength_idx,
-            'moment_idx': moment_idx,
-            'source_module': source_module_minus_1 + 1,
-            'source_id': source_id_minus_1 + 1,
-            'detector_module': detector_module_minus_1 + 1,
-            'detector_id': detector_id_minus_1 + 1
-        }
-    except Exception as e:
-        logger.error(f"Error decoding fNIRS index {original_channel_index}: {e}")
+    # Detector ID (1-6, 0-5 zero-based)
+    detector_id_zb = temp_val % NUM_DETECTOR_IDS_PER_MODULE
+    temp_val //= NUM_DETECTOR_IDS_PER_MODULE
+
+    # Detector Module (1-48, 0-47 zero-based)
+    detector_module_zb = temp_val % NUM_MODULES
+    temp_val //= NUM_MODULES
+
+    # Source ID (1-3, 0-2 zero-based)
+    source_id_zb = temp_val % NUM_SOURCE_IDS_PER_MODULE
+    temp_val //= NUM_SOURCE_IDS_PER_MODULE
+
+    # Source Module (1-48, 0-47 zero-based)
+    source_module_zb = temp_val % NUM_MODULES
+    temp_val //= NUM_MODULES
+
+    # Moment Index (0-2)
+    moment_idx = temp_val % NUM_MOMENTS
+    temp_val //= NUM_MOMENTS
+
+    # Wavelength Index (0-1)
+    wavelength_idx = temp_val % NUM_WAVELENGTHS
+
+    # Check if the index was too large / fully decoded
+    # If temp_val // NUM_WAVELENGTHS is not 0, the original_global_idx was
+    # larger than the maximum possible index derived from the constants.
+    if temp_val // NUM_WAVELENGTHS != 0:
+        # logger.warning( # Minimal logging for direct output
+        #     f"Invalid fNIRS index {original_global_idx}: "
+        #     f"exceeds maximum possible value based on current constants. "
+        #     f"Residual quotient after decoding all components: {temp_val // NUM_WAVELENGTHS}."
+        # )
         return None
 
+    return {
+        'wavelength_idx': wavelength_idx,
+        'moment_idx': moment_idx,
+        'source_module': source_module_zb + 1,  # Convert to 1-based
+        'source_id': source_id_zb + 1,          # Convert to 1-based
+        'detector_module': detector_module_zb + 1,  # Convert to 1-based
+        'detector_id': detector_id_zb + 1,          # Convert to 1-based
+    }
+
+# --- Mask Creation Function ---
+def create_moment_wavelength_masks(
+    retained_fnirs_indices: List[int]
+) -> Dict[Tuple[int, int], np.ndarray]:
+    """
+    Creates boolean masks for each moment/wavelength combination,
+    aligned with the provided list of retained fNIRS indices.
+    """
+    if not retained_fnirs_indices:
+        logger.info("retained_fnirs_indices is empty. Returning empty mask dictionary.")
+        return {}
+
+    num_retained_channels = len(retained_fnirs_indices)
+    masks: Dict[Tuple[int, int], np.ndarray] = {}
+
+    # Initialize a boolean mask (all False) for each combination
+    for m_idx in range(NUM_MOMENTS):
+        for w_idx in range(NUM_WAVELENGTHS):
+            masks[(m_idx, w_idx)] = np.zeros(num_retained_channels, dtype=bool)
+
+    # Populate the masks
+    for i, original_global_idx in enumerate(retained_fnirs_indices):
+        decoded_info = _decode_fnirs_index(original_global_idx)
+        if decoded_info:
+            moment_idx = decoded_info['moment_idx']
+            wavelength_idx = decoded_info['wavelength_idx']
+            combo_key = (moment_idx, wavelength_idx)
+            if combo_key in masks: # Check if decoded combo is within expected range
+                masks[combo_key][i] = True
+            else:
+                logger.warning(
+                    f"Index {original_global_idx} decoded to M{moment_idx}, W{wavelength_idx}, "
+                    f"which is outside the expected range defined by NUM_MOMENTS/NUM_WAVELENGTHS. "
+                    f"This index will not be included in any mask."
+                )
+        else:
+            logger.debug(f"Failed to decode fNIRS index: {original_global_idx}. It will be False in all masks.")
+
+    return masks
+
+# --- Main Normalization/Statistics Function ---
 def normalize_window_dataset(
-    window_dataset: Any,
-    retained_fnirs_indices: Optional[List[int]] = None
+    window_dataset: List[Any],
+    retained_fnirs_indices: List[int],
+    retained_channel_validity_mask: np.ndarray
 ) -> Any:
     """
-    Initial exploratory function to understand fNIRS window data.
-    
-    This function:
-    1. Examines the structure of window_dataset
-    2. Extracts and aggregates fnirs data by moment and wavelength
-    3. Reports basic statistics to help understand data distribution
-    
-    Args:
-        window_dataset: Dataset containing windowed data
-        retained_fnirs_indices: List of retained fNIRS channel indices (optional)
-                               If not provided, will try to analyze window structure directly
-        
-    Returns:
-        The unmodified window_dataset (placeholder for future normalization)
+    Performs fNIRS data transformation (log for M0/M2) and then
+    simplified data quality assessment and statistical aggregation,
+    using moment/wavelength masks. Focuses on steps 4.1 and 4.2.
     """
-    # Log information about received data
-    if retained_fnirs_indices is not None:
-        logger.warning(f"NORMALIZE: Received {len(retained_fnirs_indices)} retained fNIRS channel indices.")
-        if len(retained_fnirs_indices) > 10:
-            logger.info(f"NORMALIZE: Retained fNIRS indices (sample): {retained_fnirs_indices[:5]}...{retained_fnirs_indices[-5:]}")
-        else:
-            logger.info(f"NORMALIZE: Retained fNIRS indices: {retained_fnirs_indices}")
-    else:
-        logger.warning("NORMALIZE: No retained_fnirs_indices received. Will attempt to analyze window data directly.")
+    # Inputs are assumed to be valid and correctly typed as per the signature.
+    # window_dataset is a non-empty list.
+    # retained_fnirs_indices is a non-empty list of integers.
+    # retained_channel_validity_mask is a NumPy boolean array
+    #   with length matching len(retained_fnirs_indices).
 
-    if not window_dataset:
-        logger.warning("NORMALIZE: Window dataset is None or empty. Skipping exploration.")
-        return window_dataset
-
-    # Try to determine window count
-    num_windows = 0
-    try:
-        num_windows = len(window_dataset)
-        if num_windows == 0:
-            logger.warning("NORMALIZE: Window dataset is empty (length is 0). Skipping.")
-            return window_dataset
-        logger.warning(f"NORMALIZE: Processing window_dataset with {num_windows} windows.")
-    except TypeError:
-        logger.warning("NORMALIZE: Window dataset does not support len(). Processing as an iterable.")
-
-    # Prepare data structures for aggregating statistics
-    all_eeg_values = []
-    processed_windows_count = 0
+    num_windows = len(window_dataset)
+    logger.info(f"Processing window_dataset with {num_windows} windows.")
     
-    # Track statistics by moment and wavelength
-    moment_wavelength_stats = {
-        moment: {
-            wavelength: {
-                'values': [],
-                'count': 0,
-            } for wavelength in range(NUM_WAVELENGTHS)
-        } for moment in range(NUM_MOMENTS)
+    # As per docstring, retained_fnirs_indices is non-empty.
+    # Thus, len(retained_fnirs_indices) is safe and > 0.
+    num_retained_channels = len(retained_fnirs_indices)
+    moment_wavelength_masks = create_moment_wavelength_masks(retained_fnirs_indices)
+    
+    # --- Initialization for Step 4.1: Data Quality Percentages ---
+    logger.info("Initializing counters for fNIRS data quality assessment (Step 4.1)...")
+    total_data_points_by_combo: Dict[Tuple[int, int], int] = defaultdict(int)
+    finite_nonzero_data_points_by_combo: Dict[Tuple[int, int], int] = defaultdict(int)
+
+    # --- Initialization for Step 4.2: Detailed Statistics ---
+    logger.info("Initializing data structures for detailed statistics (Step 4.2, post log transformation)...")
+    fully_valid_moment_wavelength_data_points: Dict[Tuple[int, int], List[float]] = {
+        (m, w): [] for m in range(NUM_MOMENTS) for w in range(NUM_WAVELENGTHS)
     }
-    
-    # Flag for shape mismatch logging
-    fnirs_shape_mismatch_logged = False
-    
-    # If retained_fnirs_indices not provided, try to determine from first window
-    if retained_fnirs_indices is None:
-        # Try to examine the first window to get shape information
-        try:
-            if num_windows > 0:
-                first_window = window_dataset[0]
-                fnirs_data = None
-                
-                if isinstance(first_window, dict) and 'fnirs' in first_window:
-                    fnirs_data = first_window['fnirs']
-                elif hasattr(first_window, 'fnirs'):
-                    fnirs_data = first_window.fnirs
-                
-                if fnirs_data is not None and isinstance(fnirs_data, np.ndarray):
-                    # Get number of channels from first dimension
-                    num_channels = fnirs_data.shape[0]
-                    logger.warning(f"NORMALIZE: Detected {num_channels} fNIRS channels from first window")
-                    
-                    # Create sequential indices (0 to num_channels-1)
-                    retained_fnirs_indices = list(range(num_channels))
-                    logger.warning(f"NORMALIZE: Created synthetic channel indices (0 to {num_channels-1})")
-        except Exception as e:
-            logger.error(f"NORMALIZE: Failed to extract channel information from first window: {e}")
-    
-    # Initialize channel values dictionary
-    fnirs_channel_values: Dict[int, List[float]] = {idx: [] for idx in retained_fnirs_indices} if retained_fnirs_indices else {}
 
-    # Process each window
-    for i, window in enumerate(window_dataset):
-        processed_windows_count += 1
-        if window is None: continue
+    for window_data in window_dataset: # Iterate over the input parameter
+        if window_data is None: continue
+        window_metadata = window_data.get('metadata', {})
+        is_fnirs_window_valid = window_metadata.get('fnirs_valid', True)
 
-        # Extract data from window
-        eeg_data, fnirs_data_in_window = None, None
-        if isinstance(window, dict):
-            eeg_data = window.get('eeg')
-            fnirs_data_in_window = window.get('fnirs')
-        elif hasattr(window, 'eeg') or hasattr(window, 'fnirs'):
-            eeg_data = getattr(window, 'eeg', None)
-            fnirs_data_in_window = getattr(window, 'fnirs', None)
+        if not is_fnirs_window_valid: continue
 
-        # Process EEG data (simple collection for overall mean)
-        if eeg_data is not None and isinstance(eeg_data, np.ndarray) and eeg_data.size > 0:
-            all_eeg_values.append(eeg_data.flatten())
+        raw_fnirs_data_this_window = window_data.get('fnirs')
+        if raw_fnirs_data_this_window is None or not isinstance(raw_fnirs_data_this_window, np.ndarray):
+            continue
 
-        # Process fNIRS data if available
-        if fnirs_data_in_window is not None and isinstance(fnirs_data_in_window, np.ndarray) and \
-           fnirs_data_in_window.size > 0 and retained_fnirs_indices:
-            
-            # Extract shape information
-            num_channels_in_window_data = fnirs_data_in_window.shape[0]
-            num_frames_in_segment = fnirs_data_in_window.shape[1] if fnirs_data_in_window.ndim > 1 else 1
+        # --- Apply log transformation to a copy of fNIRS data for this window ---
+        # Ensure data is float type to handle np.nan
+        transformed_fnirs_data = raw_fnirs_data_this_window.astype(float, copy=True)
+        
+        # Suppress warnings for log(0) or log(negative), which return -inf/nan.
+        # Then, explicitly set where original data was non-positive to np.nan.
+        with np.errstate(divide='ignore', invalid='ignore'):
+            transformed_fnirs_data = np.log(transformed_fnirs_data)
+        transformed_fnirs_data[raw_fnirs_data_this_window <= 0] = np.nan
+        # --- End log transformation ---
 
-            # Validate shape matches expectations
-            if num_channels_in_window_data != len(retained_fnirs_indices):
-                if not fnirs_shape_mismatch_logged:
-                     logger.error(
-                         f"NORMALIZE CRITICAL MISMATCH: fnirs_data in window has {num_channels_in_window_data} channels (shape[0]), "
-                         f"but {len(retained_fnirs_indices)} retained_fnirs_indices were provided. "
-                         f"Window data shape: {fnirs_data_in_window.shape}. "
-                         f"This indicates a fundamental issue in how windowed fNIRS data maps to retained_fnirs_indices."
-                     )
-                     fnirs_shape_mismatch_logged = True
+        if transformed_fnirs_data.shape[0] != num_retained_channels:
+            logger.warning(f"Shape mismatch. Window fNIRS data (post-transform) has {transformed_fnirs_data.shape[0]} channels, expected {num_retained_channels}. Skipping window.")
+            continue
+        
+        num_samples_per_channel_in_window = transformed_fnirs_data.shape[1] if transformed_fnirs_data.ndim == 2 else 1
+
+        for (m_idx, w_idx), specific_combo_mask in moment_wavelength_masks.items():
+            combo_key = (m_idx, w_idx)
+            # Combine moment/wavelength mask with overall structural validity mask
+            effective_channel_mask_for_combo = specific_combo_mask & retained_channel_validity_mask
+
+            if not np.any(effective_channel_mask_for_combo): 
+                # logger.debug(f"No structurally valid channels for combo {combo_key} in this window.")
                 continue 
+
+            # Select data for these channels from the current window (using transformed data)
+            data_for_combo_this_window = transformed_fnirs_data[effective_channel_mask_for_combo, :]
             
-            # Average each channel over frames in this window
-            if num_frames_in_segment > 0:
-                mean_channel_values_this_window = np.nanmean(fnirs_data_in_window, axis=1)
-            else:
-                mean_channel_values_this_window = np.full(num_channels_in_window_data, np.nan)
+            # --- STEP 4.1: Accumulate counts for Percentage of Finite, Non-Zero Data ---
+            num_channels_for_this_combo_segment = np.sum(effective_channel_mask_for_combo)
+            
+            total_data_points_by_combo[combo_key] += num_channels_for_this_combo_segment * num_samples_per_channel_in_window
+            
+            # Count finite and non-zero values from the log-transformed data
+            finite_values_in_segment = data_for_combo_this_window[np.isfinite(data_for_combo_this_window)]
+            finite_nonzero_count_in_segment = np.sum(finite_values_in_segment != 0)
+            finite_nonzero_data_points_by_combo[combo_key] += finite_nonzero_count_in_segment
 
-            # Process each channel's data
-            if mean_channel_values_this_window.ndim == 1 and mean_channel_values_this_window.shape[0] == len(retained_fnirs_indices):
-                for ch_idx_in_retained_list, original_global_idx in enumerate(retained_fnirs_indices):
-                    value = mean_channel_values_this_window[ch_idx_in_retained_list]
-                    if np.isfinite(value): 
-                        fnirs_channel_values[original_global_idx].append(value)
-                        
-                        # Decode the index to get moment and wavelength
-                        decoded = _decode_fnirs_index(original_global_idx)
-                        if decoded:
-                            moment = decoded['moment_idx']
-                            wavelength = decoded['wavelength_idx']
-                            moment_wavelength_stats[moment][wavelength]['values'].append(value)
-                            moment_wavelength_stats[moment][wavelength]['count'] += 1
-            else:
-                if not fnirs_shape_mismatch_logged:
-                     logger.warning(
-                         f"NORMALIZE: Post-averaging shape mismatch for fNIRS data in window {i}. "
-                         f"Expected 1D array of length {len(retained_fnirs_indices)}, "
-                         f"got shape {mean_channel_values_this_window.shape}. "
-                         f"Original window data shape: {fnirs_data_in_window.shape}."
-                     )
-                     fnirs_shape_mismatch_logged = True
+            # --- STEP 4.2: Collect data for Detailed Statistics ---
+            # Data for detailed stats should be finite (non-positive values became NaN during log transform)
+            if finite_values_in_segment.size > 0:
+                fully_valid_moment_wavelength_data_points[combo_key].extend(finite_values_in_segment.tolist())
 
-    # Report summary statistics - basics first
-    if not processed_windows_count:
-        logger.warning("NORMALIZE: No windows were processed successfully.")
-        return window_dataset
-        
-    logger.warning(f"NORMALIZE: Processed {processed_windows_count} windows successfully")
+    # --- After processing all windows, Calculate and Log Step 4.1 Percentages ---
+    logger.info("--- fNIRS Data Quality: Percentage of Finite, Non-Zero Data Points (Post Log Transform) ---")
+    for m_idx in range(NUM_MOMENTS):
+        for w_idx in range(NUM_WAVELENGTHS):
+            combo_key = (m_idx, w_idx)
+            total_points = total_data_points_by_combo.get(combo_key, 0)
+            finite_nonzero_points = finite_nonzero_data_points_by_combo.get(combo_key, 0)
+            
+            percentage = (finite_nonzero_points / total_points * 100) if total_points > 0 else 0
+            logger.info(f"Moment {m_idx}, Wavelength {w_idx}:")
+            logger.info(f"  Total data points considered: {total_points}")
+            logger.info(f"  Finite, non-zero data points: {finite_nonzero_points}")
+            logger.info(f"  Percentage of finite, non-zero data: {percentage:.2f}%")
+            logger.info("-----------------------------------------------------")
 
-    # Report EEG statistics if available
-    if all_eeg_values:
-        concatenated_eeg = np.concatenate(all_eeg_values)
-        if concatenated_eeg.size > 0:
-            logger.warning(f"NORMALIZE EEG STATS: mean={np.nanmean(concatenated_eeg):.4f}, std={np.nanstd(concatenated_eeg):.4f}")
-        else:
-            logger.warning("NORMALIZE: No EEG data points found for statistics.")
-    else:
-        logger.warning("NORMALIZE: No EEG data arrays found.")
+    # --- Log Step 4.2 Detailed Statistics ---
+    logger.info("--- Detailed fNIRS Statistics (Fully Valid Data, Post Log Transform) ---")
+    for m_idx in range(NUM_MOMENTS):
+        for w_idx in range(NUM_WAVELENGTHS):
+            combo_key = (m_idx, w_idx)
+            data_list = fully_valid_moment_wavelength_data_points.get(combo_key, [])
 
-    # Report fNIRS statistics by moment and wavelength
-    if fnirs_channel_values:
-        logger.warning(f"============ NORMALIZE: fNIRS DATA STATISTICS ({len(fnirs_channel_values)} CHANNELS) ============")
-        max_distance = 0
-        all_distances = []
-        
-        # Get basic stats by moment and wavelength
-        for moment in range(NUM_MOMENTS):
-            for wavelength in range(NUM_WAVELENGTHS):
-                stats = moment_wavelength_stats[moment][wavelength]
-                if stats['values']:
-                    mean_val = np.nanmean(stats['values'])
-                    std_val = np.nanstd(stats['values'])
-                    min_val = np.nanmin(stats['values'])
-                    max_val = np.nanmax(stats['values'])
-                    logger.warning(
-                        f"NORMALIZE: Moment {moment}, Wavelength {wavelength}: "
-                        f"mean={mean_val:.4e}, std={std_val:.4e}, "
-                        f"min={min_val:.4e}, max={max_val:.4e}, "
-                        f"count={stats['count']}"
-                    )
+            # All fNIRS data is now log-transformed
+            logger.info(f"--- Moment {m_idx}, Wavelength {w_idx} (log-transformed data) ---")
+
+            if data_list:
+                data_array = np.array(data_list)
+                if data_array.size > 0:
+                    min_val = np.min(data_array)
+                    q1_val = np.percentile(data_array, 25)
+                    mean_val = np.mean(data_array)
+                    median_val = np.median(data_array)
+                    q3_val = np.percentile(data_array, 75)
+                    max_val = np.max(data_array)
+                    std_val = np.std(data_array)
+                    iqr_val = q3_val - q1_val
+                    count_val = data_array.size
+
+                    logger.info(f"  Count: {count_val}")
+                    logger.info(f"  Min:   {min_val:.4e}")
+                    logger.info(f"  Q1:    {q1_val:.4e}")
+                    logger.info(f"  Mean:  {mean_val:.4e}")
+                    logger.info(f"  Median:{median_val:.4e}")
+                    logger.info(f"  Q3:    {q3_val:.4e}")
+                    logger.info(f"  Max:   {max_val:.4e}")
+                    logger.info(f"  Std:   {std_val:.4e}")
+                    logger.info(f"  IQR:   {iqr_val:.4e}")
                 else:
-                    logger.warning(f"NORMALIZE: Moment {moment}, Wavelength {wavelength}: No data")
-        
-        # Calculate distances if the calculation function is available
-        if calculate_source_detector_distance is not None:
-            # Try to load layout data
-            layout_data = None
-            current_script_dir = os.path.dirname(os.path.abspath(__file__))
-            layout_json_path = os.path.join(current_script_dir, 'layout.json')
-            
-            if os.path.exists(layout_json_path):
-                try:
-                    with open(layout_json_path, 'r') as f:
-                        layout_data = json.load(f)
-                    logger.info(f"Successfully loaded layout data from {layout_json_path}")
-                except Exception as e:
-                    logger.error(f"Could not load layout data from {layout_json_path}: {e}")
-                    layout_data = None
-            
-            if layout_data:
-                # Compute distances for each channel
-                for original_ch_idx in fnirs_channel_values.keys():
-                    decoded = _decode_fnirs_index(original_ch_idx)
-                    if not decoded:
-                        continue
-                    
-                    try:
-                        distance = calculate_source_detector_distance(
-                            decoded['source_module'], decoded['source_id'],
-                            decoded['detector_module'], decoded['detector_id'],
-                            layout_data
-                        )
-                        if np.isfinite(distance):
-                            all_distances.append(distance)
-                            max_distance = max(max_distance, distance)
-                    except Exception as e:
-                        logger.warning(f"Error calculating distance for channel {original_ch_idx}: {e}")
-                
-                # Report distance statistics
-                if all_distances:
-                    logger.warning(f"NORMALIZE DISTANCE STATS: min={min(all_distances):.2f}mm, "
-                               f"max={max_distance:.2f}mm, "
-                               f"mean={np.mean(all_distances):.2f}mm, "
-                               f"median={np.median(all_distances):.2f}mm")
-                else:
-                    logger.warning("NORMALIZE: No valid distances could be calculated.")
+                    logger.info("  No finite data points found for this combination after all filters.")
             else:
-                logger.warning("NORMALIZE: Distance calculations skipped - no layout data available.")
-        else:
-            logger.warning("NORMALIZE: Distance calculations skipped - distance calculation function not available.")
-    else:
-        logger.warning("NORMALIZE: No fNIRS channel values collected.")
+                logger.info("  No data points collected for this combination.")
+            logger.info("--------------------------------------------------------------------")
 
-    logger.warning("NORMALIZE: Exploratory analysis complete. Returning window_dataset unmodified.")
+    logger.info("Simplified fNIRS normalization complete (currently just log transform).")
+
     return window_dataset

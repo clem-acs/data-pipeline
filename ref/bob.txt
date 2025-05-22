@@ -1,0 +1,116 @@
+Opening Zarr store: C:\Users\riopo\data-pipeline\Bob-Dreyer_B3_20250515_152131_events.zarr
+Zarr Format Version: 3
+Error opening with xarray: `compressor` is not available for Zarr format 3 arrays.
+This is expected with Zarr v3 stores. Falling back to direct zarr inspection.
+
+=== ZARR STRUCTURE ===
+Error printing tree: 'TreeRepr' object has no attribute 'encode'
+elements/ (Group)
+  element_type: shape=(461,), dtype=object
+  input_modality: shape=(461,), dtype=object
+  end_time: shape=(461,), dtype=float64
+  audio_mode: shape=(461,), dtype=object
+  duration: shape=(461,), dtype=float64
+  is_instruction: shape=(461,), dtype=int8
+  session_relative_time: shape=(461,), dtype=float64
+  start_time: shape=(461,), dtype=float64
+  title: shape=(461,), dtype=object
+  task_id: shape=(461,), dtype=object
+  with_interruptions: shape=(461,), dtype=int8
+  task_type: shape=(461,), dtype=object
+  sequence_idx: shape=(461,), dtype=int32
+  session_fraction: shape=(461,), dtype=float64
+  max_count: shape=(461,), dtype=int32
+  response_time_seconds: shape=(461,), dtype=int32
+segment_id: shape=(126,), dtype=object
+element_id: shape=(461,), dtype=object
+segments/ (Group)
+  element_relative_start: shape=(126,), dtype=float64
+  duration: shape=(126,), dtype=float64
+  end_event_id: shape=(126,), dtype=object
+  containing_element_id: shape=(126,), dtype=object
+  end_time: shape=(126,), dtype=float64
+  start_event_id: shape=(126,), dtype=object
+  type_index: shape=(126,), dtype=object
+  start_time: shape=(126,), dtype=float64
+  segment_type: shape=(126,), dtype=object
+tasks/ (Group)
+  allow_repeats: shape=(32,), dtype=int8
+  completion_status: shape=(32,), dtype=object
+  audio_mode: shape=(32,), dtype=object
+  end_time: shape=(32,), dtype=float64
+  element_count: shape=(32,), dtype=int32
+  count: shape=(32,), dtype=int32
+  session_fraction_end: shape=(32,), dtype=float64
+  duration: shape=(32,), dtype=float64
+  input_modality: shape=(32,), dtype=object
+  session_fraction_start: shape=(32,), dtype=float64
+  skip_time: shape=(32,), dtype=float64
+  skipped: shape=(32,), dtype=int8
+  task_type: shape=(32,), dtype=object
+  with_interruptions: shape=(32,), dtype=int8
+  start_time: shape=(32,), dtype=float64
+task_id: shape=(32,), dtype=object
+
+=== HIERARCHICAL GROUPS FOUND ===
+
+--- ELEMENTS ---
+Variables: 16
+Count: 461
+Variables:
+  audio_mode: shape=(461,), dtype=object
+  duration: shape=(461,), dtype=float64
+  element_type: shape=(461,), dtype=object
+  end_time: shape=(461,), dtype=float64
+  input_modality: shape=(461,), dtype=object
+  is_instruction: shape=(461,), dtype=int8
+  max_count: shape=(461,), dtype=int32
+  response_time_seconds: shape=(461,), dtype=int32
+  sequence_idx: shape=(461,), dtype=int32
+  session_fraction: shape=(461,), dtype=float64
+  session_relative_time: shape=(461,), dtype=float64
+  start_time: shape=(461,), dtype=float64
+  task_id: shape=(461,), dtype=object
+  task_type: shape=(461,), dtype=object
+  title: shape=(461,), dtype=object
+  with_interruptions: shape=(461,), dtype=int8
+
+--- TASKS ---
+Variables: 15
+Count: 32
+Variables:
+  allow_repeats: shape=(32,), dtype=int8
+  audio_mode: shape=(32,), dtype=object
+  completion_status: shape=(32,), dtype=object
+  count: shape=(32,), dtype=int32
+  duration: shape=(32,), dtype=float64
+  element_count: shape=(32,), dtype=int32
+  end_time: shape=(32,), dtype=float64
+  input_modality: shape=(32,), dtype=object
+  session_fraction_end: shape=(32,), dtype=float64
+  session_fraction_start: shape=(32,), dtype=float64
+  skip_time: shape=(32,), dtype=float64
+  skipped: shape=(32,), dtype=int8
+  start_time: shape=(32,), dtype=float64
+  task_type: shape=(32,), dtype=object
+  with_interruptions: shape=(32,), dtype=int8
+
+--- SEGMENTS ---
+Variables: 9
+Count: 126
+Variables:
+  containing_element_id: shape=(126,), dtype=object
+  duration: shape=(126,), dtype=float64
+  element_relative_start: shape=(126,), dtype=float64
+  end_event_id: shape=(126,), dtype=object
+  end_time: shape=(126,), dtype=float64
+  segment_type: shape=(126,), dtype=object
+  start_event_id: shape=(126,), dtype=object
+  start_time: shape=(126,), dtype=float64
+  type_index: shape=(126,), dtype=object
+
+=== ATTRIBUTES ===
+session_id: Bob-Dreyer_B3_20250515_152131
+transform: event
+version: 0.1
+created_at: 2025-05-16 23:07:20

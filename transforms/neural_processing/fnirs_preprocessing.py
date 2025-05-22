@@ -123,6 +123,7 @@ def preprocess_fnirs(fnirs_data, metadata, layout_data=None, present_modules=Non
     if layout_data is not None and present_modules is not None:
         # Get all feasible channel indices for present modules and track distance statistics
         feasible_indices = get_feasible_channel_indices(present_modules, layout_data, max_distance_mm)
+        print(f"DEBUG INDICES: Generated {len(feasible_indices)} feasible indices based on module layout")
 
         # Add filtering info to metadata
         preprocessing_metadata.update({
@@ -142,6 +143,13 @@ def preprocess_fnirs(fnirs_data, metadata, layout_data=None, present_modules=Non
                 preprocessing_metadata['out_of_range_channel_count'] = len(feasible_indices) - len(indices_in_range)
 
             preprocessing_metadata['used_channel_count'] = len(indices_in_range)
+            preprocessing_metadata['retained_fnirs_indices'] = indices_in_range
+            
+            print(f"DEBUG INDICES: Filtered to {len(indices_in_range)} indices within data range")
+            if indices_in_range:
+                print(f"DEBUG INDICES: Index range min={min(indices_in_range)}, max={max(indices_in_range)}")
+                print(f"DEBUG INDICES: First 10 indices: {indices_in_range[:10]}")
+                print(f"DEBUG INDICES: Last 10 indices: {indices_in_range[-10:]}")
             
             # Check validity of all channels efficiently in one pass
             all_indices = set(range(min(fnirs_data.shape[1], max_index + 1)))
@@ -154,22 +162,34 @@ def preprocess_fnirs(fnirs_data, metadata, layout_data=None, present_modules=Non
                 frame_limit = min(1000, fnirs_data.shape[0]) if fnirs_data.shape[0] > 1000 else fnirs_data.shape[0]
                 
                 # Track statistics
-                included_valid_channels = 0  # Included channels with at least one valid value
-                included_all_inf_channels = 0  # Included channels that are entirely -inf/NaN
                 excluded_valid_channels = 0  # Excluded channels with at least one valid value
-                
+                retained_channel_validity_mask_list = []
+
                 # Process all channel indices in batches
                 batch_size = 5000  # Process 5000 channels at a time
                 
-                # First check included channels
+                # First, determine validity for all retained (included) channels
                 if indices_in_range:
-                    included_indices_list = list(included_indices)
-                    for i in range(0, len(included_indices_list), batch_size):
-                        batch_indices = included_indices_list[i:i+batch_size]
-                        # Check for finite values in this batch
-                        has_finite_values = np.isfinite(fnirs_data[:frame_limit, batch_indices, :]).any(axis=0)
-                        included_valid_channels += np.sum(has_finite_values)
-                        included_all_inf_channels += len(batch_indices) - np.sum(has_finite_values)
+                    # Note: included_indices is a set, indices_in_range is a list. Using indices_in_range.
+                    for i in range(0, len(indices_in_range), batch_size):
+                        batch_indices_for_validity_check = indices_in_range[i:i+batch_size]
+                        # fnirs_data shape: (num_frames, num_channels, 1)
+                        # Check for finite values in this batch across frames and the last singleton dimension
+                        # Results in a 1D boolean array for the current batch of channels
+                        is_finite_batch = np.isfinite(fnirs_data[:frame_limit, batch_indices_for_validity_check, :])
+                        has_finite_values_batch = is_finite_batch.any(axis=(0, 2)) # Shape: (len(batch_indices_for_validity_check),)
+                        retained_channel_validity_mask_list.extend(has_finite_values_batch.tolist())
+                
+                retained_channel_validity_mask = np.array(retained_channel_validity_mask_list, dtype=bool)
+                preprocessing_metadata['retained_channel_validity_mask'] = retained_channel_validity_mask
+
+                # Calculate statistics based on the generated mask
+                if retained_channel_validity_mask.size > 0:
+                    included_valid_channels = int(np.sum(retained_channel_validity_mask))
+                    included_all_inf_channels = len(retained_channel_validity_mask) - included_valid_channels
+                else:
+                    included_valid_channels = 0
+                    included_all_inf_channels = 0
                 
                 # Then check excluded channels
                 if excluded_indices:
@@ -217,7 +237,9 @@ def preprocess_fnirs(fnirs_data, metadata, layout_data=None, present_modules=Non
                     return fnirs_data, preprocessing_metadata
                 else:
                     # Filter to keep only in-range channels
-                    return fnirs_data[:, indices_in_range, :], preprocessing_metadata
+                    filtered_data = fnirs_data[:, indices_in_range, :]
+                    print(f"DEBUG INDICES: Returning filtered fnirs data with shape {filtered_data.shape} and {len(indices_in_range)} indices in metadata")
+                    return filtered_data, preprocessing_metadata
             else:
                 # No channels within range
                 print("Warning: No channels within data range")

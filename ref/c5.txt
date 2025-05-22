@@ -1,0 +1,3763 @@
+Successfully imported LangTransform
+2025-05-19 21:15:06 - pipeline.t6B_classify_eeg_v0 - DEBUG - Initializing AWS clients
+2025-05-19 21:15:07 - pipeline.t6B_classify_eeg_v0 - DEBUG - Ensuring DynamoDB tables exist
+2025-05-19 21:15:08 - pipeline.t6B_classify_eeg_v0 - DEBUG - Managing script version in S3
+2025-05-19 21:15:08 - pipeline.t6B_classify_eeg_v0 - DEBUG - Managing script version 6B v0
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO - Using existing script at s3://conduit-data-dev/scripts/6B_classify_eeg_v0.py
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO - Transform initialized with:
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO -   Source prefix: processed/queries/
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO -   Destination prefix: models/
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO -   Transform ID: t6B_classify_eeg_v0
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO - Query store : eye_neural.zarr
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - INFO - Hyper-params: {'epochs': 20, 'batch_size': 64, 'lr': 0.0003, 'hidden': 128, 'train_ratio': 0.7, 'val_ratio': 0.15, 'test_ratio': 0.15, 'device': 'cpu', 'weight_decay': 0.0001}
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - DEBUG - Initializing AWS clients
+2025-05-19 21:15:09 - pipeline.t6B_classify_eeg_v0 - DEBUG - Ensuring DynamoDB tables exist
+2025-05-19 21:15:10 - pipeline.t6B_classify_eeg_v0 - DEBUG - Managing script version in S3
+2025-05-19 21:15:10 - pipeline.t6B_classify_eeg_v0 - DEBUG - Managing script version 6B v0
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO - Using existing script at s3://conduit-data-dev/scripts/6B_classify_eeg_v0.py
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO - Transform initialized with:
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO -   Source prefix: processed/queries/
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO -   Destination prefix: models/
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO -   Transform ID: t6B_classify_eeg_v0
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO - Query store : eye_neural.zarr
+2025-05-19 21:15:11 - pipeline.t6B_classify_eeg_v0 - INFO - Hyper-params: {'epochs': 20, 'batch_size': 64, 'lr': 0.0003, 'hidden': 128, 'train_ratio': 0.7, 'val_ratio': 0.15, 'test_ratio': 0.15, 'device': 'cpu', 'weight_decay': 0.0001}
+Looking for sessions in s3://conduit-data-dev/processed/queries/
+Available sessions matching criteria:
+Session Name                        Type         Start Time           End Time/Info        Duration        Files
+--------------------------------------------------------------------------------------------------------------
+all_elements.zarr                   Raw[Folder]  N/A                                       0s              0    
+eye_neural.zarr                     Raw[Folder]  N/A                                       0s              0    
+
+Total sessions: 2
+
+
+
+Multiple sessions found. Options:
+  1: all_elements.zarr (0s)
+  2: eye_neural.zarr (0s)
+  all: Process all sessions in the list
+  quit: Exit without processing
+
+Enter choice (number, 'all', or 'quit'): 
+Selected session: eye_neural.zarr
+Processing 1 session IDs: ['eye_neural.zarr']
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - Processing all 1 items including previously processed ones
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - Processing all 1 items at once
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - Processing batch of 1 items (indices 0-0)
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - Processing item 1/1: eye_neural.zarr
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - BaseTransform.process_item: keep_local before processing = False
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - BaseTransform.process_item: dry_run before processing = False
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - DEBUG - Session path: processed/queries/eye_neural.zarr/
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - DEBUG - Created temp directory: C:\Users\riopo\data-pipeline\transform_workdir\t6B_classify_eeg_v0_20250519_211527_eye_neural.zarr
+2025-05-19 21:15:27 - pipeline.t6B_classify_eeg_v0 - INFO - About to call process_session with keep_local = False
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+C:\Users\riopo\anaconda3\Lib\site-packages\zarr\codecs\vlen_utf8.py:99: UserWarning: The codec `vlen-bytes` is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+  return cls(**configuration_parsed)
+Successfully imported LangTransform
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Successfully imported LangTransform
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Successfully imported LangTransform
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Successfully imported LangTransform
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Successfully imported LangTransform
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()Successfully imported LangTransform
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 2, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 2 -> 2
+Integer label: 2
+Final label tensor: 2
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()Successfully imported LangTransform
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()Successfully imported LangTransform
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+Raw label_data: 1, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 1 -> 1
+Integer label: 1
+Final label tensor: 1
+
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+Raw label_data: 0, type: <class 'numpy.ndarray'>, shape: ()
+Converting 0-D array to scalar: 0 -> 0
+Integer label: 0
+Final label tensor: 0
+
+=============== PROCESSING SESSION: eye_neural.zarr ===============
+
+Using zarr store: s3://conduit-data-dev/processed/queries/eye_neural.zarr
+Building DataLoaders...
+QueryDataset: Processing session Mahnani Clay_20250430_192507_events.zarr
+Mahnani Clay_20250430_192507_events.zarr: skipping session with EEG shape (1, 1) (expected (21, 105)).
+QueryDataset: Processing session niki_dupuis_20250503_152625_events.zarr
+QueryDataset: Processing session lydia_10m_20250423_161755_events.zarr
+QueryDataset initialized with 854 total windows across 3 sessions
+Modalities: ['eeg']
+Session-level split: 2 train, 0 val, 1 test sessions
+Window counts: 329 train, 0 val, 525 test windows
+Dataset splits after filtering: 6 train, 0 validation, 9 test batches
+=== DATASET LABEL DISTRIBUTION ===
+train: {0: 191, 1: 114}
+val  : Empty
+test : {0: 286, 1: 215}
+===================================
+SANITY CHECK: Training labels found: [0, 1]
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9738 (186/191)
+Class 1 accuracy: 0.0614 (7/114)
+Prediction distribution: {0: 293, 1: 12}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    186 |      5 |
+True 1 |    107 |      7 |
+=============================
+Epoch 01/20  train_loss=0.6930  val_acc=0.633
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9686 (185/191)
+Class 1 accuracy: 0.0702 (8/114)
+Prediction distribution: {0: 291, 1: 14}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    185 |      6 |
+True 1 |    106 |      8 |
+=============================
+Epoch 02/20  train_loss=0.6585  val_acc=0.633
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9634 (184/191)
+Class 1 accuracy: 0.0789 (9/114)
+Prediction distribution: {0: 289, 1: 16}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    184 |      7 |
+True 1 |    105 |      9 |
+=============================
+Epoch 03/20  train_loss=0.6497  val_acc=0.633
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9319 (178/191)
+Class 1 accuracy: 0.1053 (12/114)
+Prediction distribution: {0: 280, 1: 25}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    178 |     13 |
+True 1 |    102 |     12 |
+=============================
+Epoch 04/20  train_loss=0.6440  val_acc=0.623
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9162 (175/191)
+Class 1 accuracy: 0.1140 (13/114)
+Prediction distribution: {0: 276, 1: 29}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    175 |     16 |
+True 1 |    101 |     13 |
+=============================
+Epoch 05/20  train_loss=0.6421  val_acc=0.616
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.8953 (171/191)
+Class 1 accuracy: 0.1316 (15/114)
+Prediction distribution: {0: 270, 1: 35}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    171 |     20 |
+True 1 |     99 |     15 |
+=============================
+Epoch 06/20  train_loss=0.6375  val_acc=0.610
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9058 (173/191)
+Class 1 accuracy: 0.1228 (14/114)
+Prediction distribution: {0: 273, 1: 32}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    173 |     18 |
+True 1 |    100 |     14 |
+=============================
+Epoch 07/20  train_loss=0.6327  val_acc=0.613
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9110 (174/191)
+Class 1 accuracy: 0.1316 (15/114)
+Prediction distribution: {0: 273, 1: 32}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    174 |     17 |
+True 1 |     99 |     15 |
+=============================
+Epoch 08/20  train_loss=0.6296  val_acc=0.620
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9267 (177/191)
+Class 1 accuracy: 0.1316 (15/114)
+Prediction distribution: {0: 276, 1: 29}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    177 |     14 |
+True 1 |     99 |     15 |
+=============================
+Epoch 09/20  train_loss=0.6254  val_acc=0.630
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9372 (179/191)
+Class 1 accuracy: 0.1316 (15/114)
+Prediction distribution: {0: 278, 1: 27}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    179 |     12 |
+True 1 |     99 |     15 |
+=============================
+Epoch 10/20  train_loss=0.6226  val_acc=0.636
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9529 (182/191)
+Class 1 accuracy: 0.1053 (12/114)
+Prediction distribution: {0: 284, 1: 21}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    182 |      9 |
+True 1 |    102 |     12 |
+=============================
+Epoch 11/20  train_loss=0.6178  val_acc=0.636
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9634 (184/191)
+Class 1 accuracy: 0.1053 (12/114)
+Prediction distribution: {0: 286, 1: 19}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    184 |      7 |
+True 1 |    102 |     12 |
+=============================
+Epoch 12/20  train_loss=0.6122  val_acc=0.643
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9529 (182/191)
+Class 1 accuracy: 0.1140 (13/114)
+Prediction distribution: {0: 283, 1: 22}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    182 |      9 |
+True 1 |    101 |     13 |
+=============================
+Epoch 13/20  train_loss=0.6082  val_acc=0.639
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9581 (183/191)
+Class 1 accuracy: 0.1140 (13/114)
+Prediction distribution: {0: 284, 1: 21}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    183 |      8 |
+True 1 |    101 |     13 |
+=============================
+Epoch 14/20  train_loss=0.6027  val_acc=0.643
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9424 (180/191)
+Class 1 accuracy: 0.1228 (14/114)
+Prediction distribution: {0: 280, 1: 25}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    180 |     11 |
+True 1 |    100 |     14 |
+=============================
+Epoch 15/20  train_loss=0.5999  val_acc=0.636
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9005 (172/191)
+Class 1 accuracy: 0.1930 (22/114)
+Prediction distribution: {0: 264, 1: 41}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    172 |     19 |
+True 1 |     92 |     22 |
+=============================
+Epoch 16/20  train_loss=0.5939  val_acc=0.636
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9319 (178/191)
+Class 1 accuracy: 0.1930 (22/114)
+Prediction distribution: {0: 270, 1: 35}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    178 |     13 |
+True 1 |     92 |     22 |
+=============================
+Epoch 17/20  train_loss=0.5897  val_acc=0.656
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9372 (179/191)
+Class 1 accuracy: 0.1930 (22/114)
+Prediction distribution: {0: 271, 1: 34}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    179 |     12 |
+True 1 |     92 |     22 |
+=============================
+Epoch 18/20  train_loss=0.5835  val_acc=0.659
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9215 (176/191)
+Class 1 accuracy: 0.2456 (28/114)
+Prediction distribution: {0: 262, 1: 43}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    176 |     15 |
+True 1 |     86 |     28 |
+=============================
+Epoch 19/20  train_loss=0.5855  val_acc=0.669
+No validation data available, using training data for model selection
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.9319 (178/191)
+Class 1 accuracy: 0.2018 (23/114)
+Prediction distribution: {0: 269, 1: 36}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    178 |     13 |
+True 1 |     91 |     23 |
+=============================
+Epoch 20/20  train_loss=0.5803  val_acc=0.659
+
+=== EVALUATION STATISTICS ===
+Class 0 accuracy: 0.6154 (176/286)
+Class 1 accuracy: 0.3628 (78/215)
+Prediction distribution: {0: 313, 1: 188}
+Confusion Matrix:
+       | Pred 0 | Pred 1 |
+True 0 |    176 |    110 |
+True 1 |    137 |     78 |
+=============================
+BEST val_acc=0.669  TEST acc=0.507
+2025-05-19 21:19:59 - pipeline.t6B_classify_eeg_v0 - INFO - After process_session call, keep_local = False
+2025-05-19 21:19:59 - pipeline.t6B_classify_eeg_v0 - INFO - Uploading file C:\Users\riopo\data-pipeline\transform_workdir\t6B_classify_eeg_v0_20250519_211527_eye_neural.zarr\eeg_classifier.pth to s3://conduit-data-dev/models/eye_neural.zarr_eeg_classifier_20250519_211527.pth
+2025-05-19 21:20:01 - pipeline.t6B_classify_eeg_v0 - INFO - Uploading file C:\Users\riopo\data-pipeline\transform_workdir\t6B_classify_eeg_v0_20250519_211527_eye_neural.zarr\metrics.json to s3://conduit-data-dev/models/eye_neural.zarr_metrics_20250519_211527.json
+2025-05-19 21:20:01 - pipeline.t6B_classify_eeg_v0 - DEBUG - Storing record for eye_neural.zarr with status 'success'
+2025-05-19 21:20:02 - pipeline.t6B_classify_eeg_v0 - INFO - keep_local before cleanup decision: False
+2025-05-19 21:20:02 - pipeline.t6B_classify_eeg_v0 - INFO - Cleaning up temp files since keep_local = False
+2025-05-19 21:20:02 - pipeline.t6B_classify_eeg_v0 - DEBUG - Cleaned up C:\Users\riopo\data-pipeline\transform_workdir\t6B_classify_eeg_v0_20250519_211527_eye_neural.zarr
+2025-05-19 21:20:02 - pipeline.t6B_classify_eeg_v0 - INFO - Batch statistics: {'processed': 1, 'success': 1, 'failed': 0, 'skipped': 0}
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001AC641AA3F0>

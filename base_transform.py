@@ -358,6 +358,8 @@ class BaseTransform:
                  dynamodb_table: str = 'conduit-pipeline-metadata',
                  script_table: str = 'conduit-script-versions', 
                  script_prefix: str = 'scripts/',
+                 # verbose and log_file are handled by global setup_logging in cli.py
+                 # but we still accept them here for backward compatibility
                  verbose: bool = False, log_file: Optional[str] = None,
                  dry_run: bool = False, keep_local: bool = False):
         """Initialize a transform.
@@ -373,8 +375,6 @@ class BaseTransform:
             dynamodb_table: DynamoDB table name for pipeline metadata
             script_table: DynamoDB table name for script versions
             script_prefix: S3 prefix for storing script versions
-            verbose: Enable verbose logging
-            log_file: Optional file path to write logs to
             dry_run: If True, simulate actions without making changes
             keep_local: If True, don't delete local working files after processing
         """
@@ -398,12 +398,17 @@ class BaseTransform:
         self.dry_run = dry_run
         self.keep_local = keep_local
         
-        # Setup logging
-        self.logger = setup_logging(
-            f"pipeline.{self.transform_id}", 
-            verbose=verbose, 
-            log_file=log_file
-        )
+        # Setup logger instance for this transform.
+        # It will inherit handlers and levels from the root logger (configured by setup_logging()
+        # in the main CLI script). Logger names will be like "transforms.MyTransformName".
+        logger_name_parts = ["transforms"]
+        if self.transform_id:
+            logger_name_parts.append(self.transform_id)
+        else:
+            # Fallback if transform_id isn't set, though it should be.
+            logger_name_parts.append(self.__class__.__name__)
+        
+        self.logger = logging.getLogger(".".join(logger_name_parts))
         
         # Initialize AWS clients
         self.logger.debug("Initializing AWS clients")
@@ -888,6 +893,95 @@ class BaseTransform:
         # Create and return the full S3 URL
         return f"s3://{self.s3_bucket}/{store_key}"
 
+    def save_zarr_dict_to_s3(self, store_key: str, tree: Dict[str, Any], attrs: Dict[str, Any]) -> str:
+        """
+        Create/overwrite a Zarr v3 store directly on S3 from an in-memory tree.
+        
+        Args:
+            store_key: S3 key for the zarr store
+            tree: Dict mapping relative paths → numpy arrays | scalar attrs | dict subtrees
+            attrs: Dict of attributes to set on the root group
+            
+        Returns:
+            S3 URI to the zarr store
+            
+        Notes:
+            - Ensures fixed-width bytes via bytesify()
+            - Creates explicit chunks no larger than 2 GB
+            - Consolidates metadata for root + each group
+        """
+        import zarr
+        import numpy as np
+        
+        # Get S3 URI
+        s3_uri = self.create_s3_zarr_store(store_key)
+        self.logger.info(f"Creating Zarr v3 store at {s3_uri}")
+        
+        if self.dry_run:
+            self.logger.info(f"[DRY RUN] Would create zarr store at {s3_uri}")
+            return s3_uri
+        
+        try:
+            # Open root group
+            root = zarr.open_group(s3_uri, mode='w')
+            
+            # Set root attributes
+            for key, value in attrs.items():
+                root.attrs[key] = value
+            
+            # Define a recursive function to build the zarr structure
+            def build_zarr_structure(parent_group, tree_dict):
+                for key, value in tree_dict.items():
+                    if isinstance(value, dict):
+                        # Create new group and recurse, with overwrite=True
+                        group = parent_group.create_group(key, overwrite=True)
+                        build_zarr_structure(group, value)
+                    elif isinstance(value, np.ndarray):
+                        # Create dataset with appropriate chunking and dtype
+                        
+                        # Ensure proper dtype - avoid object dtype for zarr v3
+                        if value.dtype.kind in ('O', 'U'):
+                            from transforms.query_helpers import bytesify
+                            value = bytesify(value)
+                        
+                        # Determine chunking
+                        chunks = value.shape
+                        if value.nbytes > 2e9 and value.ndim > 1:
+                            # For large arrays, cap chunk size
+                            # For higher-dim arrays, cap only first dimension
+                            max_chunk_0 = max(1, int(2e9 / (value.itemsize * np.prod(value.shape[1:]))))
+                            chunks = (min(max_chunk_0, value.shape[0]),) + value.shape[1:]
+                        
+                        # Create the dataset with explicit shape, dtype, chunks, and overwrite=True
+                        parent_group.create_dataset(
+                            name=key,
+                            data=value,
+                            shape=value.shape,
+                            dtype=value.dtype,
+                            chunks=chunks,
+                            overwrite=True  # Allow overwriting existing arrays
+                        )
+                    else:
+                        # Store as attribute if scalar
+                        if isinstance(value, (str, int, float, bool)) or value is None:
+                            parent_group.attrs[key] = value
+                        else:
+                            # For other types, just store as string
+                            parent_group.attrs[key] = str(value)
+            
+            # Build the zarr structure
+            build_zarr_structure(root, tree)
+            
+            # Consolidate metadata
+            zarr.consolidate_metadata(root.store)
+            self.logger.info(f"Successfully created zarr store at {s3_uri}")
+            
+            return s3_uri
+            
+        except Exception as e:
+            self.logger.error(f"Error creating zarr store: {e}")
+            raise
+    
     def save_dataset_to_s3_zarr(self, dataset, store_key, chunks=None):
         """
         Save an xarray dataset directly to S3 as zarr without local files.
@@ -1055,6 +1149,9 @@ class BaseTransform:
         Returns:
             Dict with processing statistics
         """
+        # Store include_processed as an instance variable so child classes can access it
+        self.include_processed = include_processed
+        
         if session_ids is None:
             # Find sessions that need processing
             self.logger.info("Finding sessions to process")
