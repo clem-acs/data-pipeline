@@ -32,6 +32,8 @@ except ImportError:
     from transforms.t2E_analysis_v0 import AnalysisTransform
     from transforms.t2F_audio_v0 import AudioExtractTransform
     from transforms.t4A_query_v0 import QueryTransform
+    from transforms.t4B_query_eye_neural_v0 import EyeNeuralTransform
+    from transforms.t4C_query_neuro_lang_v0 import NeuroLangTransform
     from transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
 
     from utils.session_utils import (
@@ -63,6 +65,8 @@ TRANSFORMS = {
     'audio': AudioExtractTransform,
     'event': EventTransform,
     'qry': QueryTransform,
+    'qry-eye': EyeNeuralTransform,
+    'qry-lang': NeuroLangTransform,
     'classify': ClassifyEEGTransform,
 
     # Add more transforms as they are implemented

@@ -13,7 +13,7 @@ import logging
 import time
 
 # Common constants and defaults
-DEFAULT_LABEL_MAP = {"closed": 0, "open": 1, "intro": 2, "unknown": 3}
+DEFAULT_LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
 
 # No default compression - let Zarr handle compression automatically
 
