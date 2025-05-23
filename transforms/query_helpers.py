@@ -185,6 +185,11 @@ def build_labels(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarr
     Returns:
         Array of labels for each hit
     """
+    # Add debug print
+    print(f"DEBUG: Using label_map: {label_map}")
+    if "element_ids" in elems and len(elems["element_ids"]) > 0:
+        print(f"DEBUG: Sample element_ids (first 3): {[str(eid) for eid in elems['element_ids'][:3]]}")
+    
     if label_map is None:
         # Generic fallback with single unknown label
         label_map = {"unknown": 100}
@@ -202,10 +207,17 @@ def build_labels(elems: Dict[str, np.ndarray], hits: np.ndarray, times: np.ndarr
                 eid_str = eid.decode("utf-8") if isinstance(eid, (bytes, np.bytes_)) else str(eid)
                 
                 # Determine label from element_id patterns
+                print(f"DEBUG: Trying to match '{eid_str}' against patterns {list(label_map.keys())}")
+                matched = False
                 for pattern, value in label_map.items():
                     if pattern in eid_str:
                         labels[i] = value
+                        print(f"DEBUG: MATCHED pattern '{pattern}' to label {value}")
+                        matched = True
                         break
+                
+                if not matched:
+                    print(f"DEBUG: NO MATCH - Defaulted to unknown label")
                 
                 break
     
@@ -757,6 +769,8 @@ def extract_elements_data(zgroup: zarr.Group, session_id: str,
     # Get element IDs first
     if "element_id" in eg:
         ids = bytesify(eg["element_id"][:])
+    elif "element_id" in zgroup:  # Check root coordinates
+        ids = bytesify(zgroup["element_id"][:])
     else:
         # Create default numeric IDs if not available
         ids = np.arange(eg[list(eg.array_keys())[0]].shape[0])
@@ -777,7 +791,10 @@ def extract_elements_neural_windows(
     session_id: str, 
     filter_kwargs: Dict[str, Any],
     label_map: Optional[Dict[str, int]] = None,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
+    min_duration_seconds: float = 0.0,     # NEW: Filter by minimum duration
+    middle_percent: float = 1.0,           # NEW: Take only middle X% 
+    label_field: Optional[str] = None      # NEW: Field to use for matching patterns
 ) -> Optional[Dict[str, np.ndarray]]:
     """
     Extract neural windows during elements that match specified filters.
@@ -789,6 +806,10 @@ def extract_elements_neural_windows(
         filter_kwargs: Dictionary of keyword arguments for filter_elements
         label_map: Optional mapping from element_id patterns to numeric labels
         logger: Optional logger instance
+        min_duration_seconds: Only include elements longer than this many seconds
+        middle_percent: Only include windows in the middle X% of each element's duration
+        label_field: Field in elements data to use for label pattern matching
+                     (if None, uses "element_ids" for backward compatibility)
         
     Returns:
         Dictionary with windows and metadata
@@ -806,6 +827,17 @@ def extract_elements_neural_windows(
         return None
     
     log(f"Found {len(filtered_elems['element_ids'])} matching elements for session {session_id}")
+    
+    # Apply duration filter if needed
+    if min_duration_seconds > 0:
+        durations_ms = filtered_elems["end_time"] - filtered_elems["start_time"]
+        duration_mask = durations_ms >= (min_duration_seconds * 1000)
+        if not np.any(duration_mask):
+            debug(f"No elements meet min_duration of {min_duration_seconds}s")
+            return None
+        filtered_elems = {k: v[duration_mask] if isinstance(v, np.ndarray) and len(v) == len(duration_mask) else v
+                         for k, v in filtered_elems.items()}
+        log(f"After duration filter: {len(filtered_elems['element_ids'])} elements")
     
     # Add debug print for element durations
     debug(
@@ -828,11 +860,20 @@ def extract_elements_neural_windows(
         f"Window timestamps {t.min()}-{t.max()} (length={len(t)})"
     )
     
-    # Find all hits within the element time ranges
+    # Find all hits within the element time ranges, considering middle_percent
     hits = []
     for eid, (start, end) in zip(filtered_elems["element_ids"],
                                zip(filtered_elems["start_time"], filtered_elems["end_time"])):
-        window_indices = window_indices_for_range(t, start, end)
+        # Calculate middle portion if needed
+        if middle_percent < 1.0:
+            duration = end - start
+            margin = (1.0 - middle_percent) / 2.0
+            mid_start = start + margin * duration
+            mid_end = end - margin * duration
+            window_indices = window_indices_for_range(t, mid_start, mid_end)
+        else:
+            window_indices = window_indices_for_range(t, start, end)
+            
         if window_indices.size > 0:
             hits.extend(window_indices)
     
@@ -840,8 +881,8 @@ def extract_elements_neural_windows(
         debug(f"No window hits found for the filtered elements")
         return None
         
-    # Sort for chronological order
-    hits = np.sort(np.array(hits))
+    # Sort for chronological order and remove duplicates
+    hits = np.sort(np.unique(np.array(hits)))
     
     # Add debug print
     debug(f"Generated {len(hits)} window indices, min={min(hits)}, max={max(hits)}")
@@ -851,12 +892,23 @@ def extract_elements_neural_windows(
     log(f"Found {len(hits)} windows across {len(filtered_elems['element_ids'])} elements for session {session_id}")
     
     # Use extract_full_windows to get all variables for the hits
-    result = extract_full_windows(window_group, hits)
+    result = extract_full_windows(window_group, hits, logger=logger)
+    
+    # Prepare elements dict for label matching
+    if label_field and label_field in filtered_elems and label_field != "element_ids":
+        # Create a copy for label matching
+        label_elems = filtered_elems.copy()
+        # Use the specified field for pattern matching
+        label_elems["element_ids"] = filtered_elems[label_field]
+        debug(f"Using {label_field} for label pattern matching")
+    else:
+        # Use original elements dict if no label_field specified
+        label_elems = filtered_elems
     
     # Add session_id and generate labels and element_ids
     result.update({
         "session_id": session_id,
-        "labels": bytesify(build_labels(filtered_elems, hits, t, label_map)),
+        "labels": bytesify(build_labels(label_elems, hits, t, label_map)),
         "element_ids": bytesify(build_eids(filtered_elems, hits, t))
     })
     

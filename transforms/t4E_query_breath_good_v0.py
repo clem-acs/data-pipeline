@@ -1,25 +1,25 @@
 """
-T4D Eye-Good Transform – version 0 .0
+T4E Breath-Good Transform – version 0.0
 
-Extracts neural windows that lie **within the middle X-percent** of every
-*eye-task* element whose duration is **> S seconds**.
+Extract neural windows that fall inside the middle X-percent of every
+*breath-task* element whose duration exceeds S seconds.
 
-• default S  = 10 s   (--min-duration-seconds)
-• default X  = 0.5   (--middle-percent  0 < X ≤ 1)
+Defaults
+--------
+• --min-duration-seconds (-S) : 10 s
+• --middle-percent (-X)       : 0.5   ⇢ middle 50 %
 
-Results are appended to a consolidated Zarr v3 store:
-
-    processed/queries/eye_<S>_<X>.zarr      (e.g. eye_10_0.5.zarr)
-
-Root attributes include:
-    ├─ query_name = "eye_good"
-    ├─ min_duration_seconds
-    └─ middle_percent
-Each session is saved under /sessions/<session_id>/ …
+Output
+------
+processed/queries/breath_<S>_<X>.zarr
+    ├─ root.attrs.query_name            = "breath_good"
+    ├─ root.attrs.min_duration_seconds  = S
+    └─ root.attrs.middle_percent        = X
+Each qualifying session is stored under /sessions/<session_id>/…
 """
 
 # --------------------------------------------------------------------- #
-# Std-lib & third-party
+# Std-lib / third-party
 # --------------------------------------------------------------------- #
 import json
 import logging
@@ -29,11 +29,10 @@ import numpy as np
 import zarr
 
 # --------------------------------------------------------------------- #
-# Pipeline-internal imports
+# Pipeline imports
 # --------------------------------------------------------------------- #
 from base_transform import BaseTransform, Session
 from transforms.query_helpers import (
-    # generic helpers
     open_zarr_safely,
     bytesify,
     window_indices_for_range,
@@ -42,7 +41,6 @@ from transforms.query_helpers import (
     build_labels,
     build_eids,
     extract_elements_neural_windows,  # Added the enhanced function
-    # store helpers
     init_or_open_result_store,
     save_session_to_subgroup,
     write_session_result,
@@ -51,33 +49,33 @@ from transforms.query_helpers import (
 # --------------------------------------------------------------------- #
 # Constants
 # --------------------------------------------------------------------- #
-DEFAULT_EYE_LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
+DEFAULT_BREATH_LABEL_MAP = {
+    "hold":    0,   # analogous to "close"
+    "normal":  1,   # analogous to "open"
+    "intro":   2,
+    "unknown": 3,
+}
 logger = logging.getLogger(__name__)
 
 
 # ===================================================================== #
-#  Transform class
+#  Transform
 # ===================================================================== #
-class EyeGoodTransform(BaseTransform):
+class BreathGoodTransform(BaseTransform):
     """
-    • Finds sessions that contain *_events.zarr* (elements) **and**
-      *_windowed.zarr* (neural windows).
-    • Selects *eye* elements longer than **S s**.
-    • Keeps only the middle **X · 100 %** of each element's time span.
-    • Aggregates matching neural windows into 1 store:
-        processed/queries/eye_<S>_<X>.zarr
+    Same logic as Eye-Good (t4D) but for *breath* elements.
     """
 
     SOURCE_PREFIX = "processed/event/"
     DEST_PREFIX   = "processed/queries/"
 
     # ------------------------------------------------------------------ #
-    # constructor / CLI helper
+    # ctor / CLI
     # ------------------------------------------------------------------ #
     def __init__(
         self,
         min_duration_seconds: float = 10.0,
-        middle_percent: float = 0.5,
+        middle_percent: float       = 0.5,
         label_map: Optional[Dict[str, int]] = None,
         **kwargs,
     ):
@@ -86,26 +84,26 @@ class EyeGoodTransform(BaseTransform):
         if not (0.0 < self.middle_percent <= 1.0):
             raise ValueError("--middle-percent must be in (0, 1]")
 
-        self.label_map = label_map or DEFAULT_EYE_LABEL_MAP
+        self.label_map = label_map or DEFAULT_BREATH_LABEL_MAP
 
         transform_id = kwargs.pop(
             "transform_id",
-            f"t4D_eye_good_v0_{int(self.min_duration_seconds)}s_{self.middle_percent}",
+            f"t4E_breath_good_v0_{int(self.min_duration_seconds)}s_{self.middle_percent}",
         )
-        script_id      = kwargs.pop("script_id", "4D")
-        script_name    = kwargs.pop("script_name", "eye_good")
+        script_id      = kwargs.pop("script_id", "4E")
+        script_name    = kwargs.pop("script_name", "breath_good")
         script_version = kwargs.pop("script_version", "v0")
 
         super().__init__(
-            transform_id       = transform_id,
-            script_id          = script_id,
-            script_name        = script_name,
-            script_version     = script_version,
+            transform_id   = transform_id,
+            script_id      = script_id,
+            script_name    = script_name,
+            script_version = script_version,
             **kwargs,
         )
 
         self.logger.info(
-            f"EyeGoodTransform initialised "
+            f"BreathGoodTransform initialised "
             f"(min_duration_seconds={self.min_duration_seconds}, "
             f"middle_percent={self.middle_percent}, "
             f"label_map={self.label_map})"
@@ -118,25 +116,25 @@ class EyeGoodTransform(BaseTransform):
             "--min-duration-seconds",
             type=float,
             default=10.0,
-            help="Only eye elements longer than this many seconds are kept "
-                 "(default: 10)",
+            help="Only breath elements longer than this many seconds "
+                 "are kept (default: 10).",
         )
         parser.add_argument(
             "--middle-percent",
             type=float,
             default=0.5,
             help="Fraction (0 < p ≤ 1) of each qualifying element's duration "
-                 "to keep, centred in the middle (default: 0.5)",
+                 "to keep, centred in the middle (default: 0.5).",
         )
         parser.add_argument(
             "--label-map",
             type=str,
-            help=("Optional JSON dict mapping element-id substrings → "
-                  "numeric label, e.g. '{\"closed\":0,\"open\":1}'.")
+            help="Optional JSON dict mapping element-id substrings → label "
+                 "e.g. '{\"hold\":0,\"normal\":1}'.",
         )
 
     @classmethod
-    def from_args(cls, args) -> "EyeGoodTransform":
+    def from_args(cls, args) -> "BreathGoodTransform":
         label_map = None
         if getattr(args, "label_map", None):
             try:
@@ -162,23 +160,25 @@ class EyeGoodTransform(BaseTransform):
     # ------------------------------------------------------------------ #
     def find_sessions(self) -> List[str]:
         """
-        Return sessions that have **both** *_events.zarr* and *_windowed.zarr*.
+        Sessions must have *_events.zarr* **and** *_windowed.zarr*.
         """
         bkt = self.s3_bucket
-        # ---- events ----
-        ev_sessions: Set[str] = set()
+        ev_sessions, win_sessions = set(), set()
+
+        # events
         resp = self.s3.list_objects_v2(Bucket=bkt, Prefix=self.SOURCE_PREFIX)
         for o in resp.get("Contents", []):
             k = o["Key"]
             if k.endswith("_events.zarr/zarr.json"):
                 ev_sessions.add(k.split("/")[-2].replace("_events.zarr", ""))
-        # ---- windows ----
-        win_sessions: Set[str] = set()
+
+        # windows
         resp = self.s3.list_objects_v2(Bucket=bkt, Prefix="processed/windows/")
         for o in resp.get("Contents", []):
             k = o["Key"]
             if k.endswith("_windowed.zarr/zarr.json"):
                 win_sessions.add(k.split("/")[-2].replace("_windowed.zarr", ""))
+
         sessions = sorted(ev_sessions & win_sessions)
         self.logger.info(f"Found {len(sessions)} sessions with event + window data")
         return sessions
@@ -211,7 +211,7 @@ class EyeGoodTransform(BaseTransform):
             eg = open_zarr_safely(f"s3://{bkt}/{event_key}", logger=self.logger)
             wg = open_zarr_safely(f"s3://{bkt}/{window_key}", logger=self.logger)
         except Exception as e:
-            self.logger.error(f"Zarr open failed for {sid}: {e}", exc_info=True)
+            self.logger.error(f"Zarr open failed: {e}", exc_info=True)
             return {"status": "failed", "error_details": str(e),
                     "metadata": {"session_id": sid}}
 
@@ -220,7 +220,7 @@ class EyeGoodTransform(BaseTransform):
             event_group=eg,
             window_group=wg,
             session_id=sid,
-            filter_kwargs={"task_type": "eye"},
+            filter_kwargs={"task_type": "breath"},
             label_map=self.label_map,
             min_duration_seconds=self.min_duration_seconds,
             middle_percent=self.middle_percent,
@@ -249,28 +249,23 @@ class EyeGoodTransform(BaseTransform):
                             f"label_{lbl}")
                 label_counts[name] = int(ct)
 
-        self.logger.info(f"{sid}: {w_cnt} windows from {e_cnt} eye elements "
-                         f"(middle {self.middle_percent*100:.0f}% "
-                         f"| >= {self.min_duration_seconds}s)")
+        self.logger.info(f"{sid}: {w_cnt} windows from {e_cnt} breath elements")
 
-        # ------------------------------------------------------------------
-        # save to consolidated store
-        # ------------------------------------------------------------------
-        out_key   = (f"{self.destination_prefix}"
-                     f"eye_{int(self.min_duration_seconds)}_"
-                     f"{self.middle_percent}.zarr")
+        # --------------------------- save ----------------------------- #
+        out_key = (f"{self.destination_prefix}"
+                   f"breath_{int(self.min_duration_seconds)}_"
+                   f"{self.middle_percent}.zarr")
         overwrite = getattr(self, "include_processed", False)
 
         if not self.dry_run:
-            root, sess_grp, first = init_or_open_result_store(
-                s3_client   = self.s3,
-                s3_bucket   = bkt,
-                result_key  = out_key,
-                query_name  = "eye_good",
-                label_map   = self.label_map,
-                logger      = self.logger,
+            root, sess_grp, _ = init_or_open_result_store(
+                s3_client  = self.s3,
+                s3_bucket  = bkt,
+                result_key = out_key,
+                query_name = "breath_good",
+                label_map  = self.label_map,
+                logger     = self.logger,
             )
-            # Add / update query-specific root attrs
             root.attrs["min_duration_seconds"] = self.min_duration_seconds
             root.attrs["middle_percent"]       = self.middle_percent
             save_session_to_subgroup(
@@ -285,7 +280,7 @@ class EyeGoodTransform(BaseTransform):
                 "window_count":  w_cnt,
                 "element_count": e_cnt,
                 "label_counts":  label_counts,
-                "query_type":    "eye_good",
+                "query_type":    "breath_good",
                 "min_duration_seconds": self.min_duration_seconds,
                 "middle_percent":       self.middle_percent,
             },
@@ -297,4 +292,4 @@ class EyeGoodTransform(BaseTransform):
 # CLI entry-point
 # --------------------------------------------------------------------- #
 if __name__ == "__main__":
-    EyeGoodTransform.run_from_command_line()
+    BreathGoodTransform.run_from_command_line()
