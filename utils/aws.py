@@ -45,23 +45,33 @@ def init_s3_client():
     return boto3.client('s3', **credentials)
 
 
-def init_dynamodb_resource():
+def init_dynamodb_resource(endpoint_url: Optional[str] = None):
     """Initialize DynamoDB resource using environment credentials.
     
+    Args:
+        endpoint_url (Optional[str]): Optional endpoint URL for DynamoDB.
+        
     Returns:
         Boto3 DynamoDB resource
     """
     credentials = get_aws_credentials()
+    if endpoint_url:
+        return boto3.resource('dynamodb', endpoint_url=endpoint_url, **credentials)
     return boto3.resource('dynamodb', **credentials)
 
 
-def init_dynamodb_client():
+def init_dynamodb_client(endpoint_url: Optional[str] = None):
     """Initialize DynamoDB client using environment credentials.
-    
+
+    Args:
+        endpoint_url (Optional[str]): Optional endpoint URL for DynamoDB.
+        
     Returns:
         Boto3 DynamoDB client
     """
     credentials = get_aws_credentials()
+    if endpoint_url:
+        return boto3.client('dynamodb', endpoint_url=endpoint_url, **credentials)
     return boto3.client('dynamodb', **credentials)
 
 
