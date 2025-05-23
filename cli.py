@@ -42,6 +42,7 @@ except ImportError:
     from transforms.t4C_query_neuro_lang_v0 import NeuroLangTransform
     from transforms.t4D_query_eye_good_v0 import EyeGoodTransform
     from transforms.t4E_query_breath_good_v0 import BreathGoodTransform
+    from transforms.t4F_query_beep_v0 import BeepTransform
     from transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
     # Imports for utils when running as a script
     from utils.session_utils import (
@@ -75,6 +76,7 @@ TRANSFORMS = {
     'qry-lang': NeuroLangTransform,
     'qry-eye-good': EyeGoodTransform,
     'qry-breath': BreathGoodTransform,
+    'qry-beep': BeepTransform,
     'classify': ClassifyEEGTransform,
 
     # Add more transforms as they are implemented
