@@ -15,13 +15,15 @@ import zarr
 
 from base_transform import BaseTransform, Session
 from transforms.query_helpers import (
-    DEFAULT_LABEL_MAP,
     open_zarr_safely,
     init_or_open_result_store,
     save_session_to_subgroup,
     write_session_result,
     extract_elements_neural_windows,
 )
+
+# Define default label map for eye task elements
+DEFAULT_EYE_LABEL_MAP = {"close": 0, "open": 1, "intro": 2, "unknown": 3}
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +48,12 @@ class EyeNeuralTransform(BaseTransform):
         
         Args:
             label_map: Optional mapping of element pattern to numeric label. 
-                       If not provided, uses DEFAULT_LABEL_MAP.
+                       If not provided, uses DEFAULT_EYE_LABEL_MAP.
                        Format: {"pattern1": 0, "pattern2": 1, ...}
                        Patterns are matched against element_ids.
             **kwargs: Additional arguments for BaseTransform
         """
-        self.label_map = label_map or DEFAULT_LABEL_MAP
+        self.label_map = label_map or DEFAULT_EYE_LABEL_MAP
 
         transform_id = kwargs.pop("transform_id", "t4B_eye_neural_v0")
         script_id = kwargs.pop("script_id", "4B")
