@@ -138,12 +138,18 @@ def get_session_ids(args):
 
     print(f"Looking for sessions in s3://{bucket}/{prefix}")
 
+    # Check if size filtering is being used
+    min_size_mb = getattr(args, 'min_session_size', None)
+    max_size_mb = getattr(args, 'max_session_size', None)
+    check_curated_size = min_size_mb is not None or max_size_mb is not None
+
     # Get all sessions
     sessions = get_all_sessions(
         s3_client,
         prefix=prefix,
         bucket=bucket,
-        name_filter=args.session if hasattr(args, 'session') and args.session else None
+        name_filter=args.session if hasattr(args, 'session') and args.session else None,
+        check_curated_size=check_curated_size
     )
 
     # No duration filter skipping anymore
@@ -202,10 +208,7 @@ def get_session_ids(args):
             return []
 
     # Apply session size filtering (--min-session-size, --max-session-size)
-    min_size_mb = getattr(args, 'min_session_size', None)
-    max_size_mb = getattr(args, 'max_session_size', None)
-
-    if min_size_mb is not None or max_size_mb is not None:
+    if check_curated_size:
         original_count = len(sessions)
 
         min_size_bytes = min_size_mb * 1024 * 1024 if min_size_mb is not None else None
@@ -493,11 +496,18 @@ def main():
 
         # Use the transform's bucket and prefix settings
         s3_client = init_s3_client()
+        
+        # Check if size filtering is being used
+        min_size_mb = getattr(args, 'min_session_size', None)
+        max_size_mb = getattr(args, 'max_session_size', None)
+        check_curated_size = min_size_mb is not None or max_size_mb is not None
+        
         sessions = get_all_sessions(
             s3_client,
             prefix=args.source_prefix,
             bucket=args.s3_bucket,
-            name_filter=args.session if hasattr(args, 'session') and args.session else None
+            name_filter=args.session if hasattr(args, 'session') and args.session else None,
+            check_curated_size=check_curated_size
         )
 
         if not sessions:

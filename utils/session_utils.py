@@ -95,19 +95,46 @@ def list_s3_contents(s3_client, folder, bucket=BUCKET_NAME):
 
     return contents
 
-def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
+def extract_session_id_from_path(item_path):
     """
-    Get the duration of a session based on H5 file timestamps or metadata
+    Extract session ID from a path that could be a file or folder.
+    Session ID format: name_with-dashes_underscores-andallthat_YYYYMMDD_HHMMSS
+    """
+    if item_path.endswith('.h5'):
+        # Direct H5 file case
+        base_name = os.path.basename(item_path).replace('.h5', '')
+    else:
+        # Folder case - could end with .zarr/, _windows.zarr/, etc.
+        base_name = item_path.rstrip('/').split('/')[-1]
+    
+    # Extract session ID using regex pattern for YYYYMMDD_HHMMSS
+    # Match the core session pattern and ignore various suffixes
+    match = re.search(r'(.+_\d{8}_\d{6})(?:_[^/]*)?(?:\.zarr|\.h5)?$', base_name)
+    if match:
+        session_id = match.group(1)
+        return session_id
+    
+    # If no match, return the base name as-is
+    return base_name
+
+def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME, check_curated_size=False):
+    """
+    Get the duration of a session based on H5 file timestamps or metadata.
+    Optionally checks curated-h5/ for the equivalent H5 file to determine size.
 
     Args:
         s3_client: Boto3 S3 client
         item_path: Path to session folder or direct H5 file
         bucket: S3 bucket name
+        check_curated_size: Whether to check curated H5 for size (only needed for size filtering)
 
     Returns:
         Dictionary with session metadata including duration
     """
-    # Extract session name from path
+    # Extract session ID from path
+    session_id = extract_session_id_from_path(item_path)
+    
+    # For display purposes, use the original logic for session name
     if item_path.endswith('.h5'):
         # Direct H5 file case
         session_name = os.path.basename(item_path).replace('.h5', '')
@@ -172,17 +199,50 @@ def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
                                 # Continue if we can't get metadata - we'll fall back to timestamp extraction
                                 pass
 
-    # Calculate total size of H5 files for the session
+    # Calculate session size - check curated H5 only if size filtering is being used
     total_session_size_bytes = 0
-    if h5_files: # Only calculate if there are files to sum
-        for file_key_for_size in h5_files:
-            try:
-                response_size = s3_client.head_object(Bucket=bucket, Key=file_key_for_size)
-                total_session_size_bytes += response_size.get('ContentLength', 0)
-            except Exception as e:
-                # Optionally log this error: 
-                # print(f"Warning: Could not get size for {file_key_for_size} in session {session_name}: {e}")
-                pass # If a file's size can't be fetched, it contributes 0 to total
+    size_source = "unknown"
+    
+    if check_curated_size:
+        # Look in curated-h5/ prefix at bucket root for size filtering
+        curated_h5_path = f"curated-h5/{session_id}.h5"
+        
+        try:
+            # Try to get size from the equivalent curated H5 file
+            response_size = s3_client.head_object(Bucket=bucket, Key=curated_h5_path)
+            total_session_size_bytes = response_size.get('ContentLength', 0)
+            size_source = f"curated H5: {curated_h5_path}"
+        except Exception as e:
+            # Curated H5 file doesn't exist or can't be accessed
+            # Validate session ID format and warn if invalid
+            if not re.match(r'.+_\d{8}_\d{6}$', session_id):
+                print(f"Warning: '{session_name}' does not appear to be a valid session name (expected format: name_YYYYMMDD_HHMMSS)")
+            else:
+                print(f"Warning: No corresponding curated H5 file found for session '{session_id}' at {curated_h5_path}")
+            
+            # Fall back to calculating size from original files if available
+            if h5_files:
+                for file_key_for_size in h5_files:
+                    try:
+                        response_size = s3_client.head_object(Bucket=bucket, Key=file_key_for_size)
+                        total_session_size_bytes += response_size.get('ContentLength', 0)
+                    except Exception:
+                        pass # If a file's size can't be fetched, it contributes 0 to total
+                size_source = f"original files ({len(h5_files)} H5 files)"
+            else:
+                size_source = "unavailable (no files found)"
+    else:
+        # Not doing size filtering, so just calculate from original files if available
+        if h5_files:
+            for file_key_for_size in h5_files:
+                try:
+                    response_size = s3_client.head_object(Bucket=bucket, Key=file_key_for_size)
+                    total_session_size_bytes += response_size.get('ContentLength', 0)
+                except Exception:
+                    pass # If a file's size can't be fetched, it contributes 0 to total
+            size_source = f"original files ({len(h5_files)} H5 files)"
+        else:
+            size_source = "unavailable (no files found)"
 
     # If it's not a curated file, try to extract timestamps from filenames
     if not is_curated or duration_from_metadata is None:
@@ -207,7 +267,8 @@ def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
             'h5_files': h5_files,
             'is_curated': True,
             'is_direct_file': is_direct_file,
-            'total_size_bytes': total_session_size_bytes
+            'total_size_bytes': total_session_size_bytes,
+            'size_source': size_source
         }
 
     # Case 2: We have timestamps from raw session files
@@ -228,7 +289,8 @@ def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
             'h5_files': h5_files,
             'is_curated': False,
             'is_direct_file': is_direct_file,
-            'total_size_bytes': total_session_size_bytes
+            'total_size_bytes': total_session_size_bytes,
+            'size_source': size_source
         }
 
     # Case 3: We couldn't determine duration
@@ -255,7 +317,8 @@ def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
                     'is_estimated': True,
                     'is_curated': is_curated,
                     'is_direct_file': is_direct_file,
-                    'total_size_bytes': total_session_size_bytes
+                    'total_size_bytes': total_session_size_bytes,
+                    'size_source': size_source
                 }
             except Exception:
                 pass
@@ -270,10 +333,11 @@ def get_session_duration(s3_client, item_path, bucket=BUCKET_NAME):
             'h5_files': h5_files,
             'is_curated': is_curated,
             'is_direct_file': is_direct_file,
-            'total_size_bytes': total_session_size_bytes
+            'total_size_bytes': total_session_size_bytes,
+            'size_source': size_source
         }
 
-def get_all_sessions(s3_client, prefix=NEW_SESSIONS_PREFIX, bucket=BUCKET_NAME, name_filter=None):
+def get_all_sessions(s3_client, prefix=NEW_SESSIONS_PREFIX, bucket=BUCKET_NAME, name_filter=None, check_curated_size=False):
     """Get info for all sessions, with optional name filter"""
     session_items = list_s3_session_items(s3_client, prefix, bucket)
     sessions = {}
@@ -289,7 +353,7 @@ def get_all_sessions(s3_client, prefix=NEW_SESSIONS_PREFIX, bucket=BUCKET_NAME, 
         if name_filter and name_filter not in item_name:
             continue
 
-        session_data = get_session_duration(s3_client, item, bucket)
+        session_data = get_session_duration(s3_client, item, bucket, check_curated_size=check_curated_size)
         sessions[item] = session_data
 
     return sessions
@@ -556,6 +620,79 @@ def inspect_session_h5(s3_client, session_path, session_name, bucket=BUCKET_NAME
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
+def get_latest_status_sessions(transform_id, target_status, dynamodb_table='conduit-pipeline-metadata'):
+    """
+    Get sessions where the most recent processing attempt has the target status.
+    
+    This addresses the issue where a session might have been skipped initially,
+    then later processed successfully, but --skipped-only would still return it.
+    
+    Args:
+        transform_id: ID of the transform to check
+        target_status: Status to filter for ('skipped', 'success', 'failed')
+        dynamodb_table: Name of the DynamoDB table with transform records
+        
+    Returns:
+        Set of session IDs where the latest status matches target_status
+    """
+    from collections import defaultdict
+    
+    try:
+        # Initialize DynamoDB
+        dynamodb = init_dynamodb_resource()
+        table = dynamodb.Table(dynamodb_table)
+        
+        from boto3.dynamodb.conditions import Key
+        
+        # Get ALL records for this transform (no status filtering)
+        all_records = defaultdict(list)
+        last_key = None
+        
+        while True:
+            query_params = {
+                'IndexName': 'TransformIndex',
+                'KeyConditionExpression': Key('transform_id').eq(transform_id),
+                'ProjectionExpression': 'data_id, #status, #timestamp',
+                'ExpressionAttributeNames': {
+                    '#status': 'status', 
+                    '#timestamp': 'timestamp'
+                }
+            }
+            
+            if last_key:
+                query_params['ExclusiveStartKey'] = last_key
+                
+            response = table.query(**query_params)
+            
+            # Group records by data_id
+            for item in response.get('Items', []):
+                all_records[item['data_id']].append(item)
+            
+            if 'LastEvaluatedKey' in response:
+                last_key = response['LastEvaluatedKey']
+            else:
+                break
+        
+        # Find sessions where the latest status matches target
+        result_sessions = set()
+        for data_id, records in all_records.items():
+            if not records:
+                continue
+                
+            # Sort by timestamp to get the most recent record
+            latest_record = max(records, key=lambda x: x['timestamp'])
+            
+            if latest_record['status'] == target_status:
+                result_sessions.add(data_id)
+        
+        print(f"Found {len(result_sessions)} sessions with latest status '{target_status}' for {transform_id}")
+        return result_sessions
+        
+    except Exception as e:
+        print(f"Error getting latest status sessions: {e}")
+        return set()
+
+
 def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metadata', include_skipped=True, skipped_only=False):
     """
     Get a set of session IDs that have already been processed by the specified transform.
@@ -582,11 +719,12 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
         # Start with an empty LastEvaluatedKey
         last_key = None
 
-        # Build the filter expression based on flags
+        # Handle skipped_only with special logic to find latest status
         if skipped_only:
-            # Only include 'skipped' status
-            filter_expr = Attr('status').eq('skipped')
-        elif include_skipped:
+            return get_latest_status_sessions(transform_id, 'skipped', dynamodb_table)
+        
+        # Build the filter expression based on flags for other cases
+        if include_skipped:
             # Include both 'success' and 'skipped' status
             filter_expr = Attr('status').is_in(['success', 'skipped'])
         else:
@@ -620,9 +758,8 @@ def get_processed_sessions(transform_id, dynamodb_table='conduit-pipeline-metada
                 break
 
         # Create message based on what we're including
-        if skipped_only:
-            status_msg = "previously skipped"
-        elif include_skipped:
+        # Note: skipped_only is handled earlier and returns immediately
+        if include_skipped:
             status_msg = "successfully processed or skipped"
         else:
             status_msg = "successfully processed"
