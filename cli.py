@@ -40,6 +40,7 @@ except ImportError:
     from transforms.t4A_query_v0 import QueryTransform
     from transforms.t4B_query_eye_neural_v0 import EyeNeuralTransform
     from transforms.t4C_query_neuro_lang_v0 import NeuroLangTransform
+    from transforms.t4D_query_eye_good_v0 import EyeGoodTransform
     from transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
     # Imports for utils when running as a script
     from utils.session_utils import (
@@ -71,6 +72,7 @@ TRANSFORMS = {
     'qry': QueryTransform,
     'qry-eye': EyeNeuralTransform,
     'qry-lang': NeuroLangTransform,
+    'qry-eye-good': EyeGoodTransform,
     'classify': ClassifyEEGTransform,
 
     # Add more transforms as they are implemented
