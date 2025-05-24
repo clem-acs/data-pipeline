@@ -326,12 +326,15 @@ def setup_environment(ssh):
     # Create AWS credentials directory
     run_remote_command(ssh, "mkdir -p ~/.aws", "Creating AWS credentials directory")
 
-    # Hardcode AWS credentials from .zshrc
-    aws_access_key = "???"
-    aws_secret_key = "?!?"
-    aws_region = "us-east-1"  # Using us-east-1 as found in .zshrc
+    # Get AWS credentials from environment variables
+    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    aws_region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-2')
 
-    # Create credentials file with hardcoded values
+    if not aws_access_key or not aws_secret_key:
+        raise ValueError("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set as environment variables")
+
+    # Create credentials file with environment values
     credentials_content = f"""[default]
 aws_access_key_id = {aws_access_key}
 aws_secret_access_key = {aws_secret_key}
@@ -455,11 +458,16 @@ def get_session_sizes(ssh, bucket, prefix):
         print(stderr.read().decode())
 
     # Run AWS CLI command to list objects and get their sizes with explicit region
+    # Get credentials from environment
+    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    aws_region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-2')
+    
     cmd = f"cd {REMOTE_DIR} && source venv/bin/activate && " \
-          f"AWS_ACCESS_KEY_ID=??? " \
-          f"AWS_SECRET_ACCESS_KEY=?!? " \
-          f"AWS_DEFAULT_REGION=us-east-1 " \
-          f"aws s3 ls s3://{bucket}/{prefix} --recursive --region us-east-1 | " \
+          f"AWS_ACCESS_KEY_ID={aws_access_key} " \
+          f"AWS_SECRET_ACCESS_KEY={aws_secret_key} " \
+          f"AWS_DEFAULT_REGION={aws_region} " \
+          f"aws s3 ls s3://{bucket}/{prefix} --recursive --region {aws_region} | " \
           f"grep -E '\\.h5$' | awk '{{print $3, $4}}'"
 
     print(f"Running full S3 listing command...")
@@ -623,6 +631,11 @@ def run_parallel_commands(ssh, base_command, partitions):
     """Run commands in parallel for each partition"""
     print(f"Running {len(partitions)} parallel commands...")
 
+    # Get AWS credentials from environment
+    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    aws_region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-2')
+
     # Create a script for each partition
     script_paths = []
     for i, partition in enumerate(partitions):
@@ -632,9 +645,9 @@ cd {REMOTE_DIR}
 source venv/bin/activate
 
 # Set AWS environment variables
-export AWS_ACCESS_KEY_ID=???
-export AWS_SECRET_ACCESS_KEY=?!?
-export AWS_DEFAULT_REGION=us-east-1
+export AWS_ACCESS_KEY_ID={aws_access_key}
+export AWS_SECRET_ACCESS_KEY={aws_secret_key}
+export AWS_DEFAULT_REGION={aws_region}
 
 # Run the command with size limits
 python3 cli.py {base_command} --min-session-size {partition['min_size']:.2f} --max-session-size {partition['max_size']:.2f} 2>&1 | tee partition_{i+1}.log
@@ -719,6 +732,12 @@ python3 cli.py {base_command} --min-session-size {partition['min_size']:.2f} --m
 
 def main():
     args = parse_args()
+
+    # Check that AWS credentials are available
+    if not os.environ.get('AWS_ACCESS_KEY_ID') or not os.environ.get('AWS_SECRET_ACCESS_KEY'):
+        print("Error: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set as environment variables")
+        print("These should be available from GitHub secrets or local .env file")
+        sys.exit(1)
 
     try:
         # Launch EC2 instance

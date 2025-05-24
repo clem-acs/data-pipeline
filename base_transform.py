@@ -590,6 +590,48 @@ class BaseTransform:
             self.logger.error(f"Error getting processed items: {e}")
             return set()
     
+    def get_skipped_items(self):
+        """Get data IDs that were previously skipped by this transform.
+        
+        Returns:
+            Set of skipped data IDs
+        """
+        skipped_items = set()
+        try:
+            self.logger.debug(f"Querying skipped items for transform {self.transform_id}")
+            
+            # Filter for only 'skipped' status
+            filter_expr = Attr('status').eq('skipped')
+            
+            # Initial query
+            response = self.table.query(
+                IndexName='TransformIndex',
+                KeyConditionExpression=Key('transform_id').eq(self.transform_id),
+                FilterExpression=filter_expr,
+                ProjectionExpression="data_id"
+            )
+            
+            for item in response.get('Items', []):
+                skipped_items.add(item['data_id'])
+            
+            # Handle pagination
+            while 'LastEvaluatedKey' in response:
+                response = self.table.query(
+                    IndexName='TransformIndex',
+                    KeyConditionExpression=Key('transform_id').eq(self.transform_id),
+                    FilterExpression=filter_expr,
+                    ProjectionExpression="data_id",
+                    ExclusiveStartKey=response['LastEvaluatedKey']
+                )
+                for item in response.get('Items', []):
+                    skipped_items.add(item['data_id'])
+            
+            self.logger.info(f"Found {len(skipped_items)} previously skipped items")
+            return skipped_items
+        except Exception as e:
+            self.logger.error(f"Error getting skipped items: {e}")
+            return set()
+    
     def _convert_floats_to_decimal(self, obj):
         """Convert all float values in an object to Decimal for DynamoDB compatibility."""
         if isinstance(obj, float):
@@ -1136,7 +1178,8 @@ class BaseTransform:
         return stats
     
     def run_pipeline(self, session_ids: Optional[List[str]] = None, batch_size: int = 0, 
-                    max_items: int = 0, start_idx: int = 0, include_processed: bool = False):
+                    max_items: int = 0, start_idx: int = 0, include_processed: bool = False,
+                    include_skipped: bool = False, skipped_only: bool = False):
         """Run the pipeline on specified session IDs or find new sessions to process.
         
         Args:
@@ -1145,27 +1188,49 @@ class BaseTransform:
             max_items: Maximum number of items to process
             start_idx: Starting index for processing
             include_processed: Whether to include already processed sessions
+            include_skipped: Whether to include sessions that were previously skipped
+            skipped_only: Whether to only process sessions that were previously skipped
             
         Returns:
             Dict with processing statistics
         """
-        # Store include_processed as an instance variable so child classes can access it
+        # Store flags as instance variables so child classes can access them
         self.include_processed = include_processed
+        self.include_skipped = include_skipped
+        self.skipped_only = skipped_only
         
         if session_ids is None:
             # Find sessions that need processing
             self.logger.info("Finding sessions to process")
             session_ids = self.find_sessions()
             
-        # Only filter out processed sessions if include_processed is False
+        # Handle different filtering scenarios
         unprocessed_ids = session_ids
-        if not include_processed:
-            # Get processed items (including those with 'skipped' status)
+        
+        if skipped_only:
+            # Only process sessions that were previously skipped
+            self.logger.info("Filtering for skipped-only sessions")
+            skipped_items = self.get_skipped_items()
+            unprocessed_ids = [id for id in session_ids if id in skipped_items]
+            self.logger.info(f"Found {len(unprocessed_ids)} previously skipped items out of {len(session_ids)} total")
+            
+        elif include_processed:
+            # Include all sessions regardless of status
+            self.logger.info(f"Processing all {len(session_ids)} items including previously processed ones")
+            
+        elif include_skipped:
+            # Include sessions that haven't been successfully processed (include skipped)
+            self.logger.info("Including sessions that were previously skipped")
+            # Only filter out successfully processed items, keep unprocessed and skipped
+            successfully_processed_items = self.get_processed_items(include_skipped=False)
+            unprocessed_ids = [id for id in session_ids if id not in successfully_processed_items]
+            self.logger.info(f"Found {len(unprocessed_ids)} items to process (unprocessed + skipped) out of {len(session_ids)} total")
+            
+        else:
+            # Default: filter out all previously processed sessions (both success and skipped)
             processed_items = self.get_processed_items(include_skipped=True)
             unprocessed_ids = [id for id in session_ids if id not in processed_items]
             self.logger.info(f"Found {len(unprocessed_ids)} unprocessed items out of {len(session_ids)} total")
-        else:
-            self.logger.info(f"Processing all {len(session_ids)} items including previously processed ones")
         
         # Apply max_items limit if specified
         if max_items > 0 and max_items < len(unprocessed_ids):
@@ -1423,5 +1488,7 @@ class BaseTransform:
             batch_size=args.batch_size,
             max_items=args.max_items,
             start_idx=args.start_idx,
-            include_processed=hasattr(args, 'include_processed') and args.include_processed
+            include_processed=hasattr(args, 'include_processed') and args.include_processed,
+            include_skipped=hasattr(args, 'include_skipped') and args.include_skipped,
+            skipped_only=hasattr(args, 'skipped_only') and args.skipped_only
         )

@@ -24,6 +24,7 @@ try:
     from .transforms.t4A_query_v0 import QueryTransform
     from .transforms.t6A_encode_v0 import EncodeEEGTransform
     from .transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
+    from .transforms.t6C_baseline_v0 import BaselineClassifierTransform
     from .utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
         get_processed_sessions, extract_timestamp_from_name
@@ -43,6 +44,7 @@ except ImportError:
     from transforms.t4D_query_eye_good_v0 import EyeGoodTransform
     from transforms.t4E_query_breath_good_v0 import BreathGoodTransform
     from transforms.t6B_classify_eeg_v0 import ClassifyEEGTransform
+    from transforms.t6C_baseline_v0 import BaselineClassifierTransform
     # Imports for utils when running as a script
     from utils.session_utils import (
         get_all_sessions, display_sessions_summary, select_sessions_interactive,
@@ -76,6 +78,7 @@ TRANSFORMS = {
     'qry-eye-good': EyeGoodTransform,
     'qry-breath': BreathGoodTransform,
     'classify': ClassifyEEGTransform,
+    'baseline': BaselineClassifierTransform,
 
     # Add more transforms as they are implemented
     # 'preprocess': PreprocessTransform,
